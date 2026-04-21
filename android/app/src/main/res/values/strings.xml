@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">tappen</string>
+    <string name="title_activity_main">tappen</string>
+    <string name="package_name">se.teknologappen.tappen</string>
+    <string name="custom_url_scheme">se.teknologappen.tappen</string>
+</resources>
