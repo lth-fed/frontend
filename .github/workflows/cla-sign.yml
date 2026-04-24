@@ -1,0 +1,51 @@
+name: CLA Sign
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  sign:
+    if: contains(github.event.comment.body, '/sign-cla') && github.event.issue.pull_request.url != ''
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: write
+      pull-requests: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Add signer
+        run: |
+          USER="${{ github.event.comment.user.login }}"
+          echo "Adding $USER"
+
+          if [ ! -f .github/cla-signatures.json ]; then
+            echo "[]" > .github/cla-signatures.json
+          fi
+
+          if jq -e --arg user "$USER" 'index($user) != null' .github/cla-signatures.json > /dev/null; then
+            echo "$USER has already signed the CLA"
+          else
+            jq --arg user "$USER" '. + [$user]' .github/cla-signatures.json > tmp.json
+            mv tmp.json .github/cla-signatures.json
+          fi
+
+      - name: Commit update
+        run: |
+          git config user.name "cla-bot"
+          git config user.email "cla-bot@users.noreply.github.com"
+          git add .github/cla-signatures.json
+          git diff --cached --quiet || git commit -m "[INFRA] (Update): Add CLA signature for ${{ github.event.comment.user.login }}"
+          git push
+
+      - name: Re-trigger CLA check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git fetch origin "refs/pull/${{ github.event.issue.number }}/head"
+          PR_SHA=$(git rev-parse FETCH_HEAD)
+          RUN_ID=$(gh api "repos/${{ github.repository }}/actions/workflows/cla-check.yml/runs?head_sha=$PR_SHA" \
+            --jq '.workflow_runs[0].id')
+          gh api "repos/${{ github.repository }}/actions/runs/$RUN_ID/rerun-failed-jobs" --method POST
