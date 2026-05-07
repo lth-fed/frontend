@@ -10,7 +10,13 @@
 </script>
 
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
-{@render children()}
+<div
+	class="max-h-screen min-h-screen max-w-screen min-w-screen overflow-hidden bg-gray-100
+			pt-[env(safe-area-inset-top)] pr-[env(safe-area-inset-right)]
+			pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)]"
+>
+	{@render children()}
+</div>
 
 <div style="display:none">
 	{#each locales as locale (locale)}
