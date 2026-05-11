@@ -15,7 +15,6 @@
 		504EC30F1FED79650016851F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30E1FED79650016851F /* Assets.xcassets */; };
 		504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC3101FED79650016851F /* LaunchScreen.storyboard */; };
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
-		B794F57B2F9AFDC0003DAB33 /* TicketWalletPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = B794F57A2F9AFDB3003DAB33 /* TicketWalletPlugin.swift */; };
 		B7F90E482F9B040600577FCE /* CustomViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7F90E472F9B040600577FCE /* CustomViewController.swift */; };
 /* End PBXBuildFile section */
 
@@ -30,15 +29,12 @@
 		504EC3131FED79650016851F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		50B271D01FEDC1A000F3C39B /* public */ = {isa = PBXFileReference; lastKnownFileType = folder; path = public; sourceTree = "<group>"; };
 		958DCC722DB07C7200EA8C5F /* debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = debug.xcconfig; path = ../debug.xcconfig; sourceTree = SOURCE_ROOT; };
-		B794F57A2F9AFDB3003DAB33 /* TicketWalletPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TicketWalletPlugin.swift; sourceTree = "<group>"; };
 		B7D6609C2F9DF24700187C63 /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
 		B7F90E472F9B040600577FCE /* CustomViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		B7DBC8392FA401B7005D5728 /* TabsBar */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = TabsBar; sourceTree = "<group>"; };
-		B7DBC8442FA403A6005D5728 /* ToolBar */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = ToolBar; sourceTree = "<group>"; };
-		B7DBC84B2FACB5A8005D5728 /* NavigationBar */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = NavigationBar; sourceTree = "<group>"; };
+		B7DBC8522FB1E721005D5728 /* Plugins */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Plugins; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -73,11 +69,8 @@
 		504EC3061FED79650016851F /* App */ = {
 			isa = PBXGroup;
 			children = (
-				B7DBC84B2FACB5A8005D5728 /* NavigationBar */,
-				B7DBC8442FA403A6005D5728 /* ToolBar */,
-				B7DBC8392FA401B7005D5728 /* TabsBar */,
+				B7DBC8522FB1E721005D5728 /* Plugins */,
 				B7D6609C2F9DF24700187C63 /* App.entitlements */,
-				B794F57A2F9AFDB3003DAB33 /* TicketWalletPlugin.swift */,
 				50379B222058CBB4000EE86E /* capacitor.config.json */,
 				504EC3071FED79650016851F /* AppDelegate.swift */,
 				504EC30B1FED79650016851F /* Main.storyboard */,
@@ -107,9 +100,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				B7DBC8392FA401B7005D5728 /* TabsBar */,
-				B7DBC8442FA403A6005D5728 /* ToolBar */,
-				B7DBC84B2FACB5A8005D5728 /* NavigationBar */,
+				B7DBC8522FB1E721005D5728 /* Plugins */,
 			);
 			name = App;
 			packageProductDependencies = (
@@ -178,7 +169,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				B7F90E482F9B040600577FCE /* CustomViewController.swift in Sources */,
-				B794F57B2F9AFDC0003DAB33 /* TicketWalletPlugin.swift in Sources */,
 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

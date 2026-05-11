@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import WebKit
 
 struct NavBarButtonConfig {
     let id: String?
@@ -14,7 +15,7 @@ struct NavBarButtonConfig {
     let style: UIBarButtonItem.Style?
 }
 
-final class NavigationBarOverlay: UIViewController {
+final class NavigationBarOverlay: UIViewController, ScrollEdgeElementContainer {
 
     // MARK: - UI
 
@@ -30,6 +31,9 @@ final class NavigationBarOverlay: UIViewController {
 
     var onBackButtonTap: ((String?) -> Void)?
     var onActionButtonTap: ((String?) -> Void)?
+
+    var scrollEdgeInteraction: Any?
+    let scrollEdgeEdge: UIRectEdge = .top
 
     // MARK: - Lifecycle
 
