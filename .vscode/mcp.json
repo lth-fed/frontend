@@ -1,0 +1,13 @@
+{
+	"servers": {
+		"apple-docs": {
+			"type": "http",
+			"url": "https://xdocs.dev/mcp"
+		},
+		"svelte": {
+			"url": "https://mcp.svelte.dev/mcp",
+			"type": "http"
+		}
+	},
+	"inputs": []
+}
