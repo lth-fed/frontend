@@ -6,6 +6,7 @@
 // Please refer to the original project for full attribution and licensing details.
 
 import UIKit
+import WebKit
 
 /// Represents an image icon configuration
 struct ImageIcon {
@@ -52,7 +53,7 @@ enum TabsBarBadge {
     case dot
 }
 /// A view controller that manages a tab bar overlay for Liquid Glass components
-final class TabsBarOverlay: UIViewController, UITabBarDelegate {
+final class TabsBarOverlay: UIViewController, UITabBarDelegate, ScrollEdgeElementContainer {
 
     private(set) var items: [TabsBarItem] = []
     private var idToIndex: [String: Int] = [:]
@@ -62,6 +63,9 @@ final class TabsBarOverlay: UIViewController, UITabBarDelegate {
     // Color configuration
     private var selectedIconColor: UIColor?
     private var unselectedIconColor: UIColor?
+
+    var scrollEdgeInteraction: Any?
+    let scrollEdgeEdge: UIRectEdge = .bottom
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -77,6 +81,16 @@ final class TabsBarOverlay: UIViewController, UITabBarDelegate {
             tabBar.topAnchor.constraint(equalTo: view.topAnchor),
             tabBar.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
+
+            // Configure appearance for scroll edge effects (iOS 13+)
+            let appearance = UITabBarAppearance()
+            appearance.configureWithTransparentBackground()
+        
+            tabBar.standardAppearance = appearance
+        
+            if #available(iOS 15.0, *) {
+                tabBar.scrollEdgeAppearance = appearance
+            }
     }
 
     /// Updates the tab bar with new items and configuration

@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import WebKit
 
 // MARK: - Button Config
 
@@ -69,7 +70,7 @@ extension UIBarButtonItem {
 
 // MARK: - Overlay
 
-final class ToolBarOverlay: UIViewController {
+final class ToolBarOverlay: UIViewController, ScrollEdgeElementContainer {
 
     // MARK: - UI
 
@@ -82,6 +83,9 @@ final class ToolBarOverlay: UIViewController {
     // MARK: - Events
 
     var onButtonTap: ((String?) -> Void)?
+
+    var scrollEdgeInteraction: Any?
+    let scrollEdgeEdge: UIRectEdge = .bottom
 
     // MARK: - Lifecycle
 

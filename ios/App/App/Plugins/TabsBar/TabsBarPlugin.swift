@@ -7,6 +7,7 @@
 
 import Capacitor
 import UIKit
+import WebKit
 
 // MARK: - Image Utilities
 
@@ -659,6 +660,9 @@ public class TabsBarPlugin: CAPPlugin {
             overlay.view.trailingAnchor.constraint(equalTo: hostVC.view.trailingAnchor),
             overlay.view.bottomAnchor.constraint(equalTo: hostVC.view.bottomAnchor)
         ])
+
+        let targetScrollView = findScrollView(in: hostVC.view)
+        overlay.attachScrollEdgeInteraction(to: targetScrollView)
 
         self.overlayVC = overlay
     }

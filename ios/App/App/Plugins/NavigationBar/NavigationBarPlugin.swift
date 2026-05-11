@@ -7,6 +7,7 @@
 
 import Capacitor
 import UIKit
+import WebKit
 
 @objc(NavigationBarPlugin)
 public class NavigationBarPlugin: CAPPlugin {
@@ -193,6 +194,9 @@ public class NavigationBarPlugin: CAPPlugin {
         ])
 
         overlay.didMove(toParent: hostVC)
+
+        let targetScrollView = findScrollView(in: hostVC.view)
+        overlay.attachScrollEdgeInteraction(to: targetScrollView)
 
         overlayVC = overlay
     }
