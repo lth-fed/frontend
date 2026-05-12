@@ -3,10 +3,17 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { locales, localizeHref } from '$lib/paraglide/runtime';
+	import { session } from '$lib/state/session.svelte';
 	import './layout.css';
 	import favicon from '$lib/assets/favicon.svg';
 
 	let { children } = $props();
+
+	$effect(() => {
+		const g = session.guild;
+		if (g) document.body.dataset.guild = g;
+		else delete document.body.dataset.guild;
+	});
 </script>
 
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>

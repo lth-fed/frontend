@@ -1,0 +1,198 @@
+@import "tailwindcss";
+
+/* ============================================================
+   TLTH GUILD THEMING
+   ------------------------------------------------------------
+   Every guild palette declares the SAME semantic keys.
+   Components reference semantic names only — never a guild directly.
+
+   Switch theme by setting data-guild on any ancestor:
+     <body data-guild="f">          → orange
+     <body data-guild="k">          → yellow
+     <main data-guild="w">          → turquoise (scoped)
+
+   Default (no attribute) uses a neutral palette — applied
+   pre-auth and as a fallback when no guild is known.
+   ============================================================ */
+
+/* -- Semantic key contract --
+   Every guild MUST define each of these. Same keys, different values.
+
+   --guild-primary       The headline brand color (ticket header bg)
+   --guild-primary-dark  Darker stop for gradients / pressed states
+   --guild-primary-light Light tint for filled badges, hover states
+   --guild-surface       Very light tint for card backgrounds
+   --guild-on-primary    Text/icon color that sits on top of --guild-primary
+   --guild-on-surface    Text color that sits on --guild-surface
+   --guild-accent        Used for muted text on neutral cards (date pills, etc.)
+   --guild-ring          Ring color (matches the primary for most guilds)
+   --guild-ring-width    Ring thickness. 0px for guilds where the primary
+                         already defines the ticket edge. >0 for guilds
+                         where the primary is too light to be self-defining
+                         (E-sektionen). Component always renders the ring;
+                         theme decides whether it's visible.
+*/
+
+/* ---------- Default values: neutral (pre-auth / no guild / Lund University) ---------- */
+:root {
+  --guild-primary:       #9C6114;
+  --guild-primary-dark:  #000080;
+  --guild-primary-light: #E8D5B7;
+  --guild-surface:       #F7F0E5;
+  --guild-on-primary:    #FFFFFF;
+  --guild-on-surface:    #5C3A0C;
+  --guild-accent:        #000080;
+  --guild-ring:          #9C6114;
+  --guild-ring-width:    0px;
+}
+
+/* ---------- F-sektionen — Orange ---------- */
+[data-guild="f"] {
+  --guild-primary:       #E87020;
+  --guild-primary-dark:  #C45816;
+  --guild-primary-light: #FCDFCA;
+  --guild-surface:       #FBF3EC;
+  --guild-on-primary:    #FFFFFF;
+  --guild-on-surface:    #8C3E08;
+  --guild-accent:        #C45816;
+  --guild-ring:          #E87020;
+  --guild-ring-width:    0px;
+}
+
+/* ---------- E-sektionen — White ----------
+   Special case: pure white can't carry identity through fill alone.
+   on-primary is dark; ring-width is 1px so every ticket gets a
+   visible outline against the cream app background. No per-guild
+   markup needed — the component always renders the ring, it's
+   only visible here. */
+[data-guild="e"] {
+  --guild-primary:       #FFFFFF;
+  --guild-primary-dark:  #F2F2F2;
+  --guild-primary-light: #F2F2F2;
+  --guild-surface:       #FAFAFA;
+  --guild-on-primary:    #1A1A1A;
+  --guild-on-surface:    #1A1A1A;
+  --guild-accent:        #5C5C5C;
+  --guild-ring:          #999999;
+  --guild-ring-width:    1px;
+}
+
+/* ---------- M-sektionen — Red ---------- */
+[data-guild="m"] {
+  --guild-primary:       #E81820;
+  --guild-primary-dark:  #B81018;
+  --guild-primary-light: #FBD0D2;
+  --guild-surface:       #FBF1F2;
+  --guild-on-primary:    #FFFFFF;
+  --guild-on-surface:    #86060C;
+  --guild-accent:        #B81018;
+  --guild-ring:          #E81820;
+  --guild-ring-width:    0px;
+}
+
+/* ---------- V-sektionen — Blue ---------- */
+[data-guild="v"] {
+  --guild-primary:       #3850A0;
+  --guild-primary-dark:  #283C7C;
+  --guild-primary-light: #D4DBEE;
+  --guild-surface:       #F0F2F8;
+  --guild-on-primary:    #FFFFFF;
+  --guild-on-surface:    #1B2A66;
+  --guild-accent:        #283C7C;
+  --guild-ring:          #3850A0;
+  --guild-ring-width:    0px;
+}
+
+/* ---------- A-sektionen — Purple ---------- */
+[data-guild="a"] {
+  --guild-primary:       #902088;
+  --guild-primary-dark:  #6D1666;
+  --guild-primary-light: #ECD0EA;
+  --guild-surface:       #F7EEF6;
+  --guild-on-primary:    #FFFFFF;
+  --guild-on-surface:    #560C50;
+  --guild-accent:        #6D1666;
+  --guild-ring:          #902088;
+  --guild-ring-width:    0px;
+}
+
+/* ---------- K-sektionen — Yellow ----------
+   Yellow is too bright for white text. on-primary is dark. */
+[data-guild="k"] {
+  --guild-primary:       #F8F000;
+  --guild-primary-dark:  #D8D000;
+  --guild-primary-light: #FCFBC2;
+  --guild-surface:       #FDFCEE;
+  --guild-on-primary:    #3D3000;
+  --guild-on-surface:    #6B5500;
+  --guild-accent:        #7A7400;
+  --guild-ring:          #D8D000;
+  --guild-ring-width:    0px;
+}
+
+/* ---------- D-sektionen — Pink ---------- */
+[data-guild="d"] {
+  --guild-primary:       #F080A0;
+  --guild-primary-dark:  #CE5C7E;
+  --guild-primary-light: #FBDDE6;
+  --guild-surface:       #FCF1F5;
+  --guild-on-primary:    #FFFFFF;
+  --guild-on-surface:    #9E3458;
+  --guild-accent:        #CE5C7E;
+  --guild-ring:          #F080A0;
+  --guild-ring-width:    0px;
+}
+
+/* ---------- Ing-sektionen — Marinblå ---------- */
+[data-guild="ing"] {
+  --guild-primary:       #202860;
+  --guild-primary-dark:  #121838;
+  --guild-primary-light: #D0D3E0;
+  --guild-surface:       #EFF0F4;
+  --guild-on-primary:    #FFFFFF;
+  --guild-on-surface:    #0C1238;
+  --guild-accent:        #121838;
+  --guild-ring:          #202860;
+  --guild-ring-width:    0px;
+}
+
+/* ---------- W-sektionen — Turkos ---------- */
+[data-guild="w"] {
+  --guild-primary:       #30B8C0;
+  --guild-primary-dark:  #1F8B92;
+  --guild-primary-light: #D0EEF0;
+  --guild-surface:       #EEF8F8;
+  --guild-on-primary:    #FFFFFF;
+  --guild-on-surface:    #125E62;
+  --guild-ring:          #30B8C0;
+  --guild-ring-width:    0px;
+}
+
+/* ---------- I-sektionen — Vinröd ---------- */
+[data-guild="i"] {
+  --guild-primary:       #700028;
+  --guild-primary-dark:  #4C0018;
+  --guild-primary-light: #E5C8D1;
+  --guild-surface:       #F5EBEF;
+  --guild-on-primary:    #FFFFFF;
+  --guild-on-surface:    #3F0016;
+  --guild-accent:        #4C0018;
+  --guild-ring:          #700028;
+  --guild-ring-width:    0px;
+}
+
+/* ============================================================
+   Register the semantic tokens as Tailwind utilities.
+   @theme inline is required so utilities resolve to var(--guild-*)
+   and re-evaluate when data-guild changes.
+   ============================================================ */
+@theme inline {
+  --color-guild-primary:       var(--guild-primary);
+  --color-guild-primary-dark:  var(--guild-primary-dark);
+  --color-guild-primary-light: var(--guild-primary-light);
+  --color-guild-surface:       var(--guild-surface);
+  --color-guild-on-primary:    var(--guild-on-primary);
+  --color-guild-on-surface:    var(--guild-on-surface);
+  --color-guild-accent:        var(--guild-accent);
+  --color-guild-ring:          var(--guild-ring);
+}
