@@ -1,4 +1,4 @@
-@import 'tailwindcss';
+@import '../lib/styles/guild-theme.css';
 
 body {
 	-webkit-touch-callout: none;
