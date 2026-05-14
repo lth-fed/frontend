@@ -1,0 +1,16 @@
+@import 'tailwindcss';
+@source "../../node_modules/common-lib/";
+@layer base {
+  h1 {
+    font-size: var(--text-3xl);
+  }
+  h2 {
+    font-size: var(--text-2xl);
+  }
+  h3 {
+    font-size: var(--text-xl);
+  }
+  p {
+      @apply py-2;
+  }
+}

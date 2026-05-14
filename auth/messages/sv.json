@@ -1,0 +1,14 @@
+{
+	"$schema": "https://inlang.com/schema/inlang-message-format",
+	"other_lang": "English 🇬🇧",
+	"copyright": "Kopiering förbjuden © Utvecklarna bakom teknologappen",
+	"privacy_statement": "Integritetspolicy",
+	"title": "Teknologappens inloggningstjänst",
+	"description": "Välkommen! Detta är inloggningstjänsten som används av {#link}teknologappen{/link} och sektionerna under TLTHs hemsidor.",
+	"allow": "Tillåt",
+	"cancel": "Avbryt",
+	"confirm_description": "{#origin}wow{/origin} vill ha tillgång till dina personuppgifter.",
+	"confirm_access": "Detta tillåter hemsidan och utvecklarna av {#origin}wow{/origin} att visa och spara:",
+	"confirm_name": "ditt namn",
+	"confirm_mail": "din e-mail"
+}

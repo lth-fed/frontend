@@ -1,0 +1,14 @@
+{
+	"name": "auth-lib",
+	"version": "0.0.1",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"build": "tsc index.ts"
+	},
+	"keywords": [],
+	"author": "Erik Davidsson <fed@icelk.dev>",
+	"devDependencies": {
+		"typescript": "^6.0.3"
+	}
+}
