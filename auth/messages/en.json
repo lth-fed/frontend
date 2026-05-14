@@ -1,0 +1,14 @@
+{
+	"$schema": "https://inlang.com/schema/inlang-message-format",
+	"other_lang": "Svenska 🇸🇪",
+	"copyright": "All rights reserved © The developers behind teknologappen",
+	"privacy_statement": "Privacy statement",
+	"title": "Login service of Teknologappen",
+	"description": "Welcome! This is the login service used by {#link}Teknologappen{/link} and the guids' websides.",
+	"allow": "Allow",
+	"cancel": "Cancel",
+	"confirm_description": "{#origin}{/origin} wants access to your personal details.",
+	"confirm_access": "This allows the website and developers of {#origin}{/origin} to show and save:",
+	"confirm_name": "your name",
+	"confirm_mail": "your email adress"
+}
