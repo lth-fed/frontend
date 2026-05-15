@@ -10,5 +10,11 @@
 	"confirm_description": "{#origin}{/origin} wants access to your personal details.",
 	"confirm_access": "This allows the website and developers of {#origin}{/origin} to show and save:",
 	"confirm_name": "your name",
-	"confirm_mail": "your email adress"
+	"confirm_mail": "your email adress",
+	"mail_description": "Email login. You will receive an email with a link to validate your identity.",
+	"mail_close_page": "Check your email inbox. You may now safely close this tab.",
+	"mail_mail": "Email address",
+	"mail_name": "Full name",
+	"login": "Log in",
+	"whoops": "Something went very wrong. Please retry the whole login process."
 }

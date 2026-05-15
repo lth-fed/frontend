@@ -10,5 +10,11 @@
 	"confirm_description": "{#origin}wow{/origin} vill ha tillgång till dina personuppgifter.",
 	"confirm_access": "Detta tillåter hemsidan och utvecklarna av {#origin}wow{/origin} att visa och spara:",
 	"confirm_name": "ditt namn",
-	"confirm_mail": "din e-mail"
+	"confirm_mail": "din e-mail",
+	"mail_description": "Mailinlogg. Du kommer få ett mail med en länk som validerar din identitet.",
+	"mail_close_page": "Titta i din mailinkorg, du borde har fått ett inloggningsmail. Du kan nu säkert stänga denna sida.",
+	"mail_mail": "E-post adress",
+	"mail_name": "För- och efternamn",
+	"login": "Logga in",
+	"whoops": "Något gick väldigt snett. Prova logga in från början igen."
 }

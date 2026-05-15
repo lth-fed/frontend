@@ -19,11 +19,11 @@
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
 <Button
 	class="absolute top-4 right-6"
-	onclick={() => setLang(i18n.getLang() === 'sv' ? 'en' : 'sv')}
-	>{m.other_lang(...l)}</Button>
+	onclick={() => setLang(i18n.getLang() === 'sv' ? 'en' : 'sv')}>{m.other_lang(...l)}</Button>
 <div class="grid min-h-full grid-rows-[1fr_auto]">
 	<div class="flex h-full flex-col items-center">
-		<div class="mt-32 mb-16 max-w-2xl rounded-xl bg-gray-100 p-8 drop-shadow-2xl">
+		<div class="mt-32 mb-16 max-w-md rounded-xl bg-gray-100 p-8 drop-shadow-2xl flex flex-col">
+			<h1 class="pb-4 text-2xl">{m.title(...l)}</h1>
 			{@render children()}
 		</div>
 	</div>
