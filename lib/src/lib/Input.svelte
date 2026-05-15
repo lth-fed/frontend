@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type { HTMLButtonAttributes } from 'svelte/elements'
+	import type { HTMLInputAttributes } from 'svelte/elements'
 
-	let { value = $bindable(), ...rest }: HTMLButtonAttributes = $props()
+	let { value = $bindable(), ...rest }: HTMLInputAttributes = $props()
 </script>
 
 <input

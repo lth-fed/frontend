@@ -33,14 +33,13 @@
 </script>
 
 <p class="flex flex-col">
-	<Input placeholder="aa0000bb-s" bind:value={stil_id} type="text" />
+	<Input placeholder="aa0000bb-s" bind:value={stil_id} />
 </p>
 <p class="flex flex-col">
 	<Input
 		placeholder={m.mail_name(...l)}
 		bind:value={name}
 		onkeydown={(e) => (e.key === 'Enter' ? click() : {})} />
-	/>
 </p>
 <Button class="mt-5 w-full" onclick={click}>{m.login(...l)}</Button>
 {#if whoops}
