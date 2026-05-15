@@ -1,3 +1,4 @@
+export type Provider = 'lu' | 'email' | 'test'
 export type UnknownError = null
 export type AuthState = 'unauthenticated' | 'authenticating' | 'authenticated'
 type Message = { kind: string }
@@ -10,7 +11,7 @@ function setAuthState(state: AuthState) {
 	localStorage.setItem(asLocation, state)
 }
 /**
- * Begin logging in with LU SSO.
+ * Begin logging in with SSO.
  *
  * The general flow is:
  * - call this, you get a URL back
@@ -20,7 +21,8 @@ function setAuthState(state: AuthState) {
  * - if redirected (not iframe) call the `isAuthRedirectSuccess` function on load on the page at `continueUrl`
  * - now the request middleware will get an access token
  */
-export async function beginLuLogin(
+export async function beginLogin(
+	provider: Provider,
 	continueUrl: string,
 	serverCallbackUrl?: string
 ): Promise<String | UnknownError> {
@@ -30,7 +32,7 @@ export async function beginLuLogin(
 	}
 	let response: Response
 	try {
-		response = await fetch('https://auth.teknologappen.se/api/v0/providers/lu', {
+		response = await fetch(`https://auth.teknologappen.se/api/v0/providers/${provider}`, {
 			method: 'POST',
 			body: JSON.stringify(body),
 			headers: { 'content-type': 'application/json' }
@@ -89,7 +91,7 @@ export async function authenticatedFetch(
 
 	let token = at
 
-	if (at === null || data.exp === null || data.exp < now) {
+	if (at === null || data.exp === null || data.nbf + (data.exp - data.nbf) / 2 < now) {
 		if (localStorage.getItem(asLocation) === 'authenticated') {
 			// refresh!
 			let newAt = await refresh()
