@@ -4,7 +4,9 @@
 	import { m } from '$lib/paraglide/messages'
 	const l = $derived([undefined, { locale: i18n.getLang() }])
 
+	let whoops = $state(false)
 	const query = new URLSearchParams(location.search)
+	const originUrl = query.get('origin') ?? 'https://example.org'
 
 	async function click(accepted: boolean) {
 		const body = {
@@ -19,13 +21,18 @@
 			}
 		})
 		if (!resp.ok) {
-			alert('Something went wrong!')
+			whoops = true
 			return
 		}
 		const url = await resp.text()
 		parent.postMessage({ kind: 'validation', validated: true }, '*')
 		location.href = url
 	}
+	// we want to automatically allow teknologappen the login details
+	// this should be fine with GDPR, since it says so in our privacy statement and it's
+	// also critical for the service we're offering
+	//(selling tickets, which requires a name to make a valid transaction)
+	if (originUrl === 'https://teknologappen.se') click(true)
 </script>
 
 <p>
@@ -34,8 +41,7 @@
 		inputs={{}}
 		options={{ locale: i18n.getLang() }}>
 		{#snippet origin()}
-			<span class="font-bold text-nowrap"
-				>{query.get('origin') ?? 'https://example.org'}</span>
+			<span class="font-bold text-nowrap">{originUrl}</span>
 		{/snippet}
 	</ParaglideMessage>
 </p>
@@ -43,8 +49,7 @@
 <p>
 	<ParaglideMessage message={m.confirm_access} inputs={{}} options={{ locale: i18n.getLang() }}>
 		{#snippet origin()}
-			<span class="font-bold text-nowrap"
-				>{query.get('origin') ?? 'https://example.org'}</span>
+			<span class="font-bold text-nowrap">{originUrl}</span>
 		{/snippet}
 	</ParaglideMessage>
 </p>
@@ -61,3 +66,8 @@
 		class="w-full border-green-200 from-green-200 to-green-300 saturate-50"
 		onclick={(_) => click(true)}>{m.allow(...l)}</Button>
 </div>
+{#if whoops}
+	<p class="font-bold">
+		{m.whoops(...l)}
+	</p>
+{/if}

@@ -3,9 +3,9 @@
 	import { m } from '$lib/paraglide/messages'
 	const l = $derived([undefined, { locale: i18n.getLang() }])
 
-	let sent = $state(false)
-	let invalid = $state(false)
-	let valid = $state(false)
+	let freeze = $state(false)
+	let inputError = $state(false)
+	let continueToMail = $state(false)
 	let whoops = $state(false)
 	let email = $state('')
 	let name = $state('')
@@ -18,7 +18,7 @@
 			email,
 			name
 		}
-		sent = true
+		freeze = true
 		const resp = await fetch('/api/v0/providers/email/login', {
 			method: 'POST',
 			body: JSON.stringify(body),
@@ -26,11 +26,12 @@
 				'content-type': 'application/json; charset=utf-8'
 			}
 		})
-		invalid = false
+		inputError = false
 		if (resp.ok) {
-			valid = true
+			continueToMail = true
 		} else if (resp.status === 400) {
-			invalid = true
+			inputError = true
+			freeze = false
 		} else {
 			whoops = true
 		}
@@ -43,21 +44,21 @@
 <p class="flex flex-col">
 	<Input
 		placeholder={m.mail_mail(...l)}
-		class={invalid ? 'border border-3 border-red-300' : ''}
+		class={inputError ? 'border border-3 border-red-300' : ''}
 		bind:value={email}
 		type="email"
-		disabled={sent} />
+		disabled={freeze} />
 </p>
 <p class="flex flex-col">
 	<Input
 		placeholder={m.mail_name(...l)}
-		class={invalid ? 'border border-3 border-red-300' : ''}
+		class={inputError ? 'border border-3 border-red-300' : ''}
 		bind:value={name}
-		disabled={sent}
+		disabled={freeze}
 		onkeydown={(e) => (e.key === 'Enter' ? click() : {})} />
 </p>
-<Button class="mt-5 w-full" onclick={click} disabled={sent}>{m.login(...l)}</Button>
-{#if valid}
+<Button class="mt-5 w-full" onclick={click} disabled={freeze}>{m.login(...l)}</Button>
+{#if continueToMail}
 	<p class="font-bold">
 		{m.mail_close_page(...l)}
 	</p>

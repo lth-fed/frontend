@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { i18n } from 'common-lib'
 	import { m } from '$lib/paraglide/messages'
-	import { onMount } from 'svelte'
 	const l = $derived([undefined, { locale: i18n.getLang() }])
 
 	let whoops = $state(false)
@@ -27,7 +26,7 @@
 		parent.postMessage({ kind: 'validation', validated: true }, '*')
 		location.href = url
 	}
-	onMount(approve)
+	approve()
 </script>
 
 {#if whoops}
