@@ -1,5 +1,8 @@
 @import 'tailwindcss';
 @source "../../node_modules/common-lib/";
+@theme {
+  --breakpoint-xs: 25rem;
+}
 @layer base {
   h1 {
     font-size: var(--text-3xl);
