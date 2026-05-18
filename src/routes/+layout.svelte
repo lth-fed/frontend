@@ -11,8 +11,9 @@
 
 	$effect(() => {
 		const g = session.guild;
-		if (g) document.body.dataset.guild = g;
-		else delete document.body.dataset.guild;
+		const els = [document.documentElement, document.body];
+		if (g) els.forEach((el) => (el.dataset.guild = g));
+		else els.forEach((el) => delete el.dataset.guild);
 	});
 </script>
 
