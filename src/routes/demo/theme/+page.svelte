@@ -10,16 +10,76 @@
 		serial: string;
 	}[] = [
 		{ key: null, label: 'Neutral (default)', subtitle: 'No guild', serial: '#XX-6719284' },
-		{ key: 'f', label: 'F-sektionen', subtitle: 'F-sektionen', location: 'Kan inga F-lokaler', serial: '#F-6719284' },
-		{ key: 'e', label: 'E-sektionen', subtitle: 'E-sektionen', location: 'Kan inga E-lokaler', serial: '#E-6719284' },
-		{ key: 'm', label: 'M-sektionen', subtitle: 'M-sektionen', location: 'Kan inga M-lokaler', serial: '#M-6719284' },
-		{ key: 'v', label: 'V-sektionen', subtitle: 'V-sektionen', location: 'Kan inga V-lokaler', serial: '#V-6719284' },
-		{ key: 'a', label: 'A-sektionen', subtitle: 'A-sektionen', location: 'Kan inga A-lokaler', serial: '#A-6719284' },
-		{ key: 'k', label: 'K-sektionen', subtitle: 'K-sektionen', location: 'Kan inga K-lokaler', serial: '#K-6719284' },
-		{ key: 'd', label: 'D-sektionen', subtitle: 'D-sektionen', location: 'Kan inga D-lokaler', serial: '#D-6719284' },
-		{ key: 'ing', label: 'Ing-sektionen', subtitle: 'Ing-sektionen', location: 'Kan inga Ing-lokaler', serial: '#ING-6719284' },
-		{ key: 'w', label: 'W-sektionen', subtitle: 'W-sektionen', location: 'Kan inga W-lokaler', serial: '#W-6719284' },
-		{ key: 'i', label: 'I-sektionen', subtitle: 'I-sektionen', location: 'Kan inga I-lokaler', serial: '#I-6719284' }
+		{
+			key: 'f',
+			label: 'F-sektionen',
+			subtitle: 'F-sektionen',
+			location: 'Kan inga F-lokaler',
+			serial: '#F-6719284'
+		},
+		{
+			key: 'e',
+			label: 'E-sektionen',
+			subtitle: 'E-sektionen',
+			location: 'Kan inga E-lokaler',
+			serial: '#E-6719284'
+		},
+		{
+			key: 'm',
+			label: 'M-sektionen',
+			subtitle: 'M-sektionen',
+			location: 'Kan inga M-lokaler',
+			serial: '#M-6719284'
+		},
+		{
+			key: 'v',
+			label: 'V-sektionen',
+			subtitle: 'V-sektionen',
+			location: 'Kan inga V-lokaler',
+			serial: '#V-6719284'
+		},
+		{
+			key: 'a',
+			label: 'A-sektionen',
+			subtitle: 'A-sektionen',
+			location: 'Kan inga A-lokaler',
+			serial: '#A-6719284'
+		},
+		{
+			key: 'k',
+			label: 'K-sektionen',
+			subtitle: 'K-sektionen',
+			location: 'Kan inga K-lokaler',
+			serial: '#K-6719284'
+		},
+		{
+			key: 'd',
+			label: 'D-sektionen',
+			subtitle: 'D-sektionen',
+			location: 'Kan inga D-lokaler',
+			serial: '#D-6719284'
+		},
+		{
+			key: 'ing',
+			label: 'Ing-sektionen',
+			subtitle: 'Ing-sektionen',
+			location: 'Kan inga Ing-lokaler',
+			serial: '#ING-6719284'
+		},
+		{
+			key: 'w',
+			label: 'W-sektionen',
+			subtitle: 'W-sektionen',
+			location: 'Kan inga W-lokaler',
+			serial: '#W-6719284'
+		},
+		{
+			key: 'i',
+			label: 'I-sektionen',
+			subtitle: 'I-sektionen',
+			location: 'Kan inga I-lokaler',
+			serial: '#I-6719284'
+		}
 	];
 </script>
 
@@ -31,6 +91,7 @@
 			<div class="space-y-3" data-guild={key ?? undefined}>
 				<p class="text-sm font-bold text-gray-600">{label}</p>
 				<Ticket
+					name="Simon Mechler"
 					title="Cool sittning typ"
 					{subtitle}
 					date="25 Apr, 2026"

@@ -1,4 +1,41 @@
 {
 	"$schema": "https://inlang.com/schema/inlang-message-format",
-	"hello_world": "Hello, {name} from en!"
+	"hello_world": "Hello, {name} from en!",
+
+	"ticket_status_active": "ACTIVE",
+	"ticket_label_date": "DATE",
+	"ticket_label_time": "TIME",
+	"ticket_label_location": "LOCATION",
+	"ticket_label_addition": "ADDITION",
+	"ticket_label_serial": "SERIAL",
+	"ticket_tap_qr": "Tap to view QR",
+
+	"ticket_detail_label_name": "NAME",
+	"ticket_detail_label_event": "EVENT",
+
+	"event_label_from": "FROM",
+	"event_price": "{amount} kr",
+
+	"top_bar_account_label": "Account",
+	"top_bar_notifications_label": "Notifications",
+
+	"tool_transfer": "Transfer",
+	"tool_wallet": "Add to wallet",
+	"tool_receipt": "View receipt",
+	"tool_event": "View event",
+
+	"nav_home": "Home",
+	"nav_alerts": "Alerts",
+	"nav_profile": "Profile",
+	"nav_settings": "Settings",
+
+	"carousel_slide_label": "Go to slide {n}",
+	"qr_code_alt": "QR code",
+	"modal_close_label": "Close",
+
+	"home_my_tickets": "My Tickets",
+	"home_tickets_count": "{count} Tickets",
+	"home_upcoming_events": "Upcoming Events",
+	"home_no_tickets_title": "Your tickets will appear here",
+	"home_browse_events_cta": "Browse events"
 }

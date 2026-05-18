@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 /* ============================================================
    TLTH GUILD THEMING
@@ -26,7 +26,7 @@
    --guild-on-surface    Text color that sits on --guild-surface
    --guild-accent        Used for muted text on neutral cards (date pills, etc.)
    --guild-ring          Ring color (matches the primary for most guilds)
-   --guild-ring-width    Ring thickness. 0px for guilds where the primary
+   --guild-ring-width    Ring thickness. 1px for guilds where the primary
                          already defines the ticket edge. >0 for guilds
                          where the primary is too light to be self-defining
                          (E-sektionen). Component always renders the ring;
@@ -35,28 +35,28 @@
 
 /* ---------- Default values: neutral (pre-auth / no guild / Lund University) ---------- */
 :root {
-  --guild-primary:       #9C6114;
-  --guild-primary-dark:  #000080;
-  --guild-primary-light: #E8D5B7;
-  --guild-surface:       #F7F0E5;
-  --guild-on-primary:    #FFFFFF;
-  --guild-on-surface:    #5C3A0C;
-  --guild-accent:        #000080;
-  --guild-ring:          #9C6114;
-  --guild-ring-width:    0px;
+	--guild-primary: #9c6114;
+	--guild-primary-dark: #000080;
+	--guild-primary-light: #e8d5b7;
+	--guild-surface: #f7f0e5;
+	--guild-on-primary: #ffffff;
+	--guild-on-surface: #5c3a0c;
+	--guild-accent: #000080;
+	--guild-ring: #9c6114;
+	--guild-ring-width: 1px;
 }
 
 /* ---------- F-sektionen — Orange ---------- */
-[data-guild="f"] {
-  --guild-primary:       #E87020;
-  --guild-primary-dark:  #C45816;
-  --guild-primary-light: #FCDFCA;
-  --guild-surface:       #FBF3EC;
-  --guild-on-primary:    #FFFFFF;
-  --guild-on-surface:    #8C3E08;
-  --guild-accent:        #C45816;
-  --guild-ring:          #E87020;
-  --guild-ring-width:    0px;
+[data-guild='f'] {
+	--guild-primary: #e87020;
+	--guild-primary-dark: #c45816;
+	--guild-primary-light: #fcdfca;
+	--guild-surface: #fbf3ec;
+	--guild-on-primary: #ffffff;
+	--guild-on-surface: #8c3e08;
+	--guild-accent: #c45816;
+	--guild-ring: #e87020;
+	--guild-ring-width: 1px;
 }
 
 /* ---------- E-sektionen — White ----------
@@ -65,120 +65,120 @@
    visible outline against the cream app background. No per-guild
    markup needed — the component always renders the ring, it's
    only visible here. */
-[data-guild="e"] {
-  --guild-primary:       #FFFFFF;
-  --guild-primary-dark:  #F2F2F2;
-  --guild-primary-light: #F2F2F2;
-  --guild-surface:       #FAFAFA;
-  --guild-on-primary:    #1A1A1A;
-  --guild-on-surface:    #1A1A1A;
-  --guild-accent:        #5C5C5C;
-  --guild-ring:          #999999;
-  --guild-ring-width:    1px;
+[data-guild='e'] {
+	--guild-primary: #ffffff;
+	--guild-primary-dark: #f2f2f2;
+	--guild-primary-light: #f2f2f2;
+	--guild-surface: #fafafa;
+	--guild-on-primary: #1a1a1a;
+	--guild-on-surface: #1a1a1a;
+	--guild-accent: #5c5c5c;
+	--guild-ring: #999999;
+	--guild-ring-width: 1px;
 }
 
 /* ---------- M-sektionen — Red ---------- */
-[data-guild="m"] {
-  --guild-primary:       #E81820;
-  --guild-primary-dark:  #B81018;
-  --guild-primary-light: #FBD0D2;
-  --guild-surface:       #FBF1F2;
-  --guild-on-primary:    #FFFFFF;
-  --guild-on-surface:    #86060C;
-  --guild-accent:        #B81018;
-  --guild-ring:          #E81820;
-  --guild-ring-width:    0px;
+[data-guild='m'] {
+	--guild-primary: #e81820;
+	--guild-primary-dark: #b81018;
+	--guild-primary-light: #fbd0d2;
+	--guild-surface: #fbf1f2;
+	--guild-on-primary: #ffffff;
+	--guild-on-surface: #86060c;
+	--guild-accent: #b81018;
+	--guild-ring: #e81820;
+	--guild-ring-width: 1px;
 }
 
 /* ---------- V-sektionen — Blue ---------- */
-[data-guild="v"] {
-  --guild-primary:       #3850A0;
-  --guild-primary-dark:  #283C7C;
-  --guild-primary-light: #D4DBEE;
-  --guild-surface:       #F0F2F8;
-  --guild-on-primary:    #FFFFFF;
-  --guild-on-surface:    #1B2A66;
-  --guild-accent:        #283C7C;
-  --guild-ring:          #3850A0;
-  --guild-ring-width:    0px;
+[data-guild='v'] {
+	--guild-primary: #3850a0;
+	--guild-primary-dark: #283c7c;
+	--guild-primary-light: #d4dbee;
+	--guild-surface: #f0f2f8;
+	--guild-on-primary: #ffffff;
+	--guild-on-surface: #1b2a66;
+	--guild-accent: #283c7c;
+	--guild-ring: #3850a0;
+	--guild-ring-width: 1px;
 }
 
 /* ---------- A-sektionen — Purple ---------- */
-[data-guild="a"] {
-  --guild-primary:       #902088;
-  --guild-primary-dark:  #6D1666;
-  --guild-primary-light: #ECD0EA;
-  --guild-surface:       #F7EEF6;
-  --guild-on-primary:    #FFFFFF;
-  --guild-on-surface:    #560C50;
-  --guild-accent:        #6D1666;
-  --guild-ring:          #902088;
-  --guild-ring-width:    0px;
+[data-guild='a'] {
+	--guild-primary: #902088;
+	--guild-primary-dark: #6d1666;
+	--guild-primary-light: #ecd0ea;
+	--guild-surface: #f7eef6;
+	--guild-on-primary: #ffffff;
+	--guild-on-surface: #560c50;
+	--guild-accent: #6d1666;
+	--guild-ring: #902088;
+	--guild-ring-width: 1px;
 }
 
 /* ---------- K-sektionen — Yellow ----------
    Yellow is too bright for white text. on-primary is dark. */
-[data-guild="k"] {
-  --guild-primary:       #F8F000;
-  --guild-primary-dark:  #D8D000;
-  --guild-primary-light: #FCFBC2;
-  --guild-surface:       #FDFCEE;
-  --guild-on-primary:    #3D3000;
-  --guild-on-surface:    #6B5500;
-  --guild-accent:        #7A7400;
-  --guild-ring:          #D8D000;
-  --guild-ring-width:    0px;
+[data-guild='k'] {
+	--guild-primary: #f8f000;
+	--guild-primary-dark: #d8d000;
+	--guild-primary-light: #fcfbc2;
+	--guild-surface: #fdfcee;
+	--guild-on-primary: #3d3000;
+	--guild-on-surface: #6b5500;
+	--guild-accent: #7a7400;
+	--guild-ring: #d8d000;
+	--guild-ring-width: 1px;
 }
 
 /* ---------- D-sektionen — Pink ---------- */
-[data-guild="d"] {
-  --guild-primary:       #F080A0;
-  --guild-primary-dark:  #CE5C7E;
-  --guild-primary-light: #FBDDE6;
-  --guild-surface:       #FCF1F5;
-  --guild-on-primary:    #FFFFFF;
-  --guild-on-surface:    #9E3458;
-  --guild-accent:        #CE5C7E;
-  --guild-ring:          #F080A0;
-  --guild-ring-width:    0px;
+[data-guild='d'] {
+	--guild-primary: #f080a0;
+	--guild-primary-dark: #ce5c7e;
+	--guild-primary-light: #fbdde6;
+	--guild-surface: #fcf1f5;
+	--guild-on-primary: #ffffff;
+	--guild-on-surface: #9e3458;
+	--guild-accent: #ce5c7e;
+	--guild-ring: #f080a0;
+	--guild-ring-width: 1px;
 }
 
 /* ---------- Ing-sektionen — Marinblå ---------- */
-[data-guild="ing"] {
-  --guild-primary:       #202860;
-  --guild-primary-dark:  #121838;
-  --guild-primary-light: #D0D3E0;
-  --guild-surface:       #EFF0F4;
-  --guild-on-primary:    #FFFFFF;
-  --guild-on-surface:    #0C1238;
-  --guild-accent:        #121838;
-  --guild-ring:          #202860;
-  --guild-ring-width:    0px;
+[data-guild='ing'] {
+	--guild-primary: #202860;
+	--guild-primary-dark: #121838;
+	--guild-primary-light: #d0d3e0;
+	--guild-surface: #eff0f4;
+	--guild-on-primary: #ffffff;
+	--guild-on-surface: #0c1238;
+	--guild-accent: #121838;
+	--guild-ring: #202860;
+	--guild-ring-width: 1px;
 }
 
 /* ---------- W-sektionen — Turkos ---------- */
-[data-guild="w"] {
-  --guild-primary:       #30B8C0;
-  --guild-primary-dark:  #1F8B92;
-  --guild-primary-light: #D0EEF0;
-  --guild-surface:       #EEF8F8;
-  --guild-on-primary:    #FFFFFF;
-  --guild-on-surface:    #125E62;
-  --guild-ring:          #30B8C0;
-  --guild-ring-width:    0px;
+[data-guild='w'] {
+	--guild-primary: #30b8c0;
+	--guild-primary-dark: #1f8b92;
+	--guild-primary-light: #d0eef0;
+	--guild-surface: #eef8f8;
+	--guild-on-primary: #ffffff;
+	--guild-on-surface: #125e62;
+	--guild-ring: #30b8c0;
+	--guild-ring-width: 1px;
 }
 
 /* ---------- I-sektionen — Vinröd ---------- */
-[data-guild="i"] {
-  --guild-primary:       #700028;
-  --guild-primary-dark:  #4C0018;
-  --guild-primary-light: #E5C8D1;
-  --guild-surface:       #F5EBEF;
-  --guild-on-primary:    #FFFFFF;
-  --guild-on-surface:    #3F0016;
-  --guild-accent:        #4C0018;
-  --guild-ring:          #700028;
-  --guild-ring-width:    0px;
+[data-guild='i'] {
+	--guild-primary: #700028;
+	--guild-primary-dark: #4c0018;
+	--guild-primary-light: #e5c8d1;
+	--guild-surface: #f5ebef;
+	--guild-on-primary: #ffffff;
+	--guild-on-surface: #3f0016;
+	--guild-accent: #4c0018;
+	--guild-ring: #700028;
+	--guild-ring-width: 1px;
 }
 
 /* ============================================================
@@ -187,12 +187,12 @@
    and re-evaluate when data-guild changes.
    ============================================================ */
 @theme inline {
-  --color-guild-primary:       var(--guild-primary);
-  --color-guild-primary-dark:  var(--guild-primary-dark);
-  --color-guild-primary-light: var(--guild-primary-light);
-  --color-guild-surface:       var(--guild-surface);
-  --color-guild-on-primary:    var(--guild-on-primary);
-  --color-guild-on-surface:    var(--guild-on-surface);
-  --color-guild-accent:        var(--guild-accent);
-  --color-guild-ring:          var(--guild-ring);
+	--color-guild-primary: var(--guild-primary);
+	--color-guild-primary-dark: var(--guild-primary-dark);
+	--color-guild-primary-light: var(--guild-primary-light);
+	--color-guild-surface: var(--guild-surface);
+	--color-guild-on-primary: var(--guild-on-primary);
+	--color-guild-on-surface: var(--guild-on-surface);
+	--color-guild-accent: var(--guild-accent);
+	--color-guild-ring: var(--guild-ring);
 }

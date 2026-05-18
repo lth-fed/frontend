@@ -1,5 +1,10 @@
 @import '../lib/styles/guild-theme.css';
 
+html,
+body {
+	background-color: var(--guild-surface);
+}
+
 body {
 	-webkit-touch-callout: none;
 	-webkit-user-select: none;
