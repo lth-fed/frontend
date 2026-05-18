@@ -28,7 +28,7 @@ export async function beginLogin(
 ): Promise<String | UnknownError> {
 	const body = {
 		continue_url: continueUrl,
-		callback_url: serverCallbackUrl
+		callback: { v1: serverCallbackUrl }
 	}
 	let response: Response
 	try {
