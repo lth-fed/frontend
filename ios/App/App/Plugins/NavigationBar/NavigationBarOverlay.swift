@@ -141,8 +141,6 @@ final class NavigationBarOverlay: UIViewController, ScrollEdgeElementContainer {
                 target: self,
                 action: #selector(actionButtonTapped)
             )
-            
-            item.tintColor = .systemOrange
 
         } else {
 

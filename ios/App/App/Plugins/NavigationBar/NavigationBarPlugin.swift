@@ -157,7 +157,7 @@ public class NavigationBarPlugin: CAPPlugin {
 
         overlay.onBackButtonTap = { [weak self] id in
             self?.notifyListeners(
-                "toolbarAction",
+                "navigationBarAction",
                 data: [
                     "type": "back",
                     "id": id as Any,
@@ -167,7 +167,7 @@ public class NavigationBarPlugin: CAPPlugin {
 
         overlay.onActionButtonTap = { [weak self] id in
             self?.notifyListeners(
-                "toolbarAction",
+                "navigationBarAction",
                 data: [
                     "type": "action",
                     "id": id as Any,

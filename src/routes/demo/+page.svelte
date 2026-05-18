@@ -7,4 +7,5 @@
 	<li><a class="underline" href={resolve('/demo/theme')}>theme</a></li>
 	<li><a class="underline" href={resolve('/demo/components')}>components</a></li>
 	<li><a class="underline" href={resolve('/demo/homepage')}>homepage</a></li>
+	<li><a class="underline" href={resolve('/demo/event/a')}>event</a></li>
 </ul>

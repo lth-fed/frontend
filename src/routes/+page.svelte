@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { ticketWallet } from '$lib/plugins/ticketWallet';
 
 	let errorMessage: string | null = $state(null);
@@ -57,4 +58,8 @@
 	{/if}
 
 	<button onclick={addTicketToWallet}>Add to Wallet</button>
+
+	<br />
+
+	<a href={resolve('/demo')}>demo</a>
 </main>
