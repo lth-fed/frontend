@@ -19,7 +19,7 @@
 <button
 	type="button"
 	{onclick}
-	class="block w-full overflow-hidden rounded-2xl bg-white text-left shadow-md"
+	class="block w-full overflow-hidden rounded-2xl bg-white text-left shadow-md ring-1 ring-gray-200"
 >
 	<div class="relative">
 		<img src={image} alt="" class="block aspect-[16/9] w-full object-cover" />
