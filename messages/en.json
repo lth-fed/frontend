@@ -25,7 +25,7 @@
 	"tool_event": "View event",
 
 	"nav_home": "Home",
-	"nav_alerts": "Alerts",
+	"nav_links": "Other Places",
 	"nav_profile": "Profile",
 	"nav_settings": "Settings",
 
@@ -37,5 +37,9 @@
 	"home_tickets_count": "{count} Tickets",
 	"home_upcoming_events": "Upcoming Events",
 	"home_no_tickets_title": "Your tickets will appear here",
-	"home_browse_events_cta": "Browse events"
+	"home_browse_events_cta": "Browse events",
+
+	"links_page_title": "Other Places",
+	"links_open_external": "Open {title} in a new tab",
+	"links_empty_title": "No links here yet"
 }
