@@ -17,7 +17,7 @@
 	target="_blank"
 	rel="noopener noreferrer"
 	aria-label={m.links_open_external({ title })}
-	class="flex items-center gap-4 rounded-2xl bg-white p-3 shadow-md"
+	class="flex items-center gap-4 rounded-2xl bg-white p-3 shadow-md ring-1 ring-gray-200"
 >
 	<img src={image} alt="" class="size-20 shrink-0 rounded-xl object-cover" />
 
