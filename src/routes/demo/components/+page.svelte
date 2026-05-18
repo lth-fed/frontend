@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Ticket from '$lib/components/Ticket.svelte';
 	import EventCard from '$lib/components/EventCard.svelte';
+	import LinkCard from '$lib/components/LinkCard.svelte';
 	import Carousel from '$lib/components/Carousel.svelte';
 	import NavBar from '$lib/components/NavBar.svelte';
 	import EmptyState from '$lib/components/EmptyState.svelte';
@@ -260,6 +261,22 @@
 					</div>
 				{/snippet}
 			</Carousel>
+		</section>
+
+		<section class="w-full max-w-[400px] space-y-3">
+			<p class="text-sm font-bold text-gray-600">LinkCard</p>
+			<LinkCard
+				image="https://picsum.photos/seed/linkcard-a/240/240"
+				title="F-sektionen"
+				description="Officiell hemsida för Fysiksektionen vid LTH."
+				url="https://www.f.kth.se"
+			/>
+			<LinkCard
+				image="https://picsum.photos/seed/linkcard-b/240/240"
+				title="Vårens stora avslutningssittning för F-sektionen och vänner"
+				description="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation."
+				url="https://example.com"
+			/>
 		</section>
 
 		<section class="w-full max-w-[360px] space-y-3">

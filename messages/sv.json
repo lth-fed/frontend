@@ -19,7 +19,7 @@
 	"tool_receipt": "Visa kvitto",
 	"tool_event": "Visa evenemang",
 	"nav_home": "Hem",
-	"nav_alerts": "Notiser",
+	"nav_links": "Andra platser",
 	"nav_profile": "Profil",
 	"nav_settings": "Inställningar",
 	"carousel_slide_label": "Gå till bild {n}",
@@ -29,5 +29,8 @@
 	"home_tickets_count": "{count} biljetter",
 	"home_upcoming_events": "Kommande evenemang",
 	"home_no_tickets_title": "Dina biljetter syns här",
-	"home_browse_events_cta": "Bläddra evenemang"
+	"home_browse_events_cta": "Bläddra evenemang",
+	"links_page_title": "Andra platser",
+	"links_open_external": "Öppna {title} i en ny flik",
+	"links_empty_title": "Inga länkar här ännu"
 }
