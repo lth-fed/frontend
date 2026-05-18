@@ -14,7 +14,10 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "prettier --check . && eslint .",
-		"format": "prettier --write ."
+		"format": "prettier --write .",
+		"api:generate:auth": "openapi-typescript http://localhost:8001/api/v0/spec.json -o src/lib/api/generated/auth.d.ts",
+		"api:generate:tickets": "openapi-typescript http://localhost:8000/v0/spec.json -o src/lib/api/generated/tickets.d.ts",
+		"api:generate": "pnpm run api:generate:auth && pnpm run api:generate:tickets"
 	},
 	"devDependencies": {
 		"@capacitor/cli": "^8.3.1",
@@ -30,6 +33,7 @@
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-svelte": "^3.17.0",
 		"globals": "^17.4.0",
+		"openapi-typescript": "^7.13.0",
 		"prettier": "^3.8.1",
 		"prettier-plugin-svelte": "^3.5.1",
 		"prettier-plugin-tailwindcss": "^0.7.2",
@@ -44,6 +48,7 @@
 		"@capacitor/android": "8.3.1",
 		"@capacitor/core": "^8.3.1",
 		"@capacitor/ios": "8.3.1",
-		"@lucide/svelte": "^1.14.0"
+		"@lucide/svelte": "^1.14.0",
+		"openapi-fetch": "^0.17.0"
 	}
 }
