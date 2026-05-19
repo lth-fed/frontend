@@ -7,65 +7,74 @@
 		ShareIcon,
 		TicketIcon
 	} from '@lucide/svelte';
+	import { onMount } from 'svelte';
 	import { navigationBar } from '$lib/plugins/navigationBar/navigationBar';
 	import { nativeButton } from '$lib/plugins/nativeButton/nativeButton';
-	import { Capacitor } from '@capacitor/core';
+	import { isIos26Plus } from '$lib/platform/isIos26Plus';
 
-	const isNative = Capacitor.isNativePlatform();
-	console.log('Is native platform:', isNative);
+	let isIos26Native = $state(false);
 
-	if (isNative) {
-		navigationBar.configure({
-			backButton: {
-				id: 'back',
-				style: 'plain',
-				systemIcon: 'chevron.left'
-			},
-			actionButton: {
-				id: 'action',
-				style: 'plain',
-				systemIcon: 'square.and.arrow.up'
-			},
-			title: 'Event Details',
-			visible: true
-		});
+	onMount(() => {
+		void (async () => {
+			isIos26Native = await isIos26Plus();
+			console.log('Is iOS 26+ platform:', isIos26Native);
 
-		nativeButton.configure({
-			id: 'demo-button',
-			title: 'Buy Tickets',
-			edge: 'bottom',
-			style: 'prominentGlass',
-			fullWidth: true,
-			systemIcon: 'ticket',
-			fontWeight: 'semibold',
-			visible: true,
-			enabled: true,
-			scrollEdgeEffect: true,
-			backgroundColor: '#9c6114',
-			foregroundColor: '#ffffff'
-		});
-
-		navigationBar.addListener('navigationBarAction', (event) => {
-			if (event.type === 'back') {
-				history.back();
-				navigationBar.hide();
-				nativeButton.hide();
+			if (!isIos26Native) {
+				return;
 			}
 
-			if (event.type === 'action') {
-				alert('Share button pressed!');
-			}
-		});
+			navigationBar.configure({
+				backButton: {
+					id: 'back',
+					style: 'plain',
+					systemIcon: 'chevron.left'
+				},
+				actionButton: {
+					id: 'action',
+					style: 'plain',
+					systemIcon: 'square.and.arrow.up'
+				},
+				title: 'Event Details',
+				visible: true
+			});
 
-		nativeButton.addListener('tap', (event) => {
-			if (event.id === 'demo-button') {
-				alert('Buy Tickets button pressed!');
-			}
-		});
-	}
+			nativeButton.configure({
+				id: 'demo-button',
+				title: 'Buy Tickets',
+				edge: 'bottom',
+				style: 'prominentGlass',
+				fullWidth: true,
+				systemIcon: 'ticket',
+				fontWeight: 'semibold',
+				visible: true,
+				enabled: true,
+				scrollEdgeEffect: true,
+				backgroundColor: '#9c6114',
+				foregroundColor: '#ffffff'
+			});
+
+			navigationBar.addListener('navigationBarAction', (event) => {
+				if (event.type === 'back') {
+					history.back();
+					navigationBar.hide();
+					nativeButton.hide();
+				}
+
+				if (event.type === 'action') {
+					alert('Share button pressed!');
+				}
+			});
+
+			nativeButton.addListener('tap', (event) => {
+				if (event.id === 'demo-button') {
+					alert('Buy Tickets button pressed!');
+				}
+			});
+		})();
+	});
 </script>
 
-{#if !isNative}
+{#if !isIos26Native}
 	<div class="fixed top-0 z-20 flex w-full justify-between px-4 py-3">
 		<button
 			class="flex size-11 items-center justify-center rounded-full border border-gray-100 bg-white/80 py-1.25 pr-1.5 pl-1 shadow-[0_8px_40px_color-mix(in_srgb,var(--color-guild-primary)_12%,transparent)] backdrop-blur-xs transition-transform duration-100 active:scale-120 active:bg-gray-100/80"
