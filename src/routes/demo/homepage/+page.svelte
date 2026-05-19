@@ -8,11 +8,38 @@
 	import { session } from '$lib/state/session.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import { Home, Bell, IdCard, Settings, Ticket as TicketIcon } from '@lucide/svelte';
+	import { Capacitor } from '@capacitor/core';
+	import { navigationBar } from '$lib/plugins/navigationBar/navigationBar';
+	import { tabsBar } from '$lib/plugins/tabsBar/tabsBar';
 
 	$effect(() => {
 		session.guild = 'f';
 		return () => (session.guild = null);
 	});
+
+	const isNative = Capacitor.isNativePlatform();
+
+	if (isNative) {
+		navigationBar.configure({
+			title: 'Home',
+			backButton: { id: 'profile', systemIcon: 'person', style: 'plain' },
+			actionButton: { id: 'notifications', systemIcon: 'bell', style: 'plain' },
+			visible: true
+		});
+
+		tabsBar.configure({
+			items: [
+				{ id: 'home', title: m.nav_home(), systemIcon: 'house' },
+				{ id: 'alerts', title: m.nav_alerts(), systemIcon: 'bell' },
+				{ id: 'profile', title: m.nav_profile(), systemIcon: 'person.crop.circle' },
+				{ id: 'settings', title: m.nav_settings(), systemIcon: 'gear' }
+			],
+			initialId: 'home',
+			visible: true,
+			selectedIconColor: '#e87020',
+			unselectedIconColor: '#fbf3ec'
+		});
+	}
 
 	const tickets = [
 		{
@@ -91,17 +118,19 @@
 </script>
 
 <div
-	class="relative h-screen overflow-hidden bg-white"
+	class="relative -mt-[env(safe-area-inset-top)] h-screen overflow-hidden bg-white pt-[env(safe-area-inset-top)]"
 	data-guild="f"
 	style="--ticket-scale: clamp(0.8, calc((100dvh - 340px) / 470px), 1);"
 >
-	<div class="absolute inset-x-0 top-0 z-30">
-		<TopBar
-			initials="SM"
-			onAvatarClick={() => alert('Account')}
-			onNotificationsClick={() => alert('Notifications')}
-		/>
-	</div>
+	{#if !isNative}
+		<div class="absolute inset-x-0 top-0 z-30">
+			<TopBar
+				initials="SM"
+				onAvatarClick={() => alert('Account')}
+				onNotificationsClick={() => alert('Notifications')}
+			/>
+		</div>
+	{/if}
 
 	<main class="h-full overflow-y-auto pt-[72px]">
 		<header class="mt-2 flex items-baseline justify-between px-6">
@@ -137,9 +166,11 @@
 		</section>
 	</main>
 
-	<div class="pointer-events-none fixed inset-x-0 bottom-6 z-20 flex justify-center">
-		<div class="pointer-events-auto">
-			<NavBar items={navItems} selected={selectedNav} onSelect={(id) => (selectedNav = id)} />
+	{#if !isNative}
+		<div class="pointer-events-none fixed inset-x-0 bottom-6 z-20 flex justify-center">
+			<div class="pointer-events-auto">
+				<NavBar items={navItems} selected={selectedNav} onSelect={(id) => (selectedNav = id)} />
+			</div>
 		</div>
-	</div>
+	{/if}
 </div>
