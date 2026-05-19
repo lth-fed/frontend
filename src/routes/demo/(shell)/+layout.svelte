@@ -3,7 +3,7 @@
 	import NavBar from '$lib/components/NavBar.svelte';
 	import BottomActionButton from '$lib/components/BottomActionButton.svelte';
 	import { Home, Globe, IdCard, Settings } from '@lucide/svelte';
-	import { goto } from '$app/navigation';
+	import { afterNavigate, beforeNavigate, goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { m } from '$lib/paraglide/messages.js';
 	import {
@@ -61,6 +61,25 @@
 
 	const topBar = $derived(bars.topBar ?? defaultTopBar);
 	const bottom = $derived(bars.bottom ?? defaultBottom);
+
+	let mainEl: HTMLElement;
+	const scrollPositions = new Map<string, number>();
+
+	beforeNavigate(({ from }) => {
+		if (from && mainEl) {
+			scrollPositions.set(from.url.pathname, mainEl.scrollTop);
+		}
+	});
+
+	afterNavigate(({ to, type }) => {
+		if (!mainEl || !to) return;
+		const path = to.url.pathname;
+		if (type === 'popstate') {
+			mainEl.scrollTop = scrollPositions.get(path) ?? 0;
+		} else {
+			mainEl.scrollTop = 0;
+		}
+	});
 </script>
 
 <div class="relative h-screen overflow-hidden bg-white">
@@ -68,7 +87,7 @@
 		<TopBar {...topBar} />
 	</div>
 
-	<main class="h-full overflow-y-auto pt-[72px] pb-40">
+	<main bind:this={mainEl} class="h-full overflow-y-auto pt-[72px] pb-40">
 		{@render children()}
 	</main>
 
