@@ -10,6 +10,7 @@ import UIKit
 import WebKit
 
 @objc(ToolBarPlugin)
+/// Capacitor bridge for the native toolbar overlay.
 public class ToolBarPlugin: CAPPlugin {
 
     // MARK: - Overlay
@@ -23,6 +24,7 @@ public class ToolBarPlugin: CAPPlugin {
 
     // MARK: - Configure
 
+    /// Applies a new toolbar configuration.
     @objc
     func configure(_ call: CAPPluginCall) {
 
@@ -45,6 +47,7 @@ public class ToolBarPlugin: CAPPlugin {
 
     // MARK: - Show
 
+    /// Shows the native toolbar overlay.
     @objc
     func show(_ call: CAPPluginCall) {
 
@@ -57,6 +60,7 @@ public class ToolBarPlugin: CAPPlugin {
 
     // MARK: - Hide
 
+    /// Hides the native toolbar overlay.
     @objc
     func hide(_ call: CAPPluginCall) {
 

@@ -8,6 +8,7 @@
 import UIKit
 import WebKit
 
+/// Configuration for a navigation bar button.
 struct NavBarButtonConfig {
     let id: String?
     let title: String?
@@ -67,6 +68,7 @@ final class NavigationBarOverlay: UIViewController, ScrollEdgeElementContainer {
 
     // MARK: - Public API
 
+    /// Creates and lays out the embedded navigation bar.
     func update(
         title: String?,
         backButton: NavBarButtonConfig?,
@@ -95,7 +97,7 @@ final class NavigationBarOverlay: UIViewController, ScrollEdgeElementContainer {
         }
 
         let item: UIBarButtonItem
-        
+
         let style = config.style ?? UIBarButtonItem.Style.plain
 
         if let systemIcon = config.systemIcon {
@@ -130,7 +132,7 @@ final class NavigationBarOverlay: UIViewController, ScrollEdgeElementContainer {
         }
 
         let item: UIBarButtonItem
-        
+
         let style = config.style ?? UIBarButtonItem.Style.plain
 
         if let systemIcon = config.systemIcon {

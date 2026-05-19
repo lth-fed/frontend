@@ -21,6 +21,7 @@ class CustomViewController: CAPBridgeViewController {
         bridge?.registerPluginInstance(TabsBarPlugin())
         bridge?.registerPluginInstance(ToolBarPlugin())
         bridge?.registerPluginInstance(NavigationBarPlugin())
+        bridge?.registerPluginInstance(NativeButtonPlugin())
     }
 
     /*

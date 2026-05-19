@@ -9,6 +9,7 @@ import Capacitor
 import PassKit
 
 @objc(TicketWalletPlugin)
+/// Capacitor bridge for adding passes to Apple Wallet.
 public class TicketWalletPlugin: CAPPlugin, CAPBridgedPlugin {
     public let identifier: String = "TicketWalletPlugin"
     public let jsName: String = "TicketWallet"
@@ -16,6 +17,7 @@ public class TicketWalletPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "addTicket", returnType: CAPPluginReturnPromise)
     ]
 
+    /// Adds a base64-encoded pass to Apple Wallet.
     @objc func addTicket(_ call: CAPPluginCall) {
 
         guard let passDataRaw = call.getString("passData") else {

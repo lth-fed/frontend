@@ -10,6 +10,7 @@ import UIKit
 import WebKit
 
 @objc(NavigationBarPlugin)
+/// Capacitor bridge for the native navigation bar overlay.
 public class NavigationBarPlugin: CAPPlugin {
 
     private var overlayVC: NavigationBarOverlay? {
@@ -21,6 +22,7 @@ public class NavigationBarPlugin: CAPPlugin {
 
     // MARK: - Configure
 
+    /// Applies a new navigation bar configuration.
     @objc
     func configure(_ call: CAPPluginCall) {
 
@@ -71,6 +73,7 @@ public class NavigationBarPlugin: CAPPlugin {
 
     // MARK: - Visibility
 
+    /// Shows the native navigation bar overlay.
     @objc
     func show(_ call: CAPPluginCall) {
 
@@ -81,6 +84,7 @@ public class NavigationBarPlugin: CAPPlugin {
         call.resolve()
     }
 
+    /// Hides the native navigation bar overlay.
     @objc
     func hide(_ call: CAPPluginCall) {
 
@@ -93,6 +97,7 @@ public class NavigationBarPlugin: CAPPlugin {
 
     // MARK: - Title
 
+    /// Updates the navigation title.
     @objc
     func setTitle(_ call: CAPPluginCall) {
 
@@ -107,6 +112,7 @@ public class NavigationBarPlugin: CAPPlugin {
 
     // MARK: - Buttons
 
+    /// Updates the back button configuration.
     @objc
     func setBackButton(_ call: CAPPluginCall) {
 
@@ -124,6 +130,7 @@ public class NavigationBarPlugin: CAPPlugin {
         call.resolve()
     }
 
+    /// Updates the action button configuration.
     @objc
     func setActionButton(_ call: CAPPluginCall) {
 

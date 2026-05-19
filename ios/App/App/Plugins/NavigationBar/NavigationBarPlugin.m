@@ -8,10 +8,9 @@
 #import <Capacitor/Capacitor.h>
 
 CAP_PLUGIN(NavigationBarPlugin, "NavigationBar",
-  CAP_PLUGIN_METHOD(configure, CAPPluginReturnPromise);
-  CAP_PLUGIN_METHOD(show, CAPPluginReturnPromise);
-  CAP_PLUGIN_METHOD(hide, CAPPluginReturnPromise);
-  CAP_PLUGIN_METHOD(setTitle, CAPPluginReturnPromise);
-  CAP_PLUGIN_METHOD(setBackButton, CAPPluginReturnPromise);
-  CAP_PLUGIN_METHOD(setActionButton, CAPPluginReturnPromise);
-)
+           CAP_PLUGIN_METHOD(configure, CAPPluginReturnPromise);
+           CAP_PLUGIN_METHOD(show, CAPPluginReturnPromise);
+           CAP_PLUGIN_METHOD(hide, CAPPluginReturnPromise);
+           CAP_PLUGIN_METHOD(setTitle, CAPPluginReturnPromise);
+           CAP_PLUGIN_METHOD(setBackButton, CAPPluginReturnPromise);
+           CAP_PLUGIN_METHOD(setActionButton, CAPPluginReturnPromise);)

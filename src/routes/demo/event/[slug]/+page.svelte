@@ -8,6 +8,7 @@
 		TicketIcon
 	} from '@lucide/svelte';
 	import { navigationBar } from '$lib/plugins/navigationBar/navigationBar';
+	import { nativeButton } from '$lib/plugins/nativeButton/nativeButton';
 	import { Capacitor } from '@capacitor/core';
 
 	const isNative = Capacitor.isNativePlatform();
@@ -29,10 +30,36 @@
 			visible: true
 		});
 
+		nativeButton.configure({
+			id: 'demo-button',
+			title: 'Buy Tickets',
+			edge: 'bottom',
+			style: 'prominentGlass',
+			fullWidth: true,
+			systemIcon: 'ticket',
+			fontWeight: 'semibold',
+			visible: true,
+			enabled: true,
+			scrollEdgeEffect: true,
+			backgroundColor: '#9c6114',
+			foregroundColor: '#ffffff'
+		});
+
 		navigationBar.addListener('navigationBarAction', (event) => {
 			if (event.type === 'back') {
 				history.back();
 				navigationBar.hide();
+				nativeButton.hide();
+			}
+
+			if (event.type === 'action') {
+				alert('Share button pressed!');
+			}
+		});
+
+		nativeButton.addListener('tap', (event) => {
+			if (event.id === 'demo-button') {
+				alert('Buy Tickets button pressed!');
 			}
 		});
 	}
@@ -52,20 +79,20 @@
 			<ShareIcon class="size-5.5 text-black" />
 		</button>
 	</div>
-{/if}
 
-<div
-	class="fixed bottom-0 z-20 flex w-full justify-center px-6.25 pb-[env(safe-area-inset-bottom)]"
->
-	<button
-		class="w-full rounded-full bg-guild-primary px-5 py-3.5 text-guild-on-primary shadow-[0_8px_40px_color-mix(in_srgb,rgb(0_0_0)_12%,transparent)]"
+	<div
+		class="fixed bottom-0 z-20 flex w-full justify-center px-6.25 pb-[env(safe-area-inset-bottom)]"
 	>
-		<div class="flex items-center justify-center gap-3">
-			<TicketIcon class="size-6 text-guild-on-primary" />
-			<span class="text-base font-semibold">Buy Tickets</span>
-		</div>
-	</button>
-</div>
+		<button
+			class="w-full rounded-full bg-guild-primary px-5 py-3.5 text-guild-on-primary shadow-[0_8px_40px_color-mix(in_srgb,rgb(0_0_0)_12%,transparent)]"
+		>
+			<div class="flex items-center justify-center gap-3">
+				<TicketIcon class="size-6 text-guild-on-primary" />
+				<span class="text-base font-semibold">Buy Tickets</span>
+			</div>
+		</button>
+	</div>
+{/if}
 
 <div class="-mt-[env(safe-area-inset-top)]">
 	<img class="z-0 aspect-video h-75" src="https://picsum.photos/300/533" alt="Event" />
