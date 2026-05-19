@@ -9,17 +9,17 @@ importers:
   .:
     dependencies:
       '@capacitor/android':
-        specifier: 8.3.1
-        version: 8.3.1(@capacitor/core@8.3.1)
+        specifier: 8.2.0
+        version: 8.2.0(@capacitor/core@8.2.0)
       '@capacitor/core':
-        specifier: ^8.3.1
-        version: 8.3.1
+        specifier: ^8.2.0
+        version: 8.2.0
       '@capacitor/device':
         specifier: ^8.0.2
-        version: 8.0.2(@capacitor/core@8.3.1)
+        version: 8.0.2(@capacitor/core@8.2.0)
       '@capacitor/ios':
-        specifier: 8.3.1
-        version: 8.3.1(@capacitor/core@8.3.1)
+        specifier: 8.2.0
+        version: 8.2.0(@capacitor/core@8.2.0)
       '@lucide/svelte':
         specifier: ^1.14.0
         version: 1.14.0(svelte@5.55.4(@typescript-eslint/types@8.58.2))
@@ -28,8 +28,8 @@ importers:
         version: 0.17.0
     devDependencies:
       '@capacitor/cli':
-        specifier: ^8.3.1
-        version: 8.3.1
+        specifier: ^8.2.0
+        version: 8.2.0
       '@eslint/compat':
         specifier: ^2.0.4
         version: 2.0.5(eslint@10.2.0(jiti@2.6.1))
@@ -107,28 +107,28 @@ packages:
     resolution: {integrity: sha512-qSs4ifwzKJSV39ucNjsvc6WVHs6b7S03sOh2OcHF9UHfVPqWWALUsNUVzhSBiItjRZoLHx7nIarVjqKVusUZ1Q==}
     engines: {node: '>=6.9.0'}
 
-  '@capacitor/android@8.3.1':
-    resolution: {integrity: sha512-hjskIG8YcBEh3X4yaTXvE9gcqpdcxunTgFruSKnuPxtMxAUzEK4Oq25x0Z1g3cz+MQPc+lRG09R7Ovc+ydKsNw==}
+  '@capacitor/android@8.2.0':
+    resolution: {integrity: sha512-XLm5OsWLPfXQxDxzFS7SOdMEgGvW+2c7TGLXkTR2cSKdkWK5Abns4imlT5qghKYhjM9r74IrDkBWg/9ALUGNKQ==}
     peerDependencies:
-      '@capacitor/core': ^8.3.0
+      '@capacitor/core': ^8.2.0
 
-  '@capacitor/cli@8.3.1':
-    resolution: {integrity: sha512-1sPGW4THTDfR6YjXwZ0jM7oAfAtciPOHN00qs/3sNAQx1kKrrEYSfDPwCm1/xlAgi0OeL69SiRfw314Ans+1sw==}
+  '@capacitor/cli@8.2.0':
+    resolution: {integrity: sha512-1cMEk0d/I6tl1U+v/lnJR5Oylpx8ZBIHrvQxD5zK0MkjYOUyQAAGJgh97rkhGJqjAUvrGpa8H4BmyhNQN9a17A==}
     engines: {node: '>=22.0.0'}
     hasBin: true
 
-  '@capacitor/core@8.3.1':
-    resolution: {integrity: sha512-UF8ItlHguU1Z6GXfPTeT2gakf+ctNI8pAS1kwSBQlsJMlfD4OPoto/SmKnOxKCQvnF4WRcdWeg6C0zREUNaAQg==}
+  '@capacitor/core@8.2.0':
+    resolution: {integrity: sha512-oKaoNeNtH2iIZMDFVrb1atoyRECDGHcfLMunJ5KWN8DtvpVBeeA4c41e20NTuhMxw1cSYbpq2PV2hb+/9CJxlQ==}
 
   '@capacitor/device@8.0.2':
     resolution: {integrity: sha512-fIqSXnG0s6bz5A/0xFgSXDkbU+Xl65ti80LhucNvLI4kGhJzcNn6SwWVwpXN9SJTOFWXblXknHNppheP8X1frQ==}
     peerDependencies:
       '@capacitor/core': '>=8.0.0'
 
-  '@capacitor/ios@8.3.1':
-    resolution: {integrity: sha512-BEhLyYYHWJLib4mpaPMaaylbC8meqgxbNYwQJH2svsSLW7yo/hFie+Zoo66a44XnqcMd2tvmAuzimWunXZi/xA==}
+  '@capacitor/ios@8.2.0':
+    resolution: {integrity: sha512-X2/VtM4qP/R1SM0VQ5W/VotEc6PS/KTooD33EijsfAHWBdee+xmBapW8SeNLnu16wJ+tsfWlvtipaJEyfKbRKQ==}
     peerDependencies:
-      '@capacitor/core': ^8.3.0
+      '@capacitor/core': ^8.2.0
 
   '@emnapi/core@1.9.2':
     resolution: {integrity: sha512-UC+ZhH3XtczQYfOlu3lNEkdW/p4dsJ1r/bP7H8+rhao3TTTMO1ATq/4DdIi23XuGoFY+Cz0JmCbdVl0hz9jZcA==}
@@ -1699,11 +1699,11 @@ snapshots:
 
   '@babel/helper-validator-identifier@7.28.5': {}
 
-  '@capacitor/android@8.3.1(@capacitor/core@8.3.1)':
+  '@capacitor/android@8.2.0(@capacitor/core@8.2.0)':
     dependencies:
-      '@capacitor/core': 8.3.1
+      '@capacitor/core': 8.2.0
 
-  '@capacitor/cli@8.3.1':
+  '@capacitor/cli@8.2.0':
     dependencies:
       '@ionic/cli-framework-output': 2.2.8
       '@ionic/utils-subprocess': 3.0.1
@@ -1725,17 +1725,17 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@capacitor/core@8.3.1':
+  '@capacitor/core@8.2.0':
     dependencies:
       tslib: 2.8.1
 
-  '@capacitor/device@8.0.2(@capacitor/core@8.3.1)':
+  '@capacitor/device@8.0.2(@capacitor/core@8.2.0)':
     dependencies:
-      '@capacitor/core': 8.3.1
+      '@capacitor/core': 8.2.0
 
-  '@capacitor/ios@8.3.1(@capacitor/core@8.3.1)':
+  '@capacitor/ios@8.2.0(@capacitor/core@8.2.0)':
     dependencies:
-      '@capacitor/core': 8.3.1
+      '@capacitor/core': 8.2.0
 
   '@emnapi/core@1.9.2':
     dependencies:
