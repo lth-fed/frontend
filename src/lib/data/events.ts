@@ -1,0 +1,69 @@
+import type { Guild } from '$lib/types/guild';
+
+export type Event = {
+	id: string;
+	image: string;
+	badge: string;
+	title: string;
+	description: string;
+	location: string;
+	/** Compact form for list cards, e.g. "Mon, Apr 27 - 17:00". */
+	cardDate: string;
+	/** Verbose form for the detail head, e.g. "Monday, 27 Apr". */
+	detailDate: string;
+	/** Time range, e.g. "17:00 - 23:00". */
+	timeRange: string;
+	priceFrom?: number;
+	organisers: Guild[];
+};
+
+export const events: Record<string, Event> = {
+	a: {
+		id: 'a',
+		image: 'https://picsum.photos/seed/home-a/640/360',
+		badge: 'SITTNING',
+		title: 'Annan sittning typ',
+		description:
+			'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex.',
+		location: 'Gasque-salen',
+		cardDate: 'Mon, Apr 27 - 17:00',
+		detailDate: 'Monday, 27 Apr',
+		timeRange: '17:00 - 23:00',
+		priceFrom: 120,
+		organisers: ['f']
+	},
+	b: {
+		id: 'b',
+		image: 'https://picsum.photos/seed/home-b/640/360',
+		badge: 'SITTNING',
+		title: 'Vårfest',
+		description:
+			'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse.',
+		location: 'Kårhuset',
+		cardDate: 'Fri, May 01 - 21:00',
+		detailDate: 'Friday, 1 May',
+		timeRange: '21:00 - 02:00',
+		priceFrom: 80,
+		organisers: ['f', 'e', 'm', 'v', 'a', 'k', 'd', 'ing', 'w', 'i']
+	},
+	c: {
+		id: 'c',
+		image: 'https://picsum.photos/seed/home-c/640/360',
+		badge: 'PUB',
+		title: 'Tisdagspub',
+		description:
+			'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia.',
+		location: 'Pub-lokalen',
+		cardDate: 'Tue, May 05 - 18:00',
+		detailDate: 'Tuesday, 5 May',
+		timeRange: '18:00 - 23:00',
+		priceFrom: 40,
+		organisers: ['f']
+	}
+};
+
+export const eventList: Event[] = Object.values(events);
+
+export function getEvent(id: string): Event | undefined {
+	return events[id];
+}

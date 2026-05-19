@@ -171,11 +171,7 @@
 	const links = $derived(session.guild ? guildLinks[session.guild] : []);
 </script>
 
-<header class="mt-2 px-6">
-	<h2 class="text-2xl font-bold">{m.links_page_title()}</h2>
-</header>
-
-<section class="px-6 pt-4 pb-40">
+<section class="px-6 pt-4">
 	{#if links.length === 0}
 		<EmptyState icon={LinkIcon} title={m.links_empty_title()} />
 	{:else}

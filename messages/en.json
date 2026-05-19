@@ -39,7 +39,15 @@
 	"home_no_tickets_title": "Your tickets will appear here",
 	"home_browse_events_cta": "Browse events",
 
-	"links_page_title": "Other Places",
 	"links_open_external": "Open {title} in a new tab",
-	"links_empty_title": "No links here yet"
+	"links_empty_title": "No links here yet",
+
+	"event_about": "About",
+	"event_organiser": "Organiser",
+	"event_organiser_follow": "Follow",
+	"event_location": "Location",
+	"event_open_maps": "Open Maps",
+	"event_buy_tickets": "Buy Tickets",
+	"back_label": "Back",
+	"share_label": "Share"
 }

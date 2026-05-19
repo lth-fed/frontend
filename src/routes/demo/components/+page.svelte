@@ -21,6 +21,8 @@
 		PartyPopper
 	} from '@lucide/svelte';
 	import type { Guild } from '$lib/types/guild';
+	import { slots } from '$lib/state/appBars.svelte';
+	import { m } from '$lib/paraglide/messages.js';
 
 	const themes: { key: Guild | null; label: string }[] = [
 		{ key: null, label: 'Neutral' },
@@ -212,16 +214,24 @@
 			<p class="text-sm font-bold text-gray-600">TopBar</p>
 			<div class="rounded-2xl bg-guild-surface">
 				<TopBar
-					initials="SM"
-					onAvatarClick={() => alert('Account')}
-					onNotificationsClick={() => alert('Notifications')}
+					native={false}
+					leading={slots.avatar({
+						initials: 'SM',
+						onclick: () => alert(m.top_bar_account_label())
+					})}
+					trailing={slots.bell(() => alert(m.top_bar_notifications_label()))}
 				/>
 			</div>
 		</section>
 
 		<section class="space-y-3">
 			<p class="text-sm font-bold text-gray-600">NavBar</p>
-			<NavBar items={navItems} selected={selectedNav} onSelect={(id) => (selectedNav = id)} />
+			<NavBar
+				items={navItems}
+				selected={selectedNav}
+				native={false}
+				onSelect={(id) => (selectedNav = id)}
+			/>
 		</section>
 
 		<section class="space-y-3">

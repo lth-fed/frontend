@@ -10,17 +10,18 @@
 		priceFrom?: number;
 		description: string;
 		location?: string;
+		href?: string;
 		onclick?: () => void;
 	}
 
-	let { image, badge, date, title, priceFrom, description, location, onclick }: Props = $props();
+	let { image, badge, date, title, priceFrom, description, location, href, onclick }: Props =
+		$props();
+
+	const cls =
+		'block w-full overflow-hidden rounded-2xl bg-white text-left shadow-md ring-1 ring-gray-200';
 </script>
 
-<button
-	type="button"
-	{onclick}
-	class="block w-full overflow-hidden rounded-2xl bg-white text-left shadow-md ring-1 ring-gray-200"
->
+{#snippet body()}
 	<div class="relative">
 		<img src={image} alt="" class="block aspect-[16/9] w-full object-cover" />
 		{#if badge}
@@ -54,4 +55,10 @@
 			</div>
 		{/if}
 	</div>
-</button>
+{/snippet}
+
+{#if href}
+	<a {href} {onclick} class={cls} data-sveltekit-preload-data="hover">{@render body()}</a>
+{:else}
+	<button type="button" {onclick} class={cls}>{@render body()}</button>
+{/if}

@@ -36,7 +36,7 @@ export interface SetButtonOptions {
 	systemIcon?: string;
 }
 
-export interface ToolbarActionEvent {
+export interface NavigationBarActionEvent {
 	type: 'back' | 'action';
 	id?: string;
 }
@@ -56,7 +56,7 @@ export interface NavigationBarPlugin {
 
 	/** Fires when user taps either button */
 	addListener(
-		eventName: 'toolbarAction',
-		listenerFunc: (event: ToolbarActionEvent) => void
+		eventName: 'navigationBarAction',
+		listenerFunc: (event: NavigationBarActionEvent) => void
 	): Promise<{ remove: () => void }>;
 }

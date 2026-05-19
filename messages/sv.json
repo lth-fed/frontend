@@ -30,7 +30,14 @@
 	"home_upcoming_events": "Kommande evenemang",
 	"home_no_tickets_title": "Dina biljetter syns här",
 	"home_browse_events_cta": "Bläddra evenemang",
-	"links_page_title": "Andra platser",
 	"links_open_external": "Öppna {title} i en ny flik",
-	"links_empty_title": "Inga länkar här ännu"
+	"links_empty_title": "Inga länkar här ännu",
+	"event_about": "Om",
+	"event_organiser": "Arrangör",
+	"event_organiser_follow": "Följ",
+	"event_location": "Plats",
+	"event_open_maps": "Öppna i kartor",
+	"event_buy_tickets": "Köp biljett",
+	"back_label": "Tillbaka",
+	"share_label": "Dela"
 }

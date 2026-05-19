@@ -26,6 +26,25 @@ extension ScrollEdgeElementContainer {
             let interaction = UIScrollEdgeElementContainerInteraction()
             interaction.scrollView = scrollView
             interaction.edge = scrollEdgeEdge
+
+            let edgeEffect: UIScrollEdgeEffect
+
+            switch scrollEdgeEdge {
+            case .top:
+                edgeEffect = scrollView.topEdgeEffect
+            case .bottom:
+                edgeEffect = scrollView.bottomEdgeEffect
+            case .left:
+                edgeEffect = scrollView.leftEdgeEffect
+            case .right:
+                edgeEffect = scrollView.rightEdgeEffect
+            default:
+                edgeEffect = scrollView.topEdgeEffect
+            }
+
+            edgeEffect.style = .soft
+            edgeEffect.isHidden = false
+
             view.addInteraction(interaction)
             scrollEdgeInteraction = interaction
         }

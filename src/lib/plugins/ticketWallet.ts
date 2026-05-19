@@ -10,4 +10,6 @@ export interface TicketWalletPlugin {
 	addTicket(options: { passData: string }): Promise<{ success: boolean }>;
 }
 
-export const ticketWallet = registerPlugin<TicketWalletPlugin>('TicketWallet');
+export const ticketWallet = registerPlugin<TicketWalletPlugin>('TicketWallet', {
+	web: () => import('./ticketWallet/web').then((m) => new m.TicketWalletWeb())
+});
