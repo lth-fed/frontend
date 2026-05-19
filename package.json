@@ -20,7 +20,7 @@
 		"api:generate": "pnpm run api:generate:auth && pnpm run api:generate:tickets"
 	},
 	"devDependencies": {
-		"@capacitor/cli": "^8.3.1",
+		"@capacitor/cli": "^8.2.0",
 		"@eslint/compat": "^2.0.4",
 		"@eslint/js": "^10.0.1",
 		"@inlang/paraglide-js": "^2.15.2",
@@ -45,10 +45,10 @@
 		"vite": "^8.0.7"
 	},
 	"dependencies": {
-		"@capacitor/android": "8.3.1",
-		"@capacitor/core": "^8.3.1",
+		"@capacitor/android": "8.2.0",
+		"@capacitor/core": "^8.2.0",
 		"@capacitor/device": "^8.0.2",
-		"@capacitor/ios": "8.3.1",
+		"@capacitor/ios": "8.2.0",
 		"@lucide/svelte": "^1.14.0",
 		"openapi-fetch": "^0.17.0"
 	}
