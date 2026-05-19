@@ -8,7 +8,7 @@
 	import { session } from '$lib/state/session.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import { Home, Bell, IdCard, Settings, Ticket as TicketIcon } from '@lucide/svelte';
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import { navigationBar } from '$lib/plugins/navigationBar/navigationBar';
 	import { tabsBar } from '$lib/plugins/tabsBar/tabsBar';
 	import { isIos26Plus } from '$lib/platform/isIos26Plus';
@@ -19,6 +19,8 @@
 	});
 
 	let isIos26Native = $state(false);
+	let navListenerRemover: (() => void) | null = null;
+	let tabsListenerRemover: (() => void) | null = null;
 
 	onMount(() => {
 		void (async () => {
@@ -35,6 +37,21 @@
 				visible: true
 			});
 
+			navigationBar
+				.addListener('navigationBarAction', (event) => {
+					if (event.type === 'back') {
+						history.back();
+						return;
+					}
+
+					if (event.type === 'action') {
+						alert('Notifications');
+					}
+				})
+				.then((res) => {
+					navListenerRemover = res.remove;
+				});
+
 			tabsBar.configure({
 				items: [
 					{ id: 'home', title: m.nav_home(), systemIcon: 'house' },
@@ -47,7 +64,25 @@
 				selectedIconColor: '#e87020',
 				unselectedIconColor: '#fbf3ec'
 			});
+
+			tabsBar
+				.addListener('selected', (event) => {
+					alert(`Tab selected: ${event.id}`);
+
+					if (event.id) selectedNav = event.id as NavId;
+				})
+				.then((res) => {
+					tabsListenerRemover = res.remove;
+				});
 		})();
+	});
+
+	onDestroy(() => {
+		navigationBar.hide?.();
+		tabsBar.hide?.();
+
+		navListenerRemover?.();
+		tabsListenerRemover?.();
 	});
 
 	const tickets = [

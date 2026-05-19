@@ -7,12 +7,14 @@
 		ShareIcon,
 		TicketIcon
 	} from '@lucide/svelte';
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import { navigationBar } from '$lib/plugins/navigationBar/navigationBar';
 	import { nativeButton } from '$lib/plugins/nativeButton/nativeButton';
 	import { isIos26Plus } from '$lib/platform/isIos26Plus';
 
 	let isIos26Native = $state(false);
+	let navListenerRemover: (() => void) | null = null;
+	let buttonListenerRemover: (() => void) | null = null;
 
 	onMount(() => {
 		void (async () => {
@@ -53,24 +55,38 @@
 				foregroundColor: '#ffffff'
 			});
 
-			navigationBar.addListener('navigationBarAction', (event) => {
-				if (event.type === 'back') {
-					history.back();
-					navigationBar.hide();
-					nativeButton.hide();
-				}
+			navigationBar
+				.addListener('navigationBarAction', (event) => {
+					if (event.type === 'back') {
+						history.back();
+					}
 
-				if (event.type === 'action') {
-					alert('Share button pressed!');
-				}
-			});
+					if (event.type === 'action') {
+						alert('Share button pressed!');
+					}
+				})
+				.then((res) => {
+					navListenerRemover = res.remove;
+				});
 
-			nativeButton.addListener('tap', (event) => {
-				if (event.id === 'demo-button') {
-					alert('Buy Tickets button pressed!');
-				}
-			});
+			nativeButton
+				.addListener('tap', (event) => {
+					if (event.id === 'demo-button') {
+						alert('Buy Tickets button pressed!');
+					}
+				})
+				.then((res) => {
+					buttonListenerRemover = res.remove;
+				});
 		})();
+	});
+
+	onDestroy(() => {
+		navigationBar.hide?.();
+		nativeButton.hide?.();
+
+		navListenerRemover?.();
+		buttonListenerRemover?.();
 	});
 </script>
 
