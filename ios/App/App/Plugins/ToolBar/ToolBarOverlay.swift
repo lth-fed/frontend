@@ -10,6 +10,7 @@ import WebKit
 
 // MARK: - Button Config
 
+/// Configuration for a toolbar button item.
 struct ToolBarButtonConfig {
     let id: String?
     let title: String?
@@ -19,6 +20,7 @@ struct ToolBarButtonConfig {
 
 // MARK: - Spacing
 
+/// How buttons are spaced within a toolbar group.
 enum ToolBarSpacing {
     case connected
     case compact(CGFloat)
@@ -26,6 +28,7 @@ enum ToolBarSpacing {
 
 // MARK: - Toolbar Nodes
 
+/// Toolbar layout nodes used to compose the overlay.
 enum ToolBarNode {
     case group(
         buttons: [ToolBarButtonConfig],
@@ -70,18 +73,22 @@ extension UIBarButtonItem {
 
 // MARK: - Overlay
 
+/// View controller that hosts the native toolbar overlay.
 final class ToolBarOverlay: UIViewController, ScrollEdgeElementContainer {
 
     // MARK: - UI
 
+    /// The embedded UIKit toolbar.
     private let toolbar = UIToolbar()
 
     // MARK: - State
 
+    /// Current toolbar layout nodes.
     private var nodes: [ToolBarNode] = []
 
     // MARK: - Events
 
+    /// Called when a toolbar button is tapped.
     var onButtonTap: ((String?) -> Void)?
 
     var scrollEdgeInteraction: Any?
@@ -89,6 +96,7 @@ final class ToolBarOverlay: UIViewController, ScrollEdgeElementContainer {
 
     // MARK: - Lifecycle
 
+    /// Creates and lays out the embedded toolbar.
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -99,6 +107,7 @@ final class ToolBarOverlay: UIViewController, ScrollEdgeElementContainer {
 
     // MARK: - Setup
 
+    /// Adds the toolbar to the overlay view.
     private func setupToolbar() {
 
         toolbar.translatesAutoresizingMaskIntoConstraints = false
@@ -115,6 +124,7 @@ final class ToolBarOverlay: UIViewController, ScrollEdgeElementContainer {
 
     // MARK: - Public API
 
+    /// Applies a new toolbar configuration.
     func update(
         nodes: [ToolBarNode],
         visible: Bool
@@ -129,6 +139,7 @@ final class ToolBarOverlay: UIViewController, ScrollEdgeElementContainer {
 
     // MARK: - Build
 
+    /// Rebuilds the toolbar items from the current node list.
     private func rebuild() {
 
         var items: [UIBarButtonItem] = []
@@ -181,6 +192,7 @@ final class ToolBarOverlay: UIViewController, ScrollEdgeElementContainer {
 
     // MARK: - Buttons
 
+    /// Builds bar button items for the provided configurations.
     private func buildButtons(
         _ configs: [ToolBarButtonConfig]
     ) -> [UIBarButtonItem] {

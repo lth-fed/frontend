@@ -19,7 +19,7 @@
 
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
 <div
-	class="max-h-screen min-h-screen max-w-screen min-w-screen bg-gray-100
+	class="min-h-screen max-w-screen min-w-screen bg-gray-100
 			pt-[env(safe-area-inset-top)] pr-[env(safe-area-inset-right)]
 			pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)]"
 >
