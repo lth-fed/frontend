@@ -4,7 +4,10 @@
 	import BottomActionButton from '$lib/components/BottomActionButton.svelte';
 	import { Home, Globe, IdCard, Settings } from '@lucide/svelte';
 	import { afterNavigate, beforeNavigate, goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+	import type { Pathname } from '$app/types';
+	import { SvelteMap } from 'svelte/reactivity';
 	import { m } from '$lib/paraglide/messages.js';
 	import {
 		createAppBars,
@@ -29,18 +32,18 @@
 		{ id: 'settings' as NavId, icon: Settings, systemIcon: 'gear', label: m.nav_settings() }
 	]);
 
-	const navRoutes: Record<NavId, string | null> = {
+	const navRoutes = {
 		home: '/demo/homepage',
 		links: '/demo/links',
 		profile: null,
 		settings: null
-	};
+	} satisfies Record<NavId, Pathname | null>;
 
 	const selected = $derived<NavId>(page.url.pathname.startsWith('/demo/links') ? 'links' : 'home');
 
 	function handleSelect(id: string) {
 		const route = navRoutes[id as NavId];
-		if (route) goto(route);
+		if (route) goto(resolve(route));
 		else alert(`${id} (not implemented)`);
 	}
 
@@ -63,7 +66,7 @@
 	const bottom = $derived(bars.bottom ?? defaultBottom);
 
 	let mainEl: HTMLElement;
-	const scrollPositions = new Map<string, number>();
+	const scrollPositions = new SvelteMap<string, number>();
 
 	beforeNavigate(({ from }) => {
 		if (from && mainEl) {
@@ -87,7 +90,7 @@
 		<TopBar {...topBar} />
 	</div>
 
-	<main bind:this={mainEl} class="h-full overflow-y-auto pt-[72px] pb-40">
+	<main bind:this={mainEl} class="h-full overflow-y-auto pt-18 pb-40">
 		{@render children()}
 	</main>
 
