@@ -81,7 +81,7 @@
 		>
 	</header>
 
-	<div class="mt-4" style="--carousel-item-width: calc(300px * var(--ticket-scale, 1));">
+	<div class="mt-4">
 		<Carousel items={tickets}>
 			{#snippet item(t)}
 				<Ticket {...t} onAction={(id) => alert(`Action: ${id}`)} />
