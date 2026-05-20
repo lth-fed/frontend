@@ -42,17 +42,22 @@
 </script>
 
 <div style="--ticket-scale: clamp(0.8, calc((100dvh - 340px) / 470px), 1);">
-	<header class="mt-2 flex items-baseline justify-between px-6">
-		<h2 class="text-2xl font-bold">{m.home_my_tickets()}</h2>
-		<span class="text-sm font-bold text-guild-accent"
+	<header class="flex items-baseline justify-between px-6">
+		<h2 class="text-[20px] font-semibold">{m.home_my_tickets()}</h2>
+		<span class="text-xs font-bold text-guild-accent"
 			>{m.home_tickets_count({ count: tickets.length })}</span
 		>
 	</header>
 
-	<div class="mt-4">
+	<div class="z-30 mt-3.5 overflow-y-visible">
 		<Carousel items={tickets}>
-			{#snippet item(t)}
-				<Ticket {...t} onAction={(id) => alert(`Action: ${id}`)} />
+			{#snippet item(t, canFlip, requestCenter)}
+				<Ticket
+					{...t}
+					{canFlip}
+					onRequestCenter={requestCenter}
+					onAction={(id) => alert(`Action: ${id}`)}
+				/>
 			{/snippet}
 			{#snippet empty()}
 				<EmptyState
@@ -68,9 +73,9 @@
 	</div>
 
 	<section class="px-6 pt-6">
-		<h2 class="text-2xl font-bold">{m.home_upcoming_events()}</h2>
+		<h2 class="text-[20px] font-semibold">{m.home_upcoming_events()}</h2>
 
-		<div class="mt-4 space-y-6">
+		<div class="mt-3.5 space-y-5.5">
 			{#each eventList as e (e.id)}
 				<EventCard
 					image={e.image}

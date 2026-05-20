@@ -1,17 +1,19 @@
 <script lang="ts">
 	import EventHeadCard from '$lib/components/EventHeadCard.svelte';
 	import OrganiserCard from '$lib/components/OrganiserCard.svelte';
-	import {
-		buyTicketsBottom,
-		detailTopBar,
-		useAppBars
-	} from '$lib/state/appBars.svelte';
+	import { buyTicketsBottom, detailTopBar, useAppBars } from '$lib/state/appBars.svelte';
 	import { guilds } from '$lib/data/guilds';
 	import { m } from '$lib/paraglide/messages.js';
 	import type { PageProps } from './$types';
+	import { isIos26Plus } from '$lib/platform/isIos26Plus';
+	import { onMount } from 'svelte';
 
 	let { data }: PageProps = $props();
 	const event = $derived(data.event);
+
+	let isIos26Native = $state(false);
+
+	onMount(async () => (isIos26Native = await isIos26Plus()));
 
 	useAppBars(() => ({
 		topBar: detailTopBar({
@@ -25,12 +27,10 @@
 	}));
 </script>
 
-<div>
-	<img class="z-0 aspect-video w-full" src={event.image} alt={event.title} />
+<div class={isIos26Native ? '-mt-[calc(env(safe-area-inset-top)+4.25rem)]' : '-mt-6'}>
+	<img class="z-0 aspect-video h-75" src={event.image} alt={event.title} />
 
-	<div
-		class="z-10 -mt-24 flex w-full flex-col gap-8.75 px-4"
-	>
+	<div class="z-10 -mt-24 flex w-full flex-col gap-8.75 px-4">
 		<EventHeadCard
 			badge={event.badge}
 			title={event.title}

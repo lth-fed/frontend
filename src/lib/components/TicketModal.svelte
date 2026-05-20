@@ -3,7 +3,6 @@
 	import ToolBar from './ToolBar.svelte';
 	import { ArrowLeftRight, Wallet, Receipt, PartyPopper } from '@lucide/svelte';
 	import { m } from '$lib/paraglide/messages.js';
-	import { fade } from 'svelte/transition';
 
 	type Action = 'transfer' | 'wallet' | 'receipt' | 'event';
 
@@ -26,22 +25,26 @@
 		{ id: 'event' as Action, icon: PartyPopper, label: m.tool_event() }
 	]);
 
-	$effect(() => {
-		if (!open) return;
-		const onKey = (e: KeyboardEvent) => {
-			if (e.key === 'Escape') onClose();
+	function openAsModal(node: HTMLDialogElement) {
+		node.showModal();
+
+		return () => {
+			if (node.open) node.close();
 		};
-		window.addEventListener('keydown', onKey);
-		return () => window.removeEventListener('keydown', onKey);
-	});
+	}
+
+	function handleCancel(e: Event) {
+		e.preventDefault();
+		onClose();
+	}
 </script>
 
 {#if open}
-	<div
-		class="fixed inset-0 z-50"
-		role="dialog"
-		aria-modal="true"
-		transition:fade={{ duration: 150 }}
+	<dialog
+		class="ticket-modal z-50"
+		oncancel={handleCancel}
+		aria-label={m.modal_close_label()}
+		{@attach openAsModal}
 	>
 		<button
 			type="button"
@@ -59,5 +62,22 @@
 				<ToolBar items={tools} onAction={(id) => onAction?.(id)} />
 			</div>
 		</div>
-	</div>
+	</dialog>
 {/if}
+
+<style>
+	.ticket-modal {
+		margin: 0;
+		padding: 0;
+		border: 0;
+		width: 100dvw;
+		height: 100dvh;
+		max-width: none;
+		max-height: none;
+		background: transparent;
+	}
+
+	.ticket-modal::backdrop {
+		background: rgb(0 0 0 / 0.5);
+	}
+</style>

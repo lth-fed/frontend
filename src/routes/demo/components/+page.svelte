@@ -171,7 +171,7 @@
 					addition="Wine Package +1"
 					serial="#FG-6719284"
 				/>
-				<div class="w-[360px]">
+				<div class="w-90">
 					<EventCard
 						image="https://picsum.photos/seed/long-title/640/360"
 						badge="SITTNING"
@@ -210,7 +210,7 @@
 			/>
 		</section>
 
-		<section class="w-full max-w-[400px] space-y-3">
+		<section class="w-full max-w-100 space-y-3">
 			<p class="text-sm font-bold text-gray-600">TopBar</p>
 			<div class="rounded-2xl bg-guild-surface">
 				<TopBar
@@ -239,18 +239,24 @@
 			<ToolBar items={toolItems} onAction={(id) => alert(`Action: ${id}`)} />
 		</section>
 
-		<section class="w-full max-w-[400px] space-y-3">
+		<section class="w-full max-w-100 space-y-3">
 			<p class="text-sm font-bold text-gray-600">Carousel — tickets (click to open)</p>
 			<Carousel items={demoTickets}>
-				{#snippet item(t)}
-					<Ticket {...t} onAction={(id) => alert(`Action: ${id}`)} />
+				{#snippet item(t, canFlip, requestCenter)}
+					<Ticket
+						{...t}
+						{canFlip}
+						onRequestCenter={requestCenter}
+						onAction={(id) => alert(`Action: ${id}`)}
+					/>
 				{/snippet}
 			</Carousel>
 		</section>
 
-		<section class="w-full max-w-[400px] space-y-3">
+		<section class="w-full max-w-100 space-y-3">
 			<p class="text-sm font-bold text-gray-600">Carousel — empty</p>
 			<Carousel items={[] as unknown[]}>
+				<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 				{#snippet item(_)}{/snippet}
 				{#snippet empty()}
 					<EmptyState
@@ -262,7 +268,7 @@
 			</Carousel>
 		</section>
 
-		<section class="w-full max-w-[400px] space-y-3">
+		<section class="w-full max-w-100 space-y-3">
 			<p class="text-sm font-bold text-gray-600">Carousel — events</p>
 			<Carousel items={demoEvents}>
 				{#snippet item(e)}
@@ -273,7 +279,7 @@
 			</Carousel>
 		</section>
 
-		<section class="w-full max-w-[400px] space-y-3">
+		<section class="w-full max-w-100 space-y-3">
 			<p class="text-sm font-bold text-gray-600">LinkCard</p>
 			<LinkCard
 				image="https://picsum.photos/seed/linkcard-a/240/240"
@@ -289,7 +295,7 @@
 			/>
 		</section>
 
-		<section class="w-full max-w-[360px] space-y-3">
+		<section class="w-full max-w-90 space-y-3">
 			<p class="text-sm font-bold text-gray-600">EventCard</p>
 			<EventCard
 				image="https://picsum.photos/seed/sittning/640/360"
