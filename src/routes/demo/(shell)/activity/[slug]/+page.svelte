@@ -1,5 +1,5 @@
 <script lang="ts">
-	import EventHeadCard from '$lib/components/EventHeadCard.svelte';
+	import ActivityHeadCard from '$lib/components/ActivityHeadCard.svelte';
 	import OrganiserCard from '$lib/components/OrganiserCard.svelte';
 	import { buyTicketsBottom, detailTopBar, useAppBars } from '$lib/state/appBars.svelte';
 	import { guilds } from '$lib/data/guilds';
@@ -10,7 +10,7 @@
 	import { goto } from '$app/navigation';
 
 	let { data }: PageProps = $props();
-	const event = $derived(data.event);
+	const activity = $derived(data.activity);
 
 	let isIos26Native = $state(false);
 
@@ -18,39 +18,39 @@
 
 	useAppBars(() => ({
 		topBar: detailTopBar({
-			title: event.title,
-			onShare: () => alert(`Share ${event.title}`)
+			title: activity.title,
+			onShare: () => alert(`Share ${activity.title}`)
 		}),
 		bottom: buyTicketsBottom({
-			id: `buy-${event.id}`,
-			onclick: () => goto(`/demo/event/${event.id}/tickets`)
+			id: `buy-${activity.id}`,
+			onclick: () => goto(`/demo/activity/${activity.id}/tickets`)
 		})
 	}));
 </script>
 
 <div class={isIos26Native ? '-mt-[calc(env(safe-area-inset-top)+4.25rem)]' : '-mt-6'}>
 	<div class="z-0 h-75 w-full overflow-hidden">
-		<img class="h-full w-full min-w-full object-cover" src={event.image} alt={event.title} />
+		<img class="h-full w-full min-w-full object-cover" src={activity.image} alt={activity.title} />
 	</div>
 
 	<div class="z-10 -mt-24 flex w-full flex-col gap-8.75 px-4">
-		<EventHeadCard
-			badge={event.badge}
-			title={event.title}
-			date={event.detailDate}
-			time={event.timeRange}
-			location={event.location}
+		<ActivityHeadCard
+			badge={activity.badge}
+			title={activity.title}
+			date={activity.detailDate}
+			time={activity.timeRange}
+			location={activity.location}
 		/>
 
 		<div class="flex w-full flex-col gap-3.75">
-			<h2 class="text-[24px] font-semibold">{m.event_about()}</h2>
-			<p class="text-[16px] font-normal">{event.description}</p>
+			<h2 class="text-[24px] font-semibold">{m.activity_about()}</h2>
+			<p class="text-[16px] font-normal">{activity.description}</p>
 		</div>
 
 		<div class="flex w-full flex-col gap-3.75">
-			<h2 class="text-[24px] font-semibold">{m.event_organiser()}</h2>
+			<h2 class="text-[24px] font-semibold">{m.activity_organiser()}</h2>
 			<div class="flex w-full flex-col gap-2">
-				{#each event.organisers as g (g)}
+				{#each activity.organisers as g (g)}
 					<OrganiserCard guild={g} onFollow={() => alert(`Follow ${guilds[g].name}`)} />
 				{/each}
 			</div>
@@ -58,8 +58,8 @@
 
 		<div class="flex w-full flex-col gap-3.75">
 			<div class="flex items-center justify-between">
-				<h2 class="text-[24px] font-semibold">{m.event_location()}</h2>
-				<span class="text-sm font-semibold text-guild-on-surface">{m.event_open_maps()}</span>
+				<h2 class="text-[24px] font-semibold">{m.activity_location()}</h2>
+				<span class="text-sm font-semibold text-guild-on-surface">{m.activity_open_maps()}</span>
 			</div>
 			<div class="w-full rounded-3xl border border-gray-100">
 				<img

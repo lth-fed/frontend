@@ -4,7 +4,7 @@
 
 	let errorMessage: string | null = $state(null);
 	let successMessage: string | null = $state(null);
-	const pkpassFileUrl = '/tickets/event-ticket.pkpass';
+	const pkpassFileUrl = '/tickets/activity-ticket.pkpass';
 
 	async function addTicketToWallet() {
 		try {

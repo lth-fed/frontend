@@ -24,6 +24,6 @@
 	</div>
 	<span class="flex-1 text-[16px] font-medium text-guild-on-surface">{name}</span>
 	<span class="text-[16px] font-semibold text-guild-on-surface">
-		{price === 0 ? m.ticket_price_free() : m.event_price({ amount: price })}
+		{price === 0 ? m.ticket_price_free() : m.activity_price({ amount: price })}
 	</span>
 </button>

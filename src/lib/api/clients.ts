@@ -1,7 +1,7 @@
 import createClient, { type Client, type ClientOptions } from 'openapi-fetch'
 
 import type { paths as AuthPaths } from './generated/auth'
-import type { paths as TicketsPaths } from './generated/tickets'
+import type { paths as ApiPaths } from './generated/tickets'
 
 /**
  * Base URLs per environment. In dev we hit the local poem servers directly;
@@ -9,7 +9,7 @@ import type { paths as TicketsPaths } from './generated/tickets'
  */
 const dev = import.meta.env.DEV
 const AUTH_BASE = dev ? 'http://localhost:8001/api/v0' : 'https://auth.teknologappen.se/api/v0'
-const TICKETS_BASE = dev ? 'http://localhost:8000/v0' : 'https://api.teknologappen.se/v0'
+const API_BASE = dev ? 'http://localhost:8000/v0' : 'https://api.teknologappen.se/v0'
 
 /**
  * Build a service client. Pass `fetch` from SvelteKit's `load` / form actions
@@ -20,8 +20,8 @@ export function makeAuth(opts: Omit<ClientOptions, 'baseUrl'> = {}): Client<Auth
 	return createClient<AuthPaths>({ baseUrl: AUTH_BASE, ...opts })
 }
 
-export function makeTickets(opts: Omit<ClientOptions, 'baseUrl'> = {}): Client<TicketsPaths> {
-	return createClient<TicketsPaths>({ baseUrl: TICKETS_BASE, ...opts })
+export function makeApi(opts: Omit<ClientOptions, 'baseUrl'> = {}): Client<ApiPaths> {
+	return createClient<ApiPaths>({ baseUrl: API_BASE, ...opts })
 }
 
 /**
@@ -30,4 +30,4 @@ export function makeTickets(opts: Omit<ClientOptions, 'baseUrl'> = {}): Client<T
  * server-aware fetch.
  */
 export const auth = makeAuth()
-export const tickets = makeTickets()
+export const api = makeApi()

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Ticket from '$lib/components/Ticket.svelte';
-	import EventCard from '$lib/components/EventCard.svelte';
+	import ActivityCard from '$lib/components/ActivityCard.svelte';
 	import LinkCard from '$lib/components/LinkCard.svelte';
 	import Carousel from '$lib/components/Carousel.svelte';
 	import NavBar from '$lib/components/NavBar.svelte';
@@ -32,17 +32,17 @@
 	];
 	let selectedNav = $state<NavId>('home');
 
-	type ToolId = 'transfer' | 'wallet' | 'receipt' | 'event';
+	type ToolId = 'transfer' | 'wallet' | 'receipt' | 'activity';
 	const toolItems = [
 		{ id: 'transfer' as ToolId, icon: ArrowLeftRight, label: 'Transfer' },
 		{ id: 'wallet' as ToolId, icon: Wallet, label: 'Add to wallet' },
 		{ id: 'receipt' as ToolId, icon: Receipt, label: 'View receipt' },
-		{ id: 'event' as ToolId, icon: PartyPopper, label: 'View event' }
+		{ id: 'activity' as ToolId, icon: PartyPopper, label: 'View activity' }
 	];
 
-	const demoEvents = [
+	const demoActivities = [
 		{
-			image: 'https://picsum.photos/seed/event-a/640/360',
+			image: 'https://picsum.photos/seed/activity-a/640/360',
 			badge: 'SITTNING',
 			date: 'Mon, Apr 27 - 17:00',
 			title: 'Annan sittning typ',
@@ -52,7 +52,7 @@
 			location: 'Gasque-salen'
 		},
 		{
-			image: 'https://picsum.photos/seed/event-b/640/360',
+			image: 'https://picsum.photos/seed/activity-b/640/360',
 			badge: 'FEST',
 			date: 'Fri, May 01 - 21:00',
 			title: 'Vårfest',
@@ -62,7 +62,7 @@
 			location: 'Kårhuset'
 		},
 		{
-			image: 'https://picsum.photos/seed/event-c/640/360',
+			image: 'https://picsum.photos/seed/activity-c/640/360',
 			badge: 'PUB',
 			date: 'Tue, May 05 - 18:00',
 			title: 'Tisdagspub',
@@ -140,7 +140,7 @@
 					serial="#FG-6719284"
 				/>
 				<div class="w-90">
-					<EventCard
+					<ActivityCard
 						image="https://picsum.photos/seed/long-title/640/360"
 						badge="SITTNING"
 						date="Mon, Apr 27 - 17:00"
@@ -162,7 +162,7 @@
 			<p class="text-sm font-bold text-gray-600">TicketDetail</p>
 			<TicketDetail
 				name="Simon Mechler"
-				event="Vinterbal"
+				activity="Vinterbal"
 				serial="#FG-6719284"
 				qrData="#FG-6719284"
 			/>
@@ -172,7 +172,7 @@
 			<p class="text-sm font-bold text-gray-600">TicketDetail — long</p>
 			<TicketDetail
 				name="Maximilianus Karlsson-Andersson"
-				event="Inskrivningssittningskommittéens vårfest"
+				activity="Inskrivningssittningskommittéens vårfest"
 				serial="#FG-6719284"
 				qrData="#FG-6719284"
 			/>
@@ -237,11 +237,11 @@
 		</section>
 
 		<section class="w-full max-w-100 space-y-3">
-			<p class="text-sm font-bold text-gray-600">Carousel — events</p>
-			<Carousel items={demoEvents}>
-				{#snippet item(e)}
+			<p class="text-sm font-bold text-gray-600">Carousel — activities</p>
+			<Carousel items={demoActivities}>
+				{#snippet item(a)}
 					<div class="w-[320px]">
-						<EventCard {...e} onclick={() => alert(`Event: ${e.title}`)} />
+						<ActivityCard {...a} onclick={() => alert(`Activity: ${a.title}`)} />
 					</div>
 				{/snippet}
 			</Carousel>
@@ -264,8 +264,8 @@
 		</section>
 
 		<section class="w-full max-w-90 space-y-3">
-			<p class="text-sm font-bold text-gray-600">EventCard</p>
-			<EventCard
+			<p class="text-sm font-bold text-gray-600">ActivityCard</p>
+			<ActivityCard
 				image="https://picsum.photos/seed/sittning/640/360"
 				badge="SITTNING"
 				date="Mon, Apr 27 - 17:00"
@@ -273,7 +273,7 @@
 				priceFrom={120}
 				description="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
 				location="Gasque-salen"
-				onclick={() => alert('Event clicked')}
+				onclick={() => alert('Activity clicked')}
 			/>
 		</section>
 	</div>

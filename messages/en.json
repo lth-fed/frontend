@@ -11,10 +11,10 @@
 	"ticket_tap_qr": "Tap to view QR",
 
 	"ticket_detail_label_name": "NAME",
-	"ticket_detail_label_event": "EVENT",
+	"ticket_detail_label_activity": "ACTIVITY",
 
-	"event_label_from": "FROM",
-	"event_price": "{amount} kr",
+	"activity_label_from": "FROM",
+	"activity_price": "{amount} kr",
 
 	"top_bar_account_label": "Account",
 	"top_bar_notifications_label": "Notifications",
@@ -22,7 +22,7 @@
 	"tool_transfer": "Transfer",
 	"tool_wallet": "Add to wallet",
 	"tool_receipt": "View receipt",
-	"tool_event": "View event",
+	"tool_activity": "View activity",
 
 	"nav_home": "Home",
 	"nav_links": "Other Places",
@@ -35,20 +35,20 @@
 
 	"home_my_tickets": "My Tickets",
 	"home_tickets_count": "{count} Tickets",
-	"home_upcoming_events": "Upcoming Events",
+	"home_upcoming_activities": "Upcoming Activities",
 	"home_no_tickets_title": "Your tickets will appear here",
-	"home_browse_events_cta": "Browse events",
+	"home_browse_activities_cta": "Browse activities",
 
 	"links_open_external": "Open {title} in a new tab",
 	"links_empty_title": "No links here yet",
 
-	"event_about": "About",
-	"event_organiser": "Organiser",
-	"event_organiser_follow": "Follow",
-	"event_location": "Location",
-	"event_open_maps": "Open Maps",
-	"event_buy_tickets": "Buy Tickets",
-	"event_tickets_title": "Tickets",
+	"activity_about": "About",
+	"activity_organiser": "Organiser",
+	"activity_organiser_follow": "Follow",
+	"activity_location": "Location",
+	"activity_open_maps": "Open Maps",
+	"activity_buy_tickets": "Buy Tickets",
+	"activity_tickets_title": "Tickets",
 	"ticket_price_free": "Free",
 	"back_label": "Back",
 	"share_label": "Share",
