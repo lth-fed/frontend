@@ -1,14 +1,8 @@
-import {
-	beginLogin,
-	configureAuth,
-	getAuthState,
-	isAuthRedirectSuccess,
-	refresh
-} from 'auth-lib';
+import { beginLogin, configureAuth, getAuthState, isAuthRedirectSuccess, refresh } from 'auth-lib';
 import { replaceState } from '$app/navigation';
+import { dev } from '$app/environment';
 import { session } from '$lib/state/session.svelte';
 
-const dev = import.meta.env.DEV;
 const AUTH_BASE = dev ? 'http://localhost:8001/api/v0' : 'https://auth.teknologappen.se/api/v0';
 
 configureAuth({ baseUrl: AUTH_BASE });
