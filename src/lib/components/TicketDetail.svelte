@@ -15,14 +15,14 @@
 <article
 	class="flex size-full flex-col items-center justify-center gap-3.75 rounded-[34px] border border-gray-200 bg-white"
 >
-	<header class="flex w-full items-center justify-between px-7.5 pt-3.75 pb-7.5">
-		<div class="flex flex-col items-start gap-px">
-			<p class="w-fit text-xs text-gray-600">{m.ticket_detail_label_name()}</p>
-			<p class="w-fit text-sm font-medium text-black">{name}</p>
+	<header class="flex w-full items-start justify-between gap-3 px-7.5 pt-3.75 pb-7.5">
+		<div class="flex min-w-0 flex-1 flex-col gap-px">
+			<p class="text-xs text-gray-600">{m.ticket_detail_label_name()}</p>
+			<p class="text-sm font-medium break-words text-black">{name}</p>
 		</div>
-		<div class="flex flex-col items-end gap-px">
-			<p class="w-fit text-xs text-gray-600">{m.ticket_detail_label_event()}</p>
-			<p class="w-fit text-sm font-medium text-black">{event}</p>
+		<div class="flex min-w-0 flex-1 flex-col gap-px text-right">
+			<p class="text-xs text-gray-600">{m.ticket_detail_label_event()}</p>
+			<p class="text-sm font-medium break-words text-black">{event}</p>
 		</div>
 	</header>
 

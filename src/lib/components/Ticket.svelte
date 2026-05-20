@@ -263,7 +263,7 @@
 			</div>
 
 			<div class="flex flex-col gap-1.5">
-				<h2 class="truncate text-[22px] leading-none font-bold">{title}</h2>
+				<h2 class="truncate text-[22px] leading-tight font-bold">{title}</h2>
 				<p class="text-base leading-none opacity-90">{subtitle}</p>
 			</div>
 
