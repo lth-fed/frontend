@@ -6,6 +6,7 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { Ticket as TicketIcon } from '@lucide/svelte';
 	import { activityList } from '$lib/data/activities';
+	import { formatCardDate } from '$lib/format/datetime';
 
 	const tickets = [
 		{
@@ -82,7 +83,7 @@
 				<ActivityCard
 					image={a.image}
 					badge={a.badge}
-					date={a.cardDate}
+					date={formatCardDate(a.startAt)}
 					title={a.title}
 					priceFrom={a.priceFrom}
 					description={a.description}

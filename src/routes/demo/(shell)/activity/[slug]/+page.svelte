@@ -3,6 +3,7 @@
 	import OrganiserCard from '$lib/components/OrganiserCard.svelte';
 	import { buyTicketsBottom, detailTopBar, useAppBars } from '$lib/state/appBars.svelte';
 	import { guilds } from '$lib/data/guilds';
+	import { formatDetailDate, formatTimeRange } from '$lib/format/datetime';
 	import { m } from '$lib/paraglide/messages.js';
 	import type { PageProps } from './$types';
 	import { isIos26Plus } from '$lib/platform/isIos26Plus';
@@ -37,8 +38,8 @@
 		<ActivityHeadCard
 			badge={activity.badge}
 			title={activity.title}
-			date={activity.detailDate}
-			time={activity.timeRange}
+			date={formatDetailDate(activity.startAt)}
+			time={formatTimeRange(activity.startAt, activity.endAt)}
 			location={activity.location}
 		/>
 

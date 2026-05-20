@@ -14,12 +14,8 @@ export type Activity = {
 	title: string;
 	description: string;
 	location: string;
-	/** Compact form for list cards, e.g. "Mon, Apr 27 - 17:00". */
-	cardDate: string;
-	/** Verbose form for the detail head, e.g. "Monday, 27 Apr". */
-	detailDate: string;
-	/** Time range, e.g. "17:00 - 23:00". */
-	timeRange: string;
+	startAt: Date;
+	endAt: Date;
 	priceFrom?: number;
 	organisers: Guild[];
 	ticketKinds: TicketKind[];
@@ -34,9 +30,8 @@ export const activities: Record<string, Activity> = {
 		description:
 			'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex.',
 		location: 'Gasque-salen',
-		cardDate: 'Mon, Apr 27 - 17:00',
-		detailDate: 'Monday, 27 Apr',
-		timeRange: '17:00 - 23:00',
+		startAt: new Date('2026-04-27T17:00'),
+		endAt: new Date('2026-04-27T23:00'),
 		priceFrom: 120,
 		organisers: ['f'],
 		ticketKinds: [
@@ -53,9 +48,8 @@ export const activities: Record<string, Activity> = {
 		description:
 			'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse.',
 		location: 'Kårhuset',
-		cardDate: 'Fri, May 01 - 21:00',
-		detailDate: 'Friday, 1 May',
-		timeRange: '21:00 - 02:00',
+		startAt: new Date('2026-05-01T21:00'),
+		endAt: new Date('2026-05-02T02:00'),
 		priceFrom: 80,
 		organisers: ['f', 'e', 'm', 'v', 'a', 'k', 'd', 'ing', 'w', 'i'],
 		ticketKinds: [
@@ -72,9 +66,8 @@ export const activities: Record<string, Activity> = {
 		description:
 			'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia.',
 		location: 'Pub-lokalen',
-		cardDate: 'Tue, May 05 - 18:00',
-		detailDate: 'Tuesday, 5 May',
-		timeRange: '18:00 - 23:00',
+		startAt: new Date('2026-05-05T18:00'),
+		endAt: new Date('2026-05-05T23:00'),
 		priceFrom: 40,
 		organisers: ['f'],
 		ticketKinds: [
