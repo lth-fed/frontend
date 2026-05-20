@@ -116,8 +116,8 @@ export async function authenticatedFetch(
 				localStorage.removeItem(atLocation);
 				token = null;
 				error_callback({
-					sv: 'Du kan ha blivit hackad! Autentifieringen misslycakdes. Antingen var det mer än ett år sen du loggade in eller så har någon tagit kontroll över din webbläsare och använder nu ditt konto.',
-					en: 'You may have been hacked! The authentication failed. Either you last logged in more than a year ago, or someone has taken control of your browser and are now using your account.'
+					sv: 'Du kan ha blivit hackad! Autentifieringen misslyckades. Antingen var det mer än ett år sedan du loggade in eller så har någon tagit kontroll över din webbläsare och använder nu ditt konto.',
+					en: 'You may have been hacked! Authentication failed. Either your last login was over a year ago, or someone has taken control of your browser and is now using your account.'
 				});
 			} else {
 				token = newAt;

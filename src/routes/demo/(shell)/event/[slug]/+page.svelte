@@ -28,7 +28,9 @@
 </script>
 
 <div class={isIos26Native ? '-mt-[calc(env(safe-area-inset-top)+4.25rem)]' : '-mt-6'}>
-	<img class="z-0 block aspect-video w-full object-cover" src={event.image} alt={event.title} />
+	<div class="z-0 h-75 w-full overflow-hidden">
+		<img class="h-full w-full min-w-full object-cover" src={event.image} alt={event.title} />
+	</div>
 
 	<div class="z-10 -mt-24 flex w-full flex-col gap-8.75 px-4">
 		<EventHeadCard
