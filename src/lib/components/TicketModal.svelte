@@ -41,7 +41,7 @@
 
 {#if open}
 	<dialog
-		class="ticket-modal z-50"
+		class="fixed inset-0 z-50 m-0 block h-dvh max-h-none w-dvw max-w-none border-0 bg-transparent p-0 backdrop:bg-[rgb(0_0_0/0.5)]"
 		oncancel={handleCancel}
 		aria-label={m.modal_close_label()}
 		{@attach openAsModal}
@@ -64,20 +64,3 @@
 		</div>
 	</dialog>
 {/if}
-
-<style>
-	.ticket-modal {
-		margin: 0;
-		padding: 0;
-		border: 0;
-		width: 100dvw;
-		height: 100dvh;
-		max-width: none;
-		max-height: none;
-		background: transparent;
-	}
-
-	.ticket-modal::backdrop {
-		background: rgb(0 0 0 / 0.5);
-	}
-</style>
