@@ -48,6 +48,8 @@
 	"event_location": "Location",
 	"event_open_maps": "Open Maps",
 	"event_buy_tickets": "Buy Tickets",
+	"event_tickets_title": "Tickets",
+	"ticket_price_free": "Free",
 	"back_label": "Back",
 	"share_label": "Share"
 }

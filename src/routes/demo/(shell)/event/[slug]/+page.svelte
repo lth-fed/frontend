@@ -7,6 +7,7 @@
 	import type { PageProps } from './$types';
 	import { isIos26Plus } from '$lib/platform/isIos26Plus';
 	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
 
 	let { data }: PageProps = $props();
 	const event = $derived(data.event);
@@ -22,7 +23,7 @@
 		}),
 		bottom: buyTicketsBottom({
 			id: `buy-${event.id}`,
-			onclick: () => alert(`Buy ${event.title}`)
+			onclick: () => goto(`/demo/event/${event.id}/tickets`)
 		})
 	}));
 </script>
