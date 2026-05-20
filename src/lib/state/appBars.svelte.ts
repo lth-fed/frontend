@@ -50,7 +50,10 @@ export type BottomConfig =
 			onclick: () => void;
 			backgroundColor?: string;
 			foregroundColor?: string;
-	  };
+	  }
+	| { kind: 'none' };
+
+export const emptyBottom: BottomConfig = { kind: 'none' };
 
 /**
  * The active page's override values, or null to fall back to the layout's

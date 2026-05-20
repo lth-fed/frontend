@@ -38,6 +38,8 @@
 	"event_location": "Plats",
 	"event_open_maps": "Öppna i kartor",
 	"event_buy_tickets": "Köp biljett",
+	"event_tickets_title": "Biljetter",
+	"ticket_price_free": "Gratis",
 	"back_label": "Tillbaka",
 	"share_label": "Dela"
 }

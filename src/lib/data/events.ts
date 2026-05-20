@@ -1,5 +1,12 @@
 import type { Guild } from '$lib/types/guild';
 
+export type TicketKind = {
+	id: string;
+	name: string;
+	/** Price in SEK. 0 means free. */
+	price: number;
+};
+
 export type Event = {
 	id: string;
 	image: string;
@@ -15,6 +22,7 @@ export type Event = {
 	timeRange: string;
 	priceFrom?: number;
 	organisers: Guild[];
+	ticketKinds: TicketKind[];
 };
 
 export const events: Record<string, Event> = {
@@ -30,7 +38,12 @@ export const events: Record<string, Event> = {
 		detailDate: 'Monday, 27 Apr',
 		timeRange: '17:00 - 23:00',
 		priceFrom: 120,
-		organisers: ['f']
+		organisers: ['f'],
+		ticketKinds: [
+			{ id: 'standard', name: 'Standard', price: 120 },
+			{ id: 'vip', name: 'VIP', price: 220 },
+			{ id: 'sponsor', name: 'Sponsor', price: 0 }
+		]
 	},
 	b: {
 		id: 'b',
@@ -44,7 +57,12 @@ export const events: Record<string, Event> = {
 		detailDate: 'Friday, 1 May',
 		timeRange: '21:00 - 02:00',
 		priceFrom: 80,
-		organisers: ['f', 'e', 'm', 'v', 'a', 'k', 'd', 'ing', 'w', 'i']
+		organisers: ['f', 'e', 'm', 'v', 'a', 'k', 'd', 'ing', 'w', 'i'],
+		ticketKinds: [
+			{ id: 'early-bird', name: 'Early bird', price: 80 },
+			{ id: 'standard', name: 'Standard', price: 110 },
+			{ id: 'after-party', name: 'After party', price: 50 }
+		]
 	},
 	c: {
 		id: 'c',
@@ -58,7 +76,11 @@ export const events: Record<string, Event> = {
 		detailDate: 'Tuesday, 5 May',
 		timeRange: '18:00 - 23:00',
 		priceFrom: 40,
-		organisers: ['f']
+		organisers: ['f'],
+		ticketKinds: [
+			{ id: 'entry', name: 'Entré', price: 40 },
+			{ id: 'member', name: 'Medlem', price: 0 }
+		]
 	}
 };
 
