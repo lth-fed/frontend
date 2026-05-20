@@ -339,7 +339,7 @@
 
 {#if showOverlay}
 	<dialog
-		class="ticket-overlay z-60"
+		class="fixed inset-0 z-60 m-0 block h-dvh max-h-none w-dvw max-w-none border-0 bg-transparent p-0 backdrop:bg-transparent"
 		oncancel={handleCancel}
 		aria-label={m.modal_close_label()}
 		{@attach openAsModal}
@@ -348,28 +348,36 @@
 			type="button"
 			aria-label={m.modal_close_label()}
 			onclick={closeDetails}
-			class="ticket-backdrop absolute inset-0"
-			class:is-open={overlayReady}
+			class="absolute inset-0 bg-black/50 opacity-0 transition-opacity duration-280 ease-in"
+			class:opacity-100={overlayReady}
 		></button>
 
 		<div class="pointer-events-none absolute inset-0 perspective-[1800px]">
 			<div
-				class="ticket-flip"
-				class:is-open={overlayReady}
+				class="ticket-flip pointer-events-auto absolute top-0 left-0 h-110 w-75 origin-[center_left] transition-transform duration-560 ease-[cubic-bezier(0.22,0.61,0.36,1)] will-change-transform transform-3d"
+				class:ticket-flip-open={overlayReady}
 				ontransitionend={onFlipTransitionEnd}
 				style={`--origin-x:${originX}px; --origin-y:${originY}px; --origin-scale:${originScale}; --target-x:${targetX}px; --target-y:${targetY}px;`}
 			>
-				<div class="ticket-face front" aria-hidden={overlayReady}>
+				<div class="absolute inset-0 backface-hidden" aria-hidden={overlayReady}>
 					{@render ticketFront()}
 				</div>
-				<div class="ticket-face back" aria-hidden={!overlayReady}>
+				<div
+					class="absolute inset-0 transform-[rotateY(180deg)] backface-hidden"
+					aria-hidden={!overlayReady}
+				>
 					{@render ticketBack()}
 				</div>
 			</div>
 		</div>
 
 		{#if !isIos26Native}
-			<div class="ticket-tools" class:is-visible={showTools}>
+			<div
+				class="pointer-events-none absolute bottom-[env(safe-area-inset-bottom)] left-1/2 -translate-x-1/2 translate-y-2 opacity-0 transition-all duration-180 ease-in"
+				class:opacity-100={showTools}
+				class:translate-y-0={showTools}
+				class:pointer-events-auto={showTools}
+			>
 				<ToolBar items={tools} onAction={(id) => onAction?.(id)} />
 			</div>
 		{/if}
@@ -377,77 +385,11 @@
 {/if}
 
 <style>
-	.ticket-overlay {
-		position: fixed;
-		inset: 0;
-		display: block;
-		margin: 0;
-		padding: 0;
-		border: 0;
-		width: 100dvw;
-		height: 100dvh;
-		max-width: none;
-		max-height: none;
-		background: transparent;
-	}
-
-	.ticket-backdrop {
-		opacity: 0;
-		background: rgb(0 0 0 / 0.5);
-		transition: opacity 280ms ease;
-	}
-
-	.ticket-backdrop.is-open {
-		opacity: 1;
-	}
-
 	.ticket-flip {
-		position: absolute;
-		top: 0;
-		left: 0;
-		width: 300px;
-		height: 440px;
-		pointer-events: auto;
-		transform-origin: center left;
-		transform-style: preserve-3d;
 		transform: translate(var(--origin-x), var(--origin-y)) scale(var(--origin-scale)) rotateY(0deg);
-		transition: transform 560ms cubic-bezier(0.22, 0.61, 0.36, 1);
-		will-change: transform;
 	}
 
-	.ticket-flip.is-open {
+	.ticket-flip.ticket-flip-open {
 		transform: translate(var(--target-x), var(--target-y)) scale(1.18) rotateY(180deg);
-	}
-
-	.ticket-face {
-		position: absolute;
-		inset: 0;
-		backface-visibility: hidden;
-	}
-
-	.ticket-face.back {
-		transform: rotateY(180deg);
-	}
-
-	.ticket-tools {
-		position: absolute;
-		left: 50%;
-		bottom: env(safe-area-inset-bottom);
-		transform: translate(-50%, 8px);
-		opacity: 0;
-		pointer-events: none;
-		transition:
-			opacity 180ms ease,
-			transform 180ms ease;
-	}
-
-	.ticket-tools.is-visible {
-		opacity: 1;
-		transform: translate(-50%, 0);
-		pointer-events: auto;
-	}
-
-	.ticket-overlay::backdrop {
-		background: transparent;
 	}
 </style>
