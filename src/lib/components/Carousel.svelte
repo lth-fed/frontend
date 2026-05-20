@@ -15,6 +15,7 @@
 	let itemEls = $state<(HTMLElement | undefined)[]>([]);
 	let current = $state(0);
 	let itemScales = $state<number[]>([]);
+	let spacerSize = $state(0);
 
 	function clamp(value: number, min: number, max: number) {
 		return Math.min(max, Math.max(min, value));
@@ -23,6 +24,10 @@
 	function updateState() {
 		const root = viewport;
 		if (!root) return;
+
+		const referenceItem = itemEls.find((el) => el);
+		const itemWidth = referenceItem?.offsetWidth ?? 300;
+		spacerSize = Math.max(0, (root.clientWidth - itemWidth) / 2);
 
 		const center = root.scrollLeft + root.clientWidth / 2;
 		let bestIndex = 0;
@@ -104,7 +109,8 @@
 			{@attach fromAction(viewportAction)}
 			class="snap-x snap-mandatory overflow-visible overflow-x-auto pt-4 pb-24 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
 		>
-			<div class="centered flex w-max gap-1.5">
+			<div class="flex w-max gap-1.5">
+				<div class="shrink-0" style="width: {spacerSize}px;" aria-hidden="true"></div>
 				{#each items as it, i (i)}
 					<div
 						{@attach fromAction(itemAction, () => i)}
@@ -114,6 +120,7 @@
 						{@render item(it, i === current, () => goTo(i))}
 					</div>
 				{/each}
+				<div class="shrink-0" style="width: {spacerSize}px;" aria-hidden="true"></div>
 			</div>
 		</div>
 
