@@ -89,11 +89,11 @@
 {#if !overlay.isActive}
 	<nav
 		bind:this={nav}
-		class="relative inline-flex items-center gap-1 rounded-full bg-white px-2 py-2 shadow-lg ring-[length:var(--guild-ring-width)] ring-guild-ring"
+		class="relative flex w-full items-center gap-1 rounded-full bg-white px-2 py-2 shadow-[0_2px_10px_color-mix(in_srgb,var(--guild-primary-light)_75%,transparent)] ring-(length:--guild-ring-width) ring-guild-ring"
 	>
 		<div
 			aria-hidden="true"
-			class="pointer-events-none absolute top-0 left-0 rounded-full bg-guild-primary ring-[length:var(--guild-ring-width)] ring-guild-ring {animated
+			class="pointer-events-none absolute top-0 left-0 rounded-full bg-guild-primary ring-(length:--guild-ring-width) ring-guild-ring {animated
 				? 'transition-[transform,width,height] duration-300 ease-out'
 				: ''}"
 			style={highlightStyle}
@@ -107,7 +107,7 @@
 				aria-label={it.label}
 				aria-current={active ? 'page' : undefined}
 				onclick={() => onSelect(it.id)}
-				class="relative z-10 flex size-12 items-center justify-center rounded-full transition-colors duration-300 {active
+				class="relative z-10 flex min-h-12 flex-1 items-center justify-center rounded-full transition-colors duration-300 {active
 					? 'text-guild-on-primary'
 					: 'text-gray-600'}"
 			>

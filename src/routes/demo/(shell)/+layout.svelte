@@ -15,8 +15,14 @@
 		type BottomConfig,
 		type TopBarConfig
 	} from '$lib/state/appBars.svelte';
+	import { onMount } from 'svelte';
+	import { isIos26Plus } from '$lib/platform/isIos26Plus';
 
 	let { children } = $props();
+
+	let isIos26Native = $state(false);
+
+	onMount(async () => (isIos26Native = await isIos26Plus()));
 
 	type NavId = 'home' | 'links' | 'profile' | 'settings';
 
@@ -85,34 +91,35 @@
 	});
 </script>
 
-<div class="relative h-screen overflow-hidden bg-white">
-	<div class="absolute inset-x-0 top-0 z-30">
-		<TopBar {...topBar} />
-	</div>
-
-	<main bind:this={mainEl} class="h-full overflow-y-auto pt-18 pb-40">
-		{@render children()}
-	</main>
-
-	{#if bottom.kind === 'tabs'}
-		<div
-			class="pointer-events-none fixed inset-x-0 bottom-[max(env(safe-area-inset-bottom),1.5rem)] z-20 flex justify-center"
-		>
-			<div class="pointer-events-auto">
-				<NavBar items={bottom.items} selected={bottom.selected} onSelect={bottom.onSelect} />
-			</div>
-		</div>
-	{:else if bottom.kind === 'action'}
-		<div class="fixed inset-x-0 bottom-[max(env(safe-area-inset-bottom),1.5rem)] z-20 px-6">
-			<BottomActionButton
-				id={bottom.id}
-				label={bottom.label}
-				icon={bottom.icon}
-				systemIcon={bottom.systemIcon}
-				onclick={bottom.onclick}
-				backgroundColor={bottom.backgroundColor}
-				foregroundColor={bottom.foregroundColor}
-			/>
-		</div>
-	{/if}
+<div class="fixed inset-x-0 top-0 z-30">
+	<TopBar {...topBar} />
 </div>
+
+<main
+	bind:this={mainEl}
+	class="h-full {isIos26Native ? 'mt-17' : 'pt-[calc(env(safe-area-inset-top)+1.5rem)]'} mb-20"
+>
+	{@render children()}
+</main>
+
+{#if bottom.kind === 'tabs'}
+	<div
+		class="pointer-events-none fixed right-5 bottom-[max(env(safe-area-inset-bottom),1.5rem)] left-5 z-20"
+	>
+		<div class="pointer-events-auto w-full">
+			<NavBar items={bottom.items} selected={bottom.selected} onSelect={bottom.onSelect} />
+		</div>
+	</div>
+{:else if bottom.kind === 'action'}
+	<div class="fixed inset-x-0 bottom-[max(env(safe-area-inset-bottom),1.5rem)] z-20 px-6">
+		<BottomActionButton
+			id={bottom.id}
+			label={bottom.label}
+			icon={bottom.icon}
+			systemIcon={bottom.systemIcon}
+			onclick={bottom.onclick}
+			backgroundColor={bottom.backgroundColor}
+			foregroundColor={bottom.foregroundColor}
+		/>
+	</div>
+{/if}

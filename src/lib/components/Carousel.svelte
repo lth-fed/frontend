@@ -1,58 +1,93 @@
 <script lang="ts" generics="T">
 	import type { Snippet } from 'svelte';
+	import { fromAction } from 'svelte/attachments';
 	import { m } from '$lib/paraglide/messages.js';
 
 	interface Props {
 		items: T[];
-		item: Snippet<[T]>;
+		item: Snippet<[T, boolean, () => void]>;
 		empty?: Snippet;
 	}
 
 	let { items, item, empty }: Props = $props();
 
 	let viewport = $state<HTMLDivElement>();
-	let itemEls = $state<HTMLElement[]>([]);
+	let itemEls = $state<(HTMLElement | undefined)[]>([]);
 	let current = $state(0);
+	let itemScales = $state<number[]>([]);
 
-	$effect(() => {
+	function clamp(value: number, min: number, max: number) {
+		return Math.min(max, Math.max(min, value));
+	}
+
+	function updateState() {
 		const root = viewport;
 		if (!root) return;
 
-		let frame: number | null = null;
-
-		function updateCurrent() {
-			if (!root) return;
-			const center = root.scrollLeft + root.clientWidth / 2;
-			let bestIndex = 0;
-			let bestDist = Infinity;
-			for (let i = 0; i < itemEls.length; i++) {
-				const el = itemEls[i];
-				if (!el) continue;
-				const itemCenter = el.offsetLeft + el.offsetWidth / 2;
-				const dist = Math.abs(center - itemCenter);
-				if (dist < bestDist) {
-					bestDist = dist;
-					bestIndex = i;
-				}
+		const center = root.scrollLeft + root.clientWidth / 2;
+		let bestIndex = 0;
+		let bestDist = Infinity;
+		const nextScales = items.map((_, i) => {
+			const el = itemEls[i];
+			if (!el) return 0.86;
+			const itemCenter = el.offsetLeft + el.offsetWidth / 2;
+			const dist = Math.abs(center - itemCenter);
+			if (dist < bestDist) {
+				bestDist = dist;
+				bestIndex = i;
 			}
-			if (bestIndex !== current) current = bestIndex;
-		}
+			const proximity = clamp(1 - dist / Math.max(root.clientWidth / 2, 1), 0, 1);
+			return 0.86 + proximity * 0.14;
+		});
+
+		itemScales = nextScales;
+		if (bestIndex !== current) current = bestIndex;
+	}
+
+	function viewportAction(node: HTMLDivElement) {
+		viewport = node;
+		let frame: number | null = null;
 
 		function onScroll() {
 			if (frame !== null) return;
 			frame = requestAnimationFrame(() => {
 				frame = null;
-				updateCurrent();
+				updateState();
 			});
 		}
 
-		updateCurrent();
-		root.addEventListener('scroll', onScroll, { passive: true });
-		return () => {
-			root.removeEventListener('scroll', onScroll);
-			if (frame !== null) cancelAnimationFrame(frame);
+		updateState();
+		node.addEventListener('scroll', onScroll, { passive: true });
+		window.addEventListener('resize', onScroll, { passive: true });
+
+		return {
+			destroy() {
+				node.removeEventListener('scroll', onScroll);
+				window.removeEventListener('resize', onScroll);
+				if (frame !== null) cancelAnimationFrame(frame);
+				if (viewport === node) viewport = undefined;
+			}
 		};
-	});
+	}
+
+	function itemAction(node: HTMLElement, index: number) {
+		itemEls[index] = node;
+		updateState();
+
+		return {
+			update(nextIndex: number) {
+				if (nextIndex === index) return;
+				if (itemEls[index] === node) itemEls[index] = undefined;
+				index = nextIndex;
+				itemEls[index] = node;
+				updateState();
+			},
+			destroy() {
+				if (itemEls[index] === node) itemEls[index] = undefined;
+				updateState();
+			}
+		};
+	}
 
 	function goTo(i: number) {
 		itemEls[i]?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
@@ -66,26 +101,31 @@
 {:else}
 	<div class="space-y-4">
 		<div
-			bind:this={viewport}
-			class="snap-x snap-mandatory overflow-x-auto py-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+			{@attach fromAction(viewportAction)}
+			class="snap-x snap-mandatory overflow-visible overflow-x-auto pt-4 pb-24 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
 		>
-			<div class="centered flex w-max gap-4">
+			<div class="centered flex w-max gap-1.5">
 				{#each items as it, i (i)}
-					<div bind:this={itemEls[i]} class="shrink-0 snap-center snap-always">
-						{@render item(it)}
+					<div
+						{@attach fromAction(itemAction, () => i)}
+						class="shrink-0 snap-center snap-always overflow-visible transition-transform duration-200 ease-out will-change-transform"
+						style={`transform: scale(${itemScales[i] ?? 0.86});`}
+					>
+						{@render item(it, i === current, () => goTo(i))}
 					</div>
 				{/each}
 			</div>
 		</div>
 
-		<div class="flex justify-center gap-2">
+		<div class="-mt-24 flex justify-center gap-2">
+			<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 			{#each items as _, i (i)}
 				<button
 					type="button"
 					onclick={() => goTo(i)}
 					aria-label={m.carousel_slide_label({ n: i + 1 })}
 					class="size-2 rounded-full transition-colors {current === i
-						? 'bg-guild-primary ring-[length:var(--guild-ring-width)] ring-guild-ring'
+						? 'bg-guild-primary ring-(length:--guild-ring-width) ring-guild-ring'
 						: 'bg-gray-300'}"
 				></button>
 			{/each}
