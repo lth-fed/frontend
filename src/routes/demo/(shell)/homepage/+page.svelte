@@ -5,8 +5,10 @@
 	import EmptyState from '$lib/components/EmptyState.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import { Ticket as TicketIcon } from '@lucide/svelte';
-	import { activityList } from '$lib/data/activities';
 	import { formatCardDate } from '$lib/format/datetime';
+	import type { PageProps } from './$types';
+
+	let { data }: PageProps = $props();
 
 	const tickets = [
 		{
@@ -79,7 +81,7 @@
 		<h2 class="text-[20px] font-semibold">{m.home_upcoming_activities()}</h2>
 
 		<div class="mt-3.5 space-y-5.5">
-			{#each activityList as a (a.id)}
+			{#each data.activities as a (a.id)}
 				<ActivityCard
 					image={a.image}
 					badge={a.badge}

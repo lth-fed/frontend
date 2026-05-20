@@ -1,4 +1,5 @@
 import type { Guild } from '$lib/types/guild';
+import { apiError } from './errors';
 
 export type TicketKind = {
 	id: string;
@@ -21,7 +22,36 @@ export type Activity = {
 	ticketKinds: TicketKind[];
 };
 
-export const activities: Record<string, Activity> = {
+type Opts = {
+	/** SvelteKit's load-fetch (or any other base fetch). Threaded through
+	 *  `makeApi` so the framework's preload/SSR machinery applies when set. */
+	fetch?: typeof globalThis.fetch;
+};
+
+/**
+ * List all activities visible to the current user.
+ *
+ * Backed by mock data while the backend `/activities` endpoint is pending.
+ * The real-call body will wrap the openapi-fetch call through `unwrap`
+ * from `./errors`; the signature here is stable across the swap.
+ */
+export async function listActivities(_opts: Opts = {}): Promise<Activity[]> {
+	return Object.values(_mock);
+}
+
+/**
+ * Fetch a single activity by id. Throws a SvelteKit 404 via `apiError`
+ * if the id is unknown; any other failure throws the matching kind.
+ * Route loaders need no translation — the framework renders the right
+ * error page directly.
+ */
+export async function getActivity(id: string, _opts: Opts = {}): Promise<Activity> {
+	const found = _mock[id];
+	if (!found) apiError('not-found', `Activity "${id}" not found`);
+	return found;
+}
+
+const _mock: Record<string, Activity> = {
 	a: {
 		id: 'a',
 		image: 'https://picsum.photos/seed/home-a/640/360',
@@ -76,9 +106,3 @@ export const activities: Record<string, Activity> = {
 		]
 	}
 };
-
-export const activityList: Activity[] = Object.values(activities);
-
-export function getActivity(id: string): Activity | undefined {
-	return activities[id];
-}
