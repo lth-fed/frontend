@@ -91,7 +91,7 @@
 	});
 </script>
 
-<div class="fixed inset-x-0 top-0 z-30">
+<div class="shell-topbar fixed inset-x-0 top-0 z-30">
 	<TopBar {...topBar} />
 </div>
 
@@ -104,7 +104,7 @@
 
 {#if bottom.kind === 'tabs'}
 	<div
-		class="pointer-events-none fixed right-5 bottom-[max(env(safe-area-inset-bottom),1.5rem)] left-5 z-20"
+		class="shell-bottom-nav pointer-events-none fixed right-5 bottom-[max(env(safe-area-inset-bottom),1.5rem)] left-5 z-20"
 	>
 		<div class="pointer-events-auto w-full">
 			<NavBar items={bottom.items} selected={bottom.selected} onSelect={bottom.onSelect} />
@@ -123,3 +123,17 @@
 		/>
 	</div>
 {/if}
+
+<style>
+	:global(html[data-navbar-hidden] .shell-bottom-nav) {
+		opacity: 0;
+		pointer-events: none;
+		transform: translateY(-8px);
+	}
+
+	.shell-bottom-nav {
+		transition:
+			opacity 160ms ease,
+			transform 160ms ease;
+	}
+</style>
