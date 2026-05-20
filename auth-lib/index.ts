@@ -1,14 +1,28 @@
-export type Provider = 'lu' | 'email' | 'test'
-export type UnknownError = null
-export type AuthState = 'unauthenticated' | 'authenticating' | 'authenticated'
-type Message = { kind: string }
-type ValidatedMessage = { kind: 'validation'; validated: boolean }
-type AnyMessage = Message | ValidatedMessage
+export type Provider = 'lu' | 'email' | 'test';
+export type UnknownError = null;
+export type AuthState = 'unauthenticated' | 'authenticating' | 'authenticated';
+type Message = { kind: string };
+type ValidatedMessage = { kind: 'validation'; validated: boolean };
+type AnyMessage = Message | ValidatedMessage;
 
-const atLocation = 'teknologappen-auth-access-token'
-const asLocation = 'teknologappen-auth-state'
+const atLocation = 'teknologappen-auth-access-token';
+const asLocation = 'teknologappen-auth-state';
+
+let baseUrl = 'https://auth.teknologappen.se/api/v0';
+
+/** Override the auth service base URL (e.g. http://localhost:8001/api/v0 in dev). */
+export function configureAuth(opts: { baseUrl: string }) {
+	baseUrl = opts.baseUrl;
+}
+
+export function getAuthState(): AuthState {
+	const v = localStorage.getItem(asLocation);
+	if (v === 'authenticated' || v === 'authenticating') return v;
+	return 'unauthenticated';
+}
+
 function setAuthState(state: AuthState) {
-	localStorage.setItem(asLocation, state)
+	localStorage.setItem(asLocation, state);
 }
 /**
  * Begin logging in with SSO.
@@ -26,57 +40,59 @@ export async function beginLogin(
 	continueUrl: string,
 	serverCallbackUrl?: string
 ): Promise<String | UnknownError> {
-	const body = {
-		continue_url: continueUrl,
-		callback: { v1: serverCallbackUrl }
+	const body: { continue_url: string; callback?: { v1: string } } = {
+		continue_url: continueUrl
+	};
+	if (serverCallbackUrl) {
+		body.callback = { v1: serverCallbackUrl };
 	}
-	let response: Response
+	let response: Response;
 	try {
-		response = await fetch(`https://auth.teknologappen.se/api/v0/providers/${provider}`, {
+		response = await fetch(`${baseUrl}/providers/${provider}`, {
 			method: 'POST',
 			body: JSON.stringify(body),
 			headers: { 'content-type': 'application/json' }
-		})
+		});
 	} catch (_e) {
-		return null
+		return null;
 	}
-	if (!response.ok) return null
-	let redirect: string
+	if (!response.ok) return null;
+	let redirect: string;
 	try {
-		redirect = await response.text()
+		redirect = await response.text();
 	} catch (_e) {
-		return null
+		return null;
 	}
-	setAuthState('authenticating')
-	return redirect
+	setAuthState('authenticating');
+	return redirect;
 }
 
 export function onIframeResponse(callback: (validated: boolean) => void) {
 	const listener = (e: MessageEvent) => {
 		if (e.origin !== 'https://auth.teknologappen.se') {
-			return
+			return;
 		}
-		if (typeof e.data !== 'object') return
-		let message: AnyMessage = e.data
-		if (typeof message.kind !== 'string') return
+		if (typeof e.data !== 'object') return;
+		let message: AnyMessage = e.data;
+		if (typeof message.kind !== 'string') return;
 		if (message.kind === 'validation') {
-			const val = (message as ValidatedMessage).validated
-			setAuthState(val ? 'authenticated' : 'unauthenticated')
-			callback(val)
+			const val = (message as ValidatedMessage).validated;
+			setAuthState(val ? 'authenticated' : 'unauthenticated');
+			callback(val);
 		}
-		window.removeEventListener('message', listener)
-	}
-	window.addEventListener('message', listener)
+		window.removeEventListener('message', listener);
+	};
+	window.addEventListener('message', listener);
 }
 /**
  * @returns true if auth is success
  *
  */
 export function isAuthRedirectSuccess(): boolean {
-	const query = new URLSearchParams(location.search)
-	const val = query.get('validated') === 'true'
-	setAuthState(val ? 'authenticated' : 'unauthenticated')
-	return val
+	const query = new URLSearchParams(location.search);
+	const val = query.get('validated') === 'true';
+	setAuthState(val ? 'authenticated' : 'unauthenticated');
+	return val;
 }
 
 export async function authenticatedFetch(
@@ -85,32 +101,32 @@ export async function authenticatedFetch(
 	info: RequestInfo | URL,
 	init?: RequestInit
 ): Promise<Response> {
-	const at = localStorage.getItem(atLocation)
-	const data = at !== null ? JSON.parse(atob(at.split('.')[1])) : {}
-	const now = +new Date() / 1000
+	const at = localStorage.getItem(atLocation);
+	const data = at !== null ? JSON.parse(atob(at.split('.')[1])) : {};
+	const now = +new Date() / 1000;
 
-	let token = at
+	let token = at;
 
 	if (at === null || data.exp === null || data.nbf + (data.exp - data.nbf) / 2 < now) {
 		if (localStorage.getItem(asLocation) === 'authenticated') {
 			// refresh!
-			let newAt = await refresh()
+			let newAt = await refresh();
 			if (newAt === null) {
 				// we couldn't get a new token!
-				localStorage.removeItem(atLocation)
-				token = null
+				localStorage.removeItem(atLocation);
+				token = null;
 				error_callback({
 					sv: 'Du kan ha blivit hackad! Autentifieringen misslycakdes. Antingen var det mer än ett år sen du loggade in eller så har någon tagit kontroll över din webbläsare och använder nu ditt konto.',
 					en: 'You may have been hacked! The authentication failed. Either you last logged in more than a year ago, or someone has taken control of your browser and are now using your account.'
-				})
+				});
 			} else {
-				token = newAt
-				localStorage.setItem(atLocation, newAt)
+				token = newAt;
+				localStorage.setItem(atLocation, newAt);
 			}
 		} else {
 			// we don't have a token or it's invalid
-			localStorage.removeItem(atLocation)
-			token = null
+			localStorage.removeItem(atLocation);
+			token = null;
 		}
 	}
 
@@ -121,23 +137,27 @@ export async function authenticatedFetch(
 					...init,
 					headers: {
 						...init?.headers,
-						authorization: `Bearer {token}`
+						authorization: `Bearer ${token}`
 					}
-				}
-	return await fetch(info, newInit)
+				};
+	return await fetch(info, newInit);
 }
 
-async function refresh(): Promise<string | UnknownError> {
+export async function refresh(): Promise<string | UnknownError> {
 	try {
-		const response = await fetch('https://auth.teknologappen.se/api/v0/refresh', {
+		const response = await fetch(`${baseUrl}/refresh`, {
 			method: 'POST',
 			credentials: 'include',
 			headers: { 'content-type': 'application/json' }
-		})
-		const json = await response.json()
-		const accessToken = json.access_token
-		return accessToken
+		});
+		if (!response.ok) return null;
+		const json = await response.json();
+		const accessToken = json.access_token;
+		if (typeof accessToken !== 'string') return null;
+		localStorage.setItem(atLocation, accessToken);
+		setAuthState('authenticated');
+		return accessToken;
 	} catch (_e) {
-		return null
+		return null;
 	}
 }

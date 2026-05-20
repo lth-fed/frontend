@@ -51,5 +51,7 @@
 	"event_tickets_title": "Tickets",
 	"ticket_price_free": "Free",
 	"back_label": "Back",
-	"share_label": "Share"
+	"share_label": "Share",
+
+	"auth_signing_in": "Signing you in…"
 }

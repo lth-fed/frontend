@@ -41,5 +41,6 @@
 	"event_tickets_title": "Biljetter",
 	"ticket_price_free": "Gratis",
 	"back_label": "Tillbaka",
-	"share_label": "Dela"
+	"share_label": "Dela",
+	"auth_signing_in": "Loggar in dig…"
 }
