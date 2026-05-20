@@ -20,25 +20,8 @@
 		Receipt,
 		PartyPopper
 	} from '@lucide/svelte';
-	import type { Guild } from '$lib/types/guild';
 	import { slots } from '$lib/state/appBars.svelte';
 	import { m } from '$lib/paraglide/messages.js';
-
-	const themes: { key: Guild | null; label: string }[] = [
-		{ key: null, label: 'Neutral' },
-		{ key: 'f', label: 'F' },
-		{ key: 'e', label: 'E' },
-		{ key: 'm', label: 'M' },
-		{ key: 'v', label: 'V' },
-		{ key: 'a', label: 'A' },
-		{ key: 'k', label: 'K' },
-		{ key: 'd', label: 'D' },
-		{ key: 'ing', label: 'Ing' },
-		{ key: 'w', label: 'W' },
-		{ key: 'i', label: 'I' }
-	];
-
-	let current = $state<Guild | null>('f');
 
 	type NavId = 'home' | 'alerts' | 'profile' | 'settings';
 	const navItems = [
@@ -127,22 +110,7 @@
 <main class="h-screen overflow-y-auto bg-gray-100 p-8">
 	<h1 class="mb-4 text-2xl font-bold">Components</h1>
 
-	<div class="mb-8 flex flex-wrap gap-2">
-		{#each themes as t (t.key ?? 'neutral')}
-			<button
-				type="button"
-				onclick={() => (current = t.key)}
-				data-guild={t.key ?? undefined}
-				class="rounded-full px-4 py-1.5 text-sm font-bold {current === t.key
-					? 'bg-guild-primary text-guild-on-primary ring-2 ring-guild-ring'
-					: 'bg-guild-surface text-guild-on-surface'}"
-			>
-				{t.label}
-			</button>
-		{/each}
-	</div>
-
-	<div class="flex flex-wrap items-start gap-10 pb-12" data-guild={current ?? undefined}>
+	<div class="flex flex-wrap items-start gap-10 pb-12">
 		<section class="space-y-3">
 			<p class="text-sm font-bold text-gray-600">Ticket</p>
 			<Ticket
