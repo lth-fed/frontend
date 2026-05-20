@@ -6,6 +6,14 @@ const config: CapacitorConfig = {
 	webDir: 'build',
 	ios: {
 		scrollEnabled: true
+	},
+	plugins: {
+		SystemBars: {
+			insetsHandling: 'css'
+		},
+		StatusBar: {
+			overlaysWebView: true
+		}
 	}
 };
 
