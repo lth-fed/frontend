@@ -39,5 +39,6 @@
 	"event_open_maps": "Öppna i kartor",
 	"event_buy_tickets": "Köp biljett",
 	"back_label": "Tillbaka",
-	"share_label": "Dela"
+	"share_label": "Dela",
+	"auth_signing_in": "Loggar in dig…"
 }

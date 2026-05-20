@@ -52,6 +52,7 @@
 		"@capacitor/ios": "8.2.0",
 		"@capacitor/status-bar": "^8.0.2",
 		"@lucide/svelte": "^1.14.0",
+		"auth-lib": "link:./auth-lib",
 		"openapi-fetch": "^0.17.0"
 	}
 }
