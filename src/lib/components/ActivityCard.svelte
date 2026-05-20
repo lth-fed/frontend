@@ -43,10 +43,10 @@
 			{#if priceFrom !== undefined}
 				<div class="flex flex-col items-center gap-0.5">
 					<p class="text-xs leading-none font-medium tracking-wide text-gray-500">
-						{m.event_label_from()}
+						{m.activity_label_from()}
 					</p>
 					<p class="w-fit text-base leading-none font-semibold text-guild-on-surface">
-						{m.event_price({ amount: priceFrom })}
+						{m.activity_price({ amount: priceFrom })}
 					</p>
 				</div>
 			{/if}

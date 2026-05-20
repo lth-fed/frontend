@@ -4,12 +4,12 @@
 
 	interface Props {
 		name: string;
-		event: string;
+		activity: string;
 		serial: string;
 		qrData: string;
 	}
 
-	let { name, event, serial, qrData }: Props = $props();
+	let { name, activity, serial, qrData }: Props = $props();
 </script>
 
 <article
@@ -21,8 +21,8 @@
 			<p class="text-sm font-medium break-words text-black">{name}</p>
 		</div>
 		<div class="flex min-w-0 flex-1 flex-col gap-px text-right">
-			<p class="text-xs text-gray-600">{m.ticket_detail_label_event()}</p>
-			<p class="text-sm font-medium break-words text-black">{event}</p>
+			<p class="text-xs text-gray-600">{m.ticket_detail_label_activity()}</p>
+			<p class="text-sm font-medium break-words text-black">{activity}</p>
 		</div>
 	</header>
 

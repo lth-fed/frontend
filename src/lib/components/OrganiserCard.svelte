@@ -19,6 +19,6 @@
 	<img src={info.logo} alt="" class="size-10 shrink-0 object-contain" />
 	<span class="w-full text-[16px] font-medium text-guild-on-surface">{info.name}</span>
 	<button type="button" onclick={onFollow} class="text-sm font-semibold text-guild-on-surface">
-		{m.event_organiser_follow()}
+		{m.activity_organiser_follow()}
 	</button>
 </div>

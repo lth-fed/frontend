@@ -7,7 +7,7 @@ export type TicketKind = {
 	price: number;
 };
 
-export type Event = {
+export type Activity = {
 	id: string;
 	image: string;
 	badge: string;
@@ -25,7 +25,7 @@ export type Event = {
 	ticketKinds: TicketKind[];
 };
 
-export const events: Record<string, Event> = {
+export const activities: Record<string, Activity> = {
 	a: {
 		id: 'a',
 		image: 'https://picsum.photos/seed/home-a/640/360',
@@ -84,8 +84,8 @@ export const events: Record<string, Event> = {
 	}
 };
 
-export const eventList: Event[] = Object.values(events);
+export const activityList: Activity[] = Object.values(activities);
 
-export function getEvent(id: string): Event | undefined {
-	return events[id];
+export function getActivity(id: string): Activity | undefined {
+	return activities[id];
 }

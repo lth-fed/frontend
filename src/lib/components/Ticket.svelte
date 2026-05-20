@@ -12,7 +12,7 @@
 	import type { ToolBarNode } from '$lib/plugins/toolBar/definitions';
 	import { Haptics, ImpactStyle } from '@capacitor/haptics';
 
-	type Action = 'transfer' | 'wallet' | 'receipt' | 'event';
+	type Action = 'transfer' | 'wallet' | 'receipt' | 'activity';
 
 	interface Props {
 		status?: string;
@@ -68,7 +68,7 @@
 		},
 		{ id: 'wallet' as Action, icon: Wallet, systemIcon: 'wallet.bifold', label: m.tool_wallet() },
 		{ id: 'receipt' as Action, icon: Receipt, systemIcon: 'receipt', label: m.tool_receipt() },
-		{ id: 'event' as Action, icon: PartyPopper, systemIcon: 'party.popper', label: m.tool_event() }
+		{ id: 'activity' as Action, icon: PartyPopper, systemIcon: 'party.popper', label: m.tool_activity() }
 	]);
 
 	const W = 300;
@@ -318,7 +318,7 @@
 {/snippet}
 
 {#snippet ticketBack()}
-	<TicketDetail {name} event={title} {serial} qrData={qrData ?? serial} />
+	<TicketDetail {name} activity={title} {serial} qrData={qrData ?? serial} />
 {/snippet}
 
 <button

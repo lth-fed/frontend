@@ -75,7 +75,7 @@ export function createAppBars(defaults: AppBars): AppBars {
 /**
  * Inside a page rendered under a layout that called createAppBars, override
  * the top bar / bottom area for the lifetime of the page. Pass a reactive
- * getter so live data (event titles, etc.) flows through. Defaults are
+ * getter so live data (activity titles, etc.) flows through. Defaults are
  * restored automatically when the page unmounts.
  */
 export function useAppBars(getConfig: () => Partial<AppBars>) {
@@ -156,7 +156,7 @@ export function buyTicketsBottom(opts: { id: string; onclick: () => void }): Bot
 	return {
 		kind: 'action',
 		id: opts.id,
-		label: m.event_buy_tickets(),
+		label: m.activity_buy_tickets(),
 		icon: TicketIcon,
 		systemIcon: 'ticket',
 		onclick: opts.onclick
