@@ -1,9 +1,16 @@
 <script lang="ts">
 	import { Ticket as TicketIcon, QrCode } from '@lucide/svelte';
 	import { ArrowLeftRight, Wallet, Receipt, PartyPopper } from '@lucide/svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import TicketDetail from './TicketDetail.svelte';
 	import ToolBar from './ToolBar.svelte';
+	import { toolBar } from '$lib/plugins/toolBar/toolBar';
+	import { tabsBar } from '$lib/plugins/tabsBar/tabsBar';
+	import { navigationBar } from '$lib/plugins/navigationBar/navigationBar';
+	import { isIos26Plus } from '$lib/platform/isIos26Plus';
 	import { m } from '$lib/paraglide/messages.js';
+	import type { ToolBarNode } from '$lib/plugins/toolBar/definitions';
+	import { Haptics, ImpactStyle } from '@capacitor/haptics';
 
 	type Action = 'transfer' | 'wallet' | 'receipt' | 'event';
 
@@ -47,14 +54,21 @@
 	let targetX = $state(0);
 	let targetY = $state(0);
 	let showTools = $state(false);
+	let isIos26Native = $state(false);
 	let triggerEl = $state<HTMLButtonElement>();
 	let scrollLockSnapshot: { htmlOverflow: string; bodyOverflow: string } | undefined;
+	let nativeToolBarListenerRemover: (() => void) | null = null;
 
 	const tools = $derived([
-		{ id: 'transfer' as Action, icon: ArrowLeftRight, label: m.tool_transfer() },
-		{ id: 'wallet' as Action, icon: Wallet, label: m.tool_wallet() },
-		{ id: 'receipt' as Action, icon: Receipt, label: m.tool_receipt() },
-		{ id: 'event' as Action, icon: PartyPopper, label: m.tool_event() }
+		{
+			id: 'transfer' as Action,
+			icon: ArrowLeftRight,
+			systemIcon: 'arrow.left.arrow.right',
+			label: m.tool_transfer()
+		},
+		{ id: 'wallet' as Action, icon: Wallet, systemIcon: 'wallet.bifold', label: m.tool_wallet() },
+		{ id: 'receipt' as Action, icon: Receipt, systemIcon: 'receipt', label: m.tool_receipt() },
+		{ id: 'event' as Action, icon: PartyPopper, systemIcon: 'party.popper', label: m.tool_event() }
 	]);
 
 	const W = 300;
@@ -64,6 +78,89 @@
 	const D = 7;
 
 	const path = `M ${R} 0 H ${W - R} A ${R} ${R} 0 0 1 ${W} ${R} V ${TOP_H - D} A ${D} ${D} 0 0 0 ${W} ${TOP_H + D} V ${H - R} A ${R} ${R} 0 0 1 ${W - R} ${H} H ${R} A ${R} ${R} 0 0 1 0 ${H - R} V ${TOP_H + D} A ${D} ${D} 0 0 0 0 ${TOP_H - D} V ${R} A ${R} ${R} 0 0 1 ${R} 0 Z`;
+
+	// group compact (button, button) - flex space - group compact (button, button)
+	const nativeToolBarNodes: ToolBarNode[] = $derived([
+		{
+			type: 'group',
+			spacing: 'compact',
+			buttons: tools.slice(0, tools.length / 2).map((tool) => ({
+				id: tool.id,
+				title: tool.label,
+				systemIcon: tool.systemIcon,
+				style: 'plain'
+			}))
+		},
+		{ type: 'flexible-space' },
+		{
+			type: 'group',
+			spacing: 'compact',
+			buttons: tools.slice(tools.length / 2).map((tool) => ({
+				id: tool.id,
+				title: tool.label,
+				systemIcon: tool.systemIcon,
+				style: 'plain'
+			}))
+		}
+	]);
+
+	function configureNativeToolBar(visible: boolean) {
+		if (!isIos26Native) return;
+		void toolBar.configure({
+			nodes: nativeToolBarNodes,
+			visible
+		});
+	}
+
+	function showNativeBars() {
+		if (!isIos26Native) return;
+		void tabsBar.hide();
+		void navigationBar.hide();
+	}
+
+	function restoreNativeBars() {
+		if (!isIos26Native) return;
+		void tabsBar.show();
+		void navigationBar.show();
+	}
+
+	function setShellNavbarHidden(hidden: boolean) {
+		if (typeof document === 'undefined') return;
+		document.documentElement.toggleAttribute('data-navbar-hidden', hidden);
+	}
+
+	function attachNativeToolBarListener() {
+		if (!isIos26Native || nativeToolBarListenerRemover) return;
+
+		void toolBar
+			.addListener('buttonTap', (event) => {
+				if (!event.id) return;
+				onAction?.(event.id as Action);
+			})
+			.then((res) => {
+				nativeToolBarListenerRemover = res.remove;
+			});
+	}
+
+	function detachNativeToolBarListener() {
+		nativeToolBarListenerRemover?.();
+		nativeToolBarListenerRemover = null;
+	}
+
+	onMount(() => {
+		void (async () => {
+			isIos26Native = await isIos26Plus();
+		})();
+	});
+
+	onDestroy(() => {
+		setShellNavbarHidden(false);
+		if (isIos26Native) {
+			void toolBar.hide();
+			detachNativeToolBarListener();
+			restoreNativeBars();
+		}
+	});
 
 	function openDetails() {
 		if (!canFlip) {
@@ -79,7 +176,14 @@
 		originScale = rect.width / W;
 		targetX = window.innerWidth / 2 + (W * 1.18) / 2;
 		targetY = window.innerHeight / 2 - (H * 1.18) / 2;
-		showTools = false;
+		showTools = !isIos26Native;
+		setShellNavbarHidden(true);
+		if (isIos26Native) {
+			showNativeBars();
+			configureNativeToolBar(true);
+			attachNativeToolBarListener();
+			void toolBar.show();
+		}
 		if (!scrollLockSnapshot) {
 			scrollLockSnapshot = {
 				htmlOverflow: document.documentElement.style.overflow,
@@ -95,11 +199,19 @@
 				overlayReady = true;
 			});
 		});
+
+		void Haptics.impact({ style: ImpactStyle.Medium });
 	}
 
 	function closeDetails() {
 		showTools = false;
 		overlayReady = false;
+		setShellNavbarHidden(false);
+		if (isIos26Native) {
+			void toolBar.hide();
+			detachNativeToolBarListener();
+			restoreNativeBars();
+		}
 		if (scrollLockSnapshot) {
 			document.documentElement.style.overflow = scrollLockSnapshot.htmlOverflow;
 			document.body.style.overflow = scrollLockSnapshot.bodyOverflow;
@@ -109,10 +221,7 @@
 
 	function onFlipTransitionEnd(e: TransitionEvent) {
 		if (e.propertyName !== 'transform') return;
-		if (overlayReady) {
-			showTools = true;
-			return;
-		}
+		if (overlayReady) return;
 		showOverlay = false;
 	}
 
@@ -259,9 +368,11 @@
 			</div>
 		</div>
 
-		<div class="ticket-tools" class:is-visible={showTools}>
-			<ToolBar items={tools} onAction={(id) => onAction?.(id)} />
-		</div>
+		{#if !isIos26Native}
+			<div class="ticket-tools" class:is-visible={showTools}>
+				<ToolBar items={tools} onAction={(id) => onAction?.(id)} />
+			</div>
+		{/if}
 	</dialog>
 {/if}
 

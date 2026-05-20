@@ -70,7 +70,7 @@
 	<button
 		type="button"
 		{onclick}
-		class="w-full rounded-full bg-guild-primary px-5 py-3.5 text-guild-on-primary shadow-[0_8px_40px_color-mix(in_srgb,rgb(0_0_0)_12%,transparent)] ring-[length:var(--guild-ring-width)] ring-guild-ring"
+		class="w-full rounded-full bg-guild-primary px-5 py-3.5 text-guild-on-primary shadow-[0_8px_40px_color-mix(in_srgb,rgb(0_0_0)_12%,transparent)] ring-(length:--guild-ring-width) ring-guild-ring"
 	>
 		<div class="flex items-center justify-center gap-3">
 			<Icon class="size-6 text-guild-on-primary" />
