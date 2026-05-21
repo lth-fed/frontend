@@ -24,7 +24,7 @@
 			whoops = true
 			return
 		}
-		const url = await resp.text()
+		const { url } = await resp.json()
 		parent.postMessage({ kind: 'validation', validated: true }, '*')
 		location.href = url
 	}
@@ -32,7 +32,8 @@
 	// this should be fine with GDPR, since it says so in our privacy statement and it's
 	// also critical for the service we're offering
 	//(selling tickets, which requires a name to make a valid transaction)
-	if (originUrl === 'https://teknologappen.se') click(true)
+	if (originUrl === 'https://teknologappen.se' || originUrl === 'capacitor://localhost')
+		click(true)
 </script>
 
 <p>

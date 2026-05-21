@@ -9,7 +9,7 @@
 
 	const query = new URLSearchParams(location.search)
 
-	const sid = /[a-z][a-z][0-9]{4}[a-z][a-z]-s/
+	const sid = /[a-zA-Z][a-zA-Z][0-9]{4}[a-zA-Z][a-zA-Z]-s/
 
 	async function click() {
 		if (!sid.test(stil_id)) {
