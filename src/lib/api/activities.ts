@@ -19,6 +19,11 @@ export type Activity = {
 	startAt: Date;
 	endAt: Date;
 	priceFrom?: number;
+	/**
+	 * The guild that created this activity. Drives the visual theme of the
+	 * activity and its tickets — independent of the viewer's own guild.
+	 */
+	creatorGuild: Guild;
 	organisers: Guild[];
 	ticketKinds: TicketKind[];
 };
@@ -58,6 +63,7 @@ const _mock: Record<string, Activity> = {
 		startAt: new Date('2026-04-27T17:00'),
 		endAt: new Date('2026-04-27T23:00'),
 		priceFrom: 120,
+		creatorGuild: 'a',
 		organisers: ['f'],
 		ticketKinds: [
 			{ id: 'standard', name: 'Standard', price: 120 },
@@ -76,6 +82,7 @@ const _mock: Record<string, Activity> = {
 		startAt: new Date('2026-05-01T21:00'),
 		endAt: new Date('2026-05-02T02:00'),
 		priceFrom: 80,
+		creatorGuild: 'd',
 		organisers: ['f', 'e', 'm', 'v', 'a', 'k', 'd', 'ing', 'w', 'i'],
 		ticketKinds: [
 			{ id: 'early-bird', name: 'Early bird', price: 80 },
@@ -94,6 +101,7 @@ const _mock: Record<string, Activity> = {
 		startAt: new Date('2026-05-05T18:00'),
 		endAt: new Date('2026-05-05T23:00'),
 		priceFrom: 40,
+		creatorGuild: 'i',
 		organisers: ['f'],
 		ticketKinds: [
 			{ id: 'entry', name: 'Entré', price: 40 },
