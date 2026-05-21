@@ -29,6 +29,12 @@
 	"nav_profile": "Profile",
 	"nav_settings": "Settings",
 
+	"settings_language": "Language",
+
+	"profile_student_id_label": "Student ID",
+	"profile_guild_label": "Guild",
+	"profile_sign_out": "Sign out",
+
 	"carousel_slide_label": "Go to slide {n}",
 	"qr_code_alt": "QR code",
 	"modal_close_label": "Close",

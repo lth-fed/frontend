@@ -43,3 +43,13 @@ export function makeApi(opts: Omit<ClientOptions, 'baseUrl'> = {}): Client<ApiPa
  */
 export const auth = makeAuth()
 export const api = makeApi()
+
+/**
+ * Shared options shape for the resource-level api wrappers in
+ * `lib/api/*.ts`. Carries the framework `fetch` so SvelteKit's
+ * preload/SSR machinery applies when called from a load function;
+ * extend per-resource if a call needs more options.
+ */
+export type ApiCallOpts = {
+	fetch?: typeof globalThis.fetch
+};

@@ -8,7 +8,7 @@
 	import type { Pathname } from '$app/types';
 	import { SvelteMap } from 'svelte/reactivity';
 	import { m } from '$lib/paraglide/messages.js';
-	import { pushNavigation, replaceNavigation } from '$lib/navigation/stackNavigation';
+	import { replaceNavigation } from '$lib/navigation/stackNavigation';
 	import {
 		createAppBars,
 		slots,
@@ -41,20 +41,20 @@
 	const navRoutes = {
 		home: '/demo/homepage',
 		links: '/demo/links',
-		profile: null,
-		settings: null
+		profile: '/demo/profile',
+		settings: '/demo/settings'
 	} satisfies Record<NavId, Pathname | null>;
 
-	const rootRoutes = new Set<Pathname>(['/demo/homepage', '/demo/links']);
-
-	const selected = $derived<NavId>(page.url.pathname.startsWith('/demo/links') ? 'links' : 'home');
+	const selected = $derived<NavId>(
+		(Object.entries(navRoutes) as [NavId, Pathname | null][]).find(
+			([, route]) => route !== null && page.url.pathname.startsWith(route)
+		)?.[0] ?? 'home'
+	);
 
 	function handleSelect(id: string) {
 		const route = navRoutes[id as NavId];
-		if (route) {
-			if (rootRoutes.has(route)) replaceNavigation(route);
-			else pushNavigation(route);
-		} else alert(`${id} (not implemented)`);
+		if (route) replaceNavigation(route);
+		else alert(`${id} (not implemented)`);
 	}
 
 	const bars = createAppBars({ topBar: null, bottom: null });

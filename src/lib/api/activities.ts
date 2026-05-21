@@ -1,4 +1,5 @@
 import type { Guild } from '$lib/types/guild';
+import type { ApiCallOpts } from './clients';
 import { apiError } from './errors';
 
 export type TicketKind = {
@@ -22,12 +23,6 @@ export type Activity = {
 	ticketKinds: TicketKind[];
 };
 
-type Opts = {
-	/** SvelteKit's load-fetch (or any other base fetch). Threaded through
-	 *  `makeApi` so the framework's preload/SSR machinery applies when set. */
-	fetch?: typeof globalThis.fetch;
-};
-
 /**
  * List all activities visible to the current user.
  *
@@ -35,7 +30,7 @@ type Opts = {
  * The real-call body will wrap the openapi-fetch call through `unwrap`
  * from `./errors`; the signature here is stable across the swap.
  */
-export async function listActivities(_opts: Opts = {}): Promise<Activity[]> {
+export async function listActivities(_opts: ApiCallOpts = {}): Promise<Activity[]> {
 	return Object.values(_mock);
 }
 
@@ -45,7 +40,7 @@ export async function listActivities(_opts: Opts = {}): Promise<Activity[]> {
  * Route loaders need no translation — the framework renders the right
  * error page directly.
  */
-export async function getActivity(id: string, _opts: Opts = {}): Promise<Activity> {
+export async function getActivity(id: string, _opts: ApiCallOpts = {}): Promise<Activity> {
 	const found = _mock[id];
 	if (!found) apiError('not-found', `Activity "${id}" not found`);
 	return found;
