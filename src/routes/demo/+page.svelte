@@ -3,10 +3,7 @@
 </script>
 
 <ul class="space-y-2 p-8">
-	<li><a class="underline" href={resolve('/demo/paraglide')}>paraglide</a></li>
 	<li><a class="underline" href={resolve('/demo/guild-theme-picker')}>guild theme picker</a></li>
 	<li><a class="underline" href={resolve('/demo/components')}>components</a></li>
 	<li><a class="underline" href={resolve('/demo/homepage')}>homepage</a></li>
-	<li><a class="underline" href={resolve('/demo/links')}>links</a></li>
-	<li><a class="underline" href={resolve('/demo/activity/a')}>activity</a></li>
 </ul>
