@@ -91,6 +91,7 @@
 					description={a.description}
 					location={a.location}
 					href="/demo/activity/{a.id}"
+					transition="forward"
 				/>
 			{/each}
 		</div>

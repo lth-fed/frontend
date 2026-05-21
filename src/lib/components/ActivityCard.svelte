@@ -1,6 +1,9 @@
 <script lang="ts">
+	import type { Pathname } from '$app/types';
+	import { resolve } from '$app/paths';
 	import { MapPin } from '@lucide/svelte';
 	import { m } from '$lib/paraglide/messages.js';
+	import { pushNavigation, replaceNavigation } from '$lib/navigation/stackNavigation';
 
 	interface Props {
 		image: string;
@@ -10,12 +13,23 @@
 		priceFrom?: number;
 		description: string;
 		location?: string;
-		href?: string;
+		href?: Pathname;
+		transition?: 'forward' | 'root';
 		onclick?: () => void;
 	}
 
-	let { image, badge, date, title, priceFrom, description, location, href, onclick }: Props =
-		$props();
+	let {
+		image,
+		badge,
+		date,
+		title,
+		priceFrom,
+		description,
+		location,
+		href,
+		transition,
+		onclick
+	}: Props = $props();
 
 	const cls =
 		'block w-full overflow-hidden rounded-3xl bg-white text-left shadow-[0_4px_20px_color-mix(in_srgb,rgb(0_0_0)_12%,transparent)]';
@@ -68,7 +82,20 @@
 {/snippet}
 
 {#if href}
-	<a {href} {onclick} class={cls} data-sveltekit-preload-data="hover">{@render body()}</a>
+	<a
+		href={resolve(href)}
+		onclick={(event) => {
+			if (onclick) onclick();
+			if (!transition) return;
+			event.preventDefault();
+			if (transition === 'root') replaceNavigation(href);
+			else pushNavigation(href);
+		}}
+		class={cls}
+		data-sveltekit-preload-data="hover"
+	>
+		{@render body()}
+	</a>
 {:else}
 	<button type="button" {onclick} class={cls}>{@render body()}</button>
 {/if}

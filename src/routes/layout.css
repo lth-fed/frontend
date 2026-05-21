@@ -13,3 +13,73 @@ body {
 	-ms-user-select: none;
 	user-select: none;
 }
+
+::view-transition-old(root) {
+	animation: slide-out-left 300ms cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+::view-transition-new(root) {
+	animation: slide-in-right 300ms cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+[data-transition-direction='back']::view-transition-old(root) {
+	animation: slide-out-right 300ms cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+[data-transition-direction='back']::view-transition-new(root) {
+	animation: slide-in-left 300ms cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+[data-transition-direction='root']::view-transition-old(root) {
+	animation: fade-out 180ms ease forwards;
+}
+
+[data-transition-direction='root']::view-transition-new(root) {
+	animation: fade-in 180ms ease forwards;
+}
+
+@keyframes slide-out-left {
+	to {
+		transform: translateX(-30%);
+		opacity: 0.9;
+	}
+}
+
+@keyframes slide-in-right {
+	from {
+		transform: translateX(100%);
+	}
+}
+
+@keyframes slide-out-right {
+	to {
+		transform: translateX(100%);
+		opacity: 0.9;
+	}
+}
+
+@keyframes slide-in-left {
+	from {
+		transform: translateX(-30%);
+	}
+}
+
+@keyframes fade-out {
+	from {
+		opacity: 1;
+	}
+
+	to {
+		opacity: 0;
+	}
+}
+
+@keyframes fade-in {
+	from {
+		opacity: 0;
+	}
+
+	to {
+		opacity: 1;
+	}
+}

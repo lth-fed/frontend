@@ -3,12 +3,13 @@
 	import NavBar from '$lib/components/NavBar.svelte';
 	import BottomActionButton from '$lib/components/BottomActionButton.svelte';
 	import { Home, Globe, IdCard, Settings } from '@lucide/svelte';
-	import { afterNavigate, beforeNavigate, goto } from '$app/navigation';
+	import { afterNavigate, beforeNavigate } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import type { Pathname } from '$app/types';
 	import { SvelteMap } from 'svelte/reactivity';
 	import { m } from '$lib/paraglide/messages.js';
+	import { pushNavigation, replaceNavigation } from '$lib/navigation/stackNavigation';
 	import {
 		createAppBars,
 		slots,
@@ -45,12 +46,16 @@
 		settings: null
 	} satisfies Record<NavId, Pathname | null>;
 
+	const rootRoutes = new Set<Pathname>(['/demo/homepage', '/demo/links']);
+
 	const selected = $derived<NavId>(page.url.pathname.startsWith('/demo/links') ? 'links' : 'home');
 
 	function handleSelect(id: string) {
 		const route = navRoutes[id as NavId];
-		if (route) goto(resolve(route));
-		else alert(`${id} (not implemented)`);
+		if (route) {
+			if (rootRoutes.has(route)) replaceNavigation(resolve(route));
+			else pushNavigation(resolve(route));
+		} else alert(`${id} (not implemented)`);
 	}
 
 	const bars = createAppBars({ topBar: null, bottom: null });

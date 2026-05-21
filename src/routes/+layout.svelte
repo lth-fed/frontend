@@ -7,8 +7,10 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { session } from '$lib/state/session.svelte';
 	import { bootstrapAuth } from '$lib/auth/bootstrap';
+	import { readNavigationIntent } from '$lib/navigation/stackNavigation';
 	import './layout.css';
 	import favicon from '$lib/assets/favicon.svg';
+	import { beforeNavigate, onNavigate } from '$app/navigation';
 
 	let { children } = $props();
 
@@ -21,6 +23,34 @@
 		const els = [document.documentElement, document.body];
 		if (g) els.forEach((el) => (el.dataset.guild = g));
 		else els.forEach((el) => delete el.dataset.guild);
+	});
+
+	onNavigate((navigation) => {
+		if (!document.startViewTransition) return;
+		if (!navigation.from || !navigation.to) return;
+
+		const direction = navigation.type === 'popstate' ? 'back' : readNavigationIntent();
+		const { documentElement } = document;
+
+		return new Promise((resolve) => {
+			documentElement.dataset.transitionDirection = direction;
+			document
+				.startViewTransition(async () => {
+					resolve();
+					await navigation.complete;
+				})
+				.finished.finally(() => {
+					delete documentElement.dataset.transitionDirection;
+				});
+		});
+	});
+
+	beforeNavigate((navigation) => {
+		if (navigation.type !== 'popstate' || !navigation.from) return;
+
+		if ((page.state.navDepth ?? 0) === 0) {
+			navigation.cancel();
+		}
 	});
 </script>
 
