@@ -12,7 +12,10 @@ declare global {
 		}
 		// interface Locals {}
 		// interface PageData {}
-		// interface PageState {}
+		interface PageState {
+			navDepth?: number;
+			navTransition?: 'forward' | 'back' | 'root';
+		}
 		// interface Platform {}
 	}
 }

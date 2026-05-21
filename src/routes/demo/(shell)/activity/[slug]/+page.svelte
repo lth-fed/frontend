@@ -8,7 +8,10 @@
 	import type { PageProps } from './$types';
 	import { isIos26Plus } from '$lib/platform/isIos26Plus';
 	import { onMount } from 'svelte';
-	import { goto } from '$app/navigation';
+	import { pushNavigation } from '$lib/navigation/stackNavigation';
+	import type { Pathname } from '$app/types';
+	import { fly } from 'svelte/transition';
+	import { quadOut } from 'svelte/easing';
 
 	let { data }: PageProps = $props();
 	const activity = $derived(data.activity);
@@ -24,7 +27,7 @@
 		}),
 		bottom: buyTicketsBottom({
 			id: `buy-${activity.id}`,
-			onclick: () => goto(`/demo/activity/${activity.id}/tickets`)
+			onclick: () => pushNavigation(`/demo/activity/${activity.id}/tickets` as Pathname)
 		})
 	}));
 </script>
@@ -34,40 +37,50 @@
 		<img class="h-full w-full min-w-full object-cover" src={activity.image} alt={activity.title} />
 	</div>
 
+	<!-- The animations here are a workaround. There is a backdrop filter applying a bacgkround
+	 blur effect on the ActivityHeadCard and this effect won't load until after the page transition
+	 in some browsers, which results in an ugly flicker. The animations don't fix this, but they
+	 do mask the issue (and I think they look half-decent).
+
+	 If you have a better solution, go wild! -->
 	<div class="z-10 -mt-24 flex w-full flex-col gap-8.75 px-4">
-		<ActivityHeadCard
-			badge={activity.badge}
-			title={activity.title}
-			date={formatDetailDate(activity.startAt)}
-			time={formatTimeRange(activity.startAt, activity.endAt)}
-			location={activity.location}
-		/>
-
-		<div class="flex w-full flex-col gap-3.75">
-			<h2 class="text-[24px] font-semibold">{m.activity_about()}</h2>
-			<p class="text-[16px] font-normal">{activity.description}</p>
+		<div in:fly={{ y: -28, duration: 140, delay: 120, easing: quadOut }}>
+			<ActivityHeadCard
+				badge={activity.badge}
+				title={activity.title}
+				date={formatDetailDate(activity.startAt)}
+				time={formatTimeRange(activity.startAt, activity.endAt)}
+				location={activity.location}
+			/>
 		</div>
 
-		<div class="flex w-full flex-col gap-3.75">
-			<h2 class="text-[24px] font-semibold">{m.activity_organiser()}</h2>
-			<div class="flex w-full flex-col gap-2">
-				{#each activity.organisers as g (g)}
-					<OrganiserCard guild={g} onFollow={() => alert(`Follow ${guilds[g].name}`)} />
-				{/each}
+		<div in:fly={{ y: 28, duration: 140, delay: 120, easing: quadOut }}>
+			<div class="flex w-full flex-col gap-3.75">
+				<h2 class="text-[24px] font-semibold">{m.activity_about()}</h2>
+				<p class="text-[16px] font-normal">{activity.description}</p>
 			</div>
-		</div>
 
-		<div class="flex w-full flex-col gap-3.75">
-			<div class="flex items-center justify-between">
-				<h2 class="text-[24px] font-semibold">{m.activity_location()}</h2>
-				<span class="text-sm font-semibold text-guild-on-surface">{m.activity_open_maps()}</span>
+			<div class="flex w-full flex-col gap-3.75">
+				<h2 class="text-[24px] font-semibold">{m.activity_organiser()}</h2>
+				<div class="flex w-full flex-col gap-2">
+					{#each activity.organisers as g (g)}
+						<OrganiserCard guild={g} onFollow={() => alert(`Follow ${guilds[g].name}`)} />
+					{/each}
+				</div>
 			</div>
-			<div class="w-full rounded-3xl border border-gray-100">
-				<img
-					class="aspect-video w-full rounded-3xl object-cover"
-					src="https://picsum.photos/600/400"
-					alt="Location"
-				/>
+
+			<div class="flex w-full flex-col gap-3.75">
+				<div class="flex items-center justify-between">
+					<h2 class="text-[24px] font-semibold">{m.activity_location()}</h2>
+					<span class="text-sm font-semibold text-guild-on-surface">{m.activity_open_maps()}</span>
+				</div>
+				<div class="w-full rounded-3xl border border-gray-100">
+					<img
+						class="aspect-video w-full rounded-3xl object-cover"
+						src="https://picsum.photos/600/400"
+						alt="Location"
+					/>
+				</div>
 			</div>
 		</div>
 	</div>
