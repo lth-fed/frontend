@@ -25,19 +25,27 @@ export async function bootstrapAuth(): Promise<void> {
 			const token = await refresh();
 			if (token) {
 				session.accessToken = token;
-				session.ready = true;
-				return;
 			}
-		}
-
-		const redirect = await beginLogin('test', window.location.href);
-		if (typeof redirect === 'string') {
-			window.location.href = redirect;
-			return;
 		}
 	} catch (err) {
 		console.error('Auth bootstrap failed', err);
 	}
 
 	session.ready = true;
+}
+
+/**
+ * Kick off the SSO login flow. The user is redirected to the auth provider
+ * and lands back on the current URL with `?validated=true` on success, which
+ * `bootstrapAuth` then consumes.
+ */
+export async function startLogin(): Promise<void> {
+	try {
+		const redirect = await beginLogin('test', window.location.href);
+		if (typeof redirect === 'string') {
+			window.location.href = redirect;
+		}
+	} catch (err) {
+		console.error('Login failed to start', err);
+	}
 }
