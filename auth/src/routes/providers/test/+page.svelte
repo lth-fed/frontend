@@ -9,7 +9,13 @@
 
 	const query = new URLSearchParams(location.search)
 
+	const sid = /[a-z][a-z][0-9]{4}[a-z][a-z]-s/
+
 	async function click() {
+		if (!sid.test(stil_id)) {
+			alert('Välj ett korrekt stil-id. Tack!')
+			return
+		}
 		const body = {
 			id: query.get('id'),
 			stil_id,
