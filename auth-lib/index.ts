@@ -143,6 +143,28 @@ export async function authenticatedFetch(
 	return await fetch(info, newInit);
 }
 
+/**
+ * Log the user out: invalidate the server-side refresh token, clear the
+ * locally cached access token, and reset auth state to unauthenticated.
+ *
+ * The server call is best-effort — if it fails (offline, server down) we
+ * still clear local state so the user is logged out client-side. The
+ * server-side cleanup catches up on the next refresh attempt.
+ */
+export async function logout(): Promise<void> {
+	try {
+		await fetch(`${baseUrl}/logout`, {
+			method: 'POST',
+			credentials: 'include',
+			headers: { 'content-type': 'application/json' }
+		});
+	} catch (_e) {
+		// ignore — we clear local state regardless
+	}
+	localStorage.removeItem(atLocation);
+	setAuthState('unauthenticated');
+}
+
 export async function refresh(): Promise<string | UnknownError> {
 	try {
 		const response = await fetch(`${baseUrl}/refresh`, {
