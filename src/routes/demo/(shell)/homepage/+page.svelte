@@ -7,39 +7,53 @@
 	import { Ticket as TicketIcon } from '@lucide/svelte';
 	import { formatCardDate } from '$lib/format/datetime';
 	import type { PageProps } from './$types';
+	import type { Guild } from '$lib/types/guild';
 
 	let { data }: PageProps = $props();
 
-	const tickets = [
+	const tickets: Array<{
+		name: string;
+		title: string;
+		subtitle: string;
+		date: string;
+		time: string;
+		location: string;
+		addition: string;
+		serial: string;
+		creatorGuild: Guild;
+	}> = [
 		{
 			name: 'Simon Mechler',
-			title: 'Cool sittning typ',
-			subtitle: 'F-sektionen',
-			date: '25 Apr, 2026',
-			time: '17:00 - 23:00',
-			location: 'Kan inga F-lokaler',
-			addition: 'Wine Package +1',
-			serial: '#FG-6719284'
+			title: 'Vårfest',
+			subtitle: 'V-sektionen',
+			date: '01 May, 2026',
+			time: '21:00 - 02:00',
+			location: 'Kårhuset',
+			addition: 'Early bird',
+			serial: '#VG-6719284',
+			creatorGuild: 'd'
 		},
 		{
 			name: 'Simon Mechler',
 			title: 'Annan sittning typ',
-			subtitle: 'F-sektionen',
+			subtitle: 'A-sektionen',
 			date: '27 Apr, 2026',
 			time: '17:00 - 23:00',
 			location: 'Gasque-salen',
 			addition: 'Standard',
-			serial: '#FG-6719285'
+			serial: '#AG-6719285',
+			creatorGuild: 'a'
 		},
 		{
 			name: 'Simon Mechler',
-			title: 'Tredje sittning',
-			subtitle: 'F-sektionen',
-			date: '29 Apr, 2026',
-			time: '18:00 - 00:00',
-			location: 'Kårhuset',
-			addition: 'VIP',
-			serial: '#FG-6719286'
+			title: 'Tisdagspub',
+			subtitle: 'I-sektionen',
+			date: '05 May, 2026',
+			time: '18:00 - 23:00',
+			location: 'Pub-lokalen',
+			addition: 'Entré',
+			serial: '#IG-6719286',
+			creatorGuild: 'i'
 		}
 	];
 </script>
@@ -90,6 +104,7 @@
 					priceFrom={a.priceFrom}
 					description={a.description}
 					location={a.location}
+					creatorGuild={a.creatorGuild}
 					href="/demo/activity/{a.id}"
 					transition="forward"
 				/>

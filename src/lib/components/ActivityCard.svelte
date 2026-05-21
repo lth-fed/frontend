@@ -4,6 +4,7 @@
 	import { MapPin } from '@lucide/svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import { pushNavigation, replaceNavigation } from '$lib/navigation/stackNavigation';
+	import type { Guild } from '$lib/types/guild';
 
 	interface Props {
 		image: string;
@@ -15,6 +16,7 @@
 		location?: string;
 		href?: Pathname;
 		transition?: 'forward' | 'root';
+		creatorGuild?: Guild;
 		onclick?: () => void;
 	}
 
@@ -28,6 +30,7 @@
 		location,
 		href,
 		transition,
+		creatorGuild,
 		onclick
 	}: Props = $props();
 
@@ -84,6 +87,7 @@
 {#if href}
 	<a
 		href={resolve(href)}
+		data-guild={creatorGuild}
 		onclick={(event) => {
 			if (onclick) onclick();
 			if (!transition) return;
@@ -97,5 +101,7 @@
 		{@render body()}
 	</a>
 {:else}
-	<button type="button" {onclick} class={cls}>{@render body()}</button>
+	<button type="button" data-guild={creatorGuild} {onclick} class={cls}
+		>{@render body()}</button
+	>
 {/if}

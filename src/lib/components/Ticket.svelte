@@ -11,6 +11,7 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import type { ToolBarNode } from '$lib/plugins/toolBar/definitions';
 	import { Haptics, ImpactStyle } from '@capacitor/haptics';
+	import type { Guild } from '$lib/types/guild';
 
 	type Action = 'transfer' | 'wallet' | 'receipt' | 'activity';
 
@@ -25,6 +26,7 @@
 		serial: string;
 		name: string;
 		qrData?: string;
+		creatorGuild?: Guild;
 		onAction?: (id: Action) => void;
 		canFlip?: boolean;
 		onRequestCenter?: () => void;
@@ -41,6 +43,7 @@
 		serial,
 		name,
 		qrData,
+		creatorGuild,
 		onAction,
 		canFlip = true,
 		onRequestCenter
@@ -323,6 +326,7 @@
 
 <button
 	type="button"
+	data-guild={creatorGuild}
 	{@attach attachTrigger}
 	onclick={openDetails}
 	class="block cursor-pointer rounded-[34px] border-0 bg-guild-primary-light p-0 text-left shadow-[0_8px_40px_color-mix(in_srgb,rgb(0_0_0)_6%,transparent)] [-webkit-tap-highlight-color:transparent] focus:outline-none"
@@ -339,6 +343,7 @@
 
 {#if showOverlay}
 	<dialog
+		data-guild={creatorGuild}
 		class="fixed inset-0 z-60 m-0 block h-dvh max-h-none w-dvw max-w-none border-0 bg-transparent p-0 backdrop:bg-transparent"
 		oncancel={handleCancel}
 		aria-label={m.modal_close_label()}
@@ -373,9 +378,10 @@
 
 		{#if !isIos26Native}
 			<div
-				class="pointer-events-none absolute bottom-[env(safe-area-inset-bottom)] left-1/2 -translate-x-1/2 translate-y-2 opacity-0 transition-all duration-180 ease-in"
+				class="absolute bottom-[env(safe-area-inset-bottom)] left-1/2 -translate-x-1/2 translate-y-2 opacity-0 transition-all duration-180 ease-in"
 				class:opacity-100={showTools}
 				class:translate-y-0={showTools}
+				class:pointer-events-none={!showTools}
 				class:pointer-events-auto={showTools}
 			>
 				<ToolBar items={tools} onAction={(id) => onAction?.(id)} />

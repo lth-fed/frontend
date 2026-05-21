@@ -32,7 +32,10 @@
 	}));
 </script>
 
-<div class={isIos26Native ? '-mt-[calc(env(safe-area-inset-top)+4.25rem)]' : '-mt-6'}>
+<div
+	data-guild={activity.creatorGuild}
+	class={isIos26Native ? '-mt-[calc(env(safe-area-inset-top)+4.25rem)]' : '-mt-6'}
+>
 	<div class="z-0 h-75 w-full overflow-hidden">
 		<img class="h-full w-full min-w-full object-cover" src={activity.image} alt={activity.title} />
 	</div>
