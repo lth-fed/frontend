@@ -54,33 +54,40 @@
 			/>
 		</div>
 
-		<div in:fly={{ y: 28, duration: 140, delay: 120, easing: quadOut }}>
-			<div class="flex w-full flex-col gap-3.75">
-				<h2 class="text-[24px] font-semibold">{m.activity_about()}</h2>
-				<p class="text-[16px] font-normal">{activity.description}</p>
-			</div>
+		<div
+			class="flex w-full flex-col gap-3.75"
+			in:fly={{ y: 28, duration: 140, delay: 120, easing: quadOut }}
+		>
+			<h2 class="text-[24px] font-semibold">{m.activity_about()}</h2>
+			<p class="text-[16px] font-normal">{activity.description}</p>
+		</div>
 
-			<div class="flex w-full flex-col gap-3.75">
-				<h2 class="text-[24px] font-semibold">{m.activity_organiser()}</h2>
-				<div class="flex w-full flex-col gap-2">
-					{#each activity.organisers as g (g)}
-						<OrganiserCard guild={g} onFollow={() => alert(`Follow ${guilds[g].name}`)} />
-					{/each}
-				</div>
+		<div
+			class="flex w-full flex-col gap-3.75"
+			in:fly={{ y: 28, duration: 140, delay: 120, easing: quadOut }}
+		>
+			<h2 class="text-[24px] font-semibold">{m.activity_organiser()}</h2>
+			<div class="flex w-full flex-col gap-2">
+				{#each activity.organisers as g (g)}
+					<OrganiserCard guild={g} onFollow={() => alert(`Follow ${guilds[g].name}`)} />
+				{/each}
 			</div>
+		</div>
 
-			<div class="flex w-full flex-col gap-3.75">
-				<div class="flex items-center justify-between">
-					<h2 class="text-[24px] font-semibold">{m.activity_location()}</h2>
-					<span class="text-sm font-semibold text-guild-on-surface">{m.activity_open_maps()}</span>
-				</div>
-				<div class="w-full rounded-3xl border border-gray-100">
-					<img
-						class="aspect-video w-full rounded-3xl object-cover"
-						src="https://picsum.photos/600/400"
-						alt="Location"
-					/>
-				</div>
+		<div
+			class="flex w-full flex-col gap-3.75"
+			in:fly={{ y: 28, duration: 140, delay: 120, easing: quadOut }}
+		>
+			<div class="flex items-center justify-between">
+				<h2 class="text-[24px] font-semibold">{m.activity_location()}</h2>
+				<span class="text-sm font-semibold text-guild-on-surface">{m.activity_open_maps()}</span>
+			</div>
+			<div class="w-full rounded-3xl border border-gray-100">
+				<img
+					class="aspect-video w-full rounded-3xl object-cover"
+					src="https://picsum.photos/600/400"
+					alt="Location"
+				/>
 			</div>
 		</div>
 	</div>
