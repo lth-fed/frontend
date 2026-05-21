@@ -22,7 +22,7 @@ export function readNavigationIntent(): NavigationIntent {
 	return pendingIntent ?? 'root';
 }
 
-export async function pushNavigation(url: string | Pathname, opts?: { noScroll?: boolean }) {
+export async function pushNavigation(url: Pathname, opts?: { noScroll?: boolean }) {
 	pendingIntent = 'forward';
 	try {
 		await goto(resolve(url), {
@@ -35,7 +35,7 @@ export async function pushNavigation(url: string | Pathname, opts?: { noScroll?:
 	}
 }
 
-export async function replaceNavigation(url: string | Pathname, opts?: { noScroll?: boolean }) {
+export async function replaceNavigation(url: Pathname, opts?: { noScroll?: boolean }) {
 	pendingIntent = 'root';
 	try {
 		await goto(resolve(url), {

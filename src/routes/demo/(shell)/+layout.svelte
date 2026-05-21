@@ -4,7 +4,6 @@
 	import BottomActionButton from '$lib/components/BottomActionButton.svelte';
 	import { Home, Globe, IdCard, Settings } from '@lucide/svelte';
 	import { afterNavigate, beforeNavigate } from '$app/navigation';
-	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import type { Pathname } from '$app/types';
 	import { SvelteMap } from 'svelte/reactivity';
@@ -53,8 +52,8 @@
 	function handleSelect(id: string) {
 		const route = navRoutes[id as NavId];
 		if (route) {
-			if (rootRoutes.has(route)) replaceNavigation(resolve(route));
-			else pushNavigation(resolve(route));
+			if (rootRoutes.has(route)) replaceNavigation(route);
+			else pushNavigation(route);
 		} else alert(`${id} (not implemented)`);
 	}
 
