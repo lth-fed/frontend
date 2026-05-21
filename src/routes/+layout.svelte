@@ -2,19 +2,22 @@
 	import type { Pathname } from '$app/types';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import { onMount } from 'svelte';
 	import { locales, localizeHref } from '$lib/paraglide/runtime';
 	import { m } from '$lib/paraglide/messages.js';
 	import { session } from '$lib/state/session.svelte';
 	import { bootstrapAuth } from '$lib/auth/bootstrap';
 	import { readNavigationIntent } from '$lib/navigation/stackNavigation';
+	import Landing from '$lib/components/Landing.svelte';
 	import './layout.css';
 	import favicon from '$lib/assets/favicon.svg';
-	import { beforeNavigate, onNavigate } from '$app/navigation';
+	import { afterNavigate, beforeNavigate, onNavigate } from '$app/navigation';
 
 	let { children } = $props();
 
-	onMount(() => {
+	let bootstrapped = false;
+	afterNavigate(() => {
+		if (bootstrapped) return;
+		bootstrapped = true;
 		bootstrapAuth();
 	});
 
@@ -60,12 +63,14 @@
 			pt-[env(safe-area-inset-top)] pr-[env(safe-area-inset-right)]
 			pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)]"
 >
-	{#if session.ready}
-		{@render children()}
-	{:else}
+	{#if !session.ready}
 		<div class="grid min-h-screen place-items-center text-sm text-gray-500">
 			{m.auth_signing_in()}
 		</div>
+	{:else if !session.accessToken}
+		<Landing />
+	{:else}
+		{@render children()}
 	{/if}
 </div>
 
