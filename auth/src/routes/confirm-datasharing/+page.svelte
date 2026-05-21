@@ -31,8 +31,12 @@
 	// we want to automatically allow teknologappen the login details
 	// this should be fine with GDPR, since it says so in our privacy statement and it's
 	// also critical for the service we're offering
-	//(selling tickets, which requires a name to make a valid transaction)
-	if (originUrl === 'https://teknologappen.se' || originUrl === 'capacitor://localhost')
+	// (selling tickets, which requires a name to make a valid transaction)
+	if (
+		originUrl === 'https://teknologappen.se' ||
+		originUrl === 'capacitor://localhost' ||
+		originUrl === 'https://localhost'
+	)
 		click(true)
 </script>
 
