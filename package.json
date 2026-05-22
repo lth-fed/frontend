@@ -50,7 +50,9 @@
 		"@capacitor/device": "^8.0.2",
 		"@capacitor/haptics": "^8.0.2",
 		"@capacitor/ios": "8.2.0",
+		"@capacitor/preferences": "^8.0.1",
 		"@capacitor/status-bar": "^8.0.2",
+		"@capgo/inappbrowser": "^8.6.8",
 		"@lucide/svelte": "^1.14.0",
 		"auth-lib": "link:./auth-lib",
 		"openapi-fetch": "^0.17.0"

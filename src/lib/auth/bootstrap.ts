@@ -1,39 +1,45 @@
-import { beginLogin, configureAuth, getAuthState, isAuthRedirectSuccess, refresh } from 'auth-lib';
-import { replaceState } from '$app/navigation';
+import { beginLogin, configureAuth, getAuthState, refreshAccessToken } from 'auth-lib';
 import { dev } from '$app/environment';
 import { session } from '$lib/state/session.svelte';
+import { InAppBrowser } from '@capgo/inappbrowser';
+import { CapacitorCookies } from '@capacitor/core';
 
 const AUTH_BASE = dev ? 'http://localhost:8001/api/v0' : 'https://auth.teknologappen.se/api/v0';
 
 configureAuth({ baseUrl: AUTH_BASE });
 
-function consumeValidatedQueryParam(): boolean {
-	const url = new URL(window.location.href);
-	if (!url.searchParams.has('validated')) return false;
-	isAuthRedirectSuccess();
-	url.searchParams.delete('validated');
-	const cleaned = url.pathname + (url.search ? url.search : '') + url.hash;
-	replaceState(cleaned, history.state ?? {});
-	return true;
-}
-
+// TODO: I really believe major parts of this auth logic should live in hooks instead (that includes auth-lib).
 export async function bootstrapAuth(): Promise<void> {
 	try {
-		consumeValidatedQueryParam();
-
 		if (getAuthState() === 'authenticated') {
-			const token = await refresh();
+			const token = await refreshAccessToken();
 			if (token) {
 				session.accessToken = token;
 				session.ready = true;
+
 				return;
 			}
 		}
 
-		const redirect = await beginLogin('test', window.location.href);
+		const redirect = await beginLogin('test', 'tappen://auth-callback');
 		if (typeof redirect === 'string') {
-			window.location.href = redirect;
-			return;
+			const response = await InAppBrowser.openSecureWindow({
+				authEndpoint: redirect!.toString(),
+				redirectUri: 'tappen://auth-callback',
+				prefersEphemeralWebBrowserSession: true
+			});
+
+			const url = new URL(response.redirectedUri);
+			const refreshToken = url.searchParams.get('refresh_token');
+			if (!refreshToken) return;
+
+			await CapacitorCookies.setCookie({
+				url: 'https://auth.teknologappen.se',
+				key: 'teknologappen-auth-refresh-token',
+				value: refreshToken
+			});
+
+			await refreshAccessToken();
 		}
 	} catch (err) {
 		console.error('Auth bootstrap failed', err);

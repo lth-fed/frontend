@@ -1,9 +1,9 @@
+import { CapacitorHttp, HttpOptions, HttpResponse } from '@capacitor/core';
+import { Preferences } from '@capacitor/preferences';
+
 export type Provider = 'lu' | 'email' | 'test';
 export type UnknownError = null;
 export type AuthState = 'unauthenticated' | 'authenticating' | 'authenticated';
-type Message = { kind: string };
-type ValidatedMessage = { kind: 'validation'; validated: boolean };
-type AnyMessage = Message | ValidatedMessage;
 
 const atLocation = 'teknologappen-auth-access-token';
 const asLocation = 'teknologappen-auth-state';
@@ -16,13 +16,14 @@ export function configureAuth(opts: { baseUrl: string }) {
 }
 
 export function getAuthState(): AuthState {
-	const v = localStorage.getItem(asLocation);
+	const { value: v } = Preferences.get({ key: asLocation });
 	if (v === 'authenticated' || v === 'authenticating') return v;
+
 	return 'unauthenticated';
 }
 
 function setAuthState(state: AuthState) {
-	localStorage.setItem(asLocation, state);
+	Preferences.set({ key: asLocation, value: state });
 }
 /**
  * Begin logging in with SSO.
@@ -39,13 +40,15 @@ export async function beginLogin(
 	provider: Provider,
 	continueUrl: string,
 	serverCallbackUrl?: string
-): Promise<String | UnknownError> {
+): Promise<string | UnknownError> {
 	const body: { continue_url: string; callback?: { v1: string } } = {
 		continue_url: continueUrl
 	};
+
 	if (serverCallbackUrl) {
 		body.callback = { v1: serverCallbackUrl };
 	}
+
 	let response: Response;
 	try {
 		response = await fetch(`${baseUrl}/providers/${provider}`, {
@@ -56,91 +59,66 @@ export async function beginLogin(
 	} catch (_e) {
 		return null;
 	}
+
 	if (!response.ok) return null;
+
 	let redirect: string;
 	try {
 		redirect = await response.text();
 	} catch (_e) {
 		return null;
 	}
+
 	setAuthState('authenticating');
+
 	return redirect;
 }
 
-export function onIframeResponse(callback: (validated: boolean) => void) {
-	const listener = (e: MessageEvent) => {
-		if (e.origin !== 'https://auth.teknologappen.se') {
-			return;
-		}
-		if (typeof e.data !== 'object') return;
-		let message: AnyMessage = e.data;
-		if (typeof message.kind !== 'string') return;
-		if (message.kind === 'validation') {
-			const val = (message as ValidatedMessage).validated;
-			setAuthState(val ? 'authenticated' : 'unauthenticated');
-			callback(val);
-		}
-		window.removeEventListener('message', listener);
-	};
-	window.addEventListener('message', listener);
-}
-/**
- * @returns true if auth is success
- *
- */
-export function isAuthRedirectSuccess(): boolean {
-	const query = new URLSearchParams(location.search);
-	const val = query.get('validated') === 'true';
-	setAuthState(val ? 'authenticated' : 'unauthenticated');
-	return val;
-}
-
 export async function authenticatedFetch(
-	fetch: (info: RequestInfo | URL, init?: RequestInit) => Promise<Response>,
-	error_callback: (userMessage: { [lang: string]: string }) => void,
-	info: RequestInfo | URL,
-	init?: RequestInit
-): Promise<Response> {
-	const at = localStorage.getItem(atLocation);
+	options: HttpOptions & { method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' },
+	errorCallback: (userMessage: { [lang: string]: string }) => void
+): Promise<HttpResponse> {
+	// const at = localStorage.getItem(atLocation);
+	const { value: at } = await Preferences.get({ key: atLocation });
 	const data = at !== null ? JSON.parse(atob(at.split('.')[1])) : {};
 	const now = +new Date() / 1000;
 
 	let token = at;
 
 	if (at === null || data.exp === null || data.nbf + (data.exp - data.nbf) / 2 < now) {
-		if (localStorage.getItem(asLocation) === 'authenticated') {
+		if ((await Preferences.get({ key: asLocation })).value === 'authenticated') {
 			// refresh!
-			let newAt = await refresh();
+			const newAt = await refreshAccessToken();
+
 			if (newAt === null) {
 				// we couldn't get a new token!
-				localStorage.removeItem(atLocation);
+				await Preferences.remove({ key: atLocation });
 				token = null;
-				error_callback({
+
+				errorCallback({
 					sv: 'Du kan ha blivit hackad! Autentifieringen misslyckades. Antingen var det mer än ett år sedan du loggade in eller så har någon tagit kontroll över din webbläsare och använder nu ditt konto.',
 					en: 'You may have been hacked! Authentication failed. Either your last login was over a year ago, or someone has taken control of your browser and is now using your account.'
 				});
 			} else {
 				token = newAt;
-				localStorage.setItem(atLocation, newAt);
+				await Preferences.set({ key: atLocation, value: newAt });
 			}
 		} else {
 			// we don't have a token or it's invalid
-			localStorage.removeItem(atLocation);
+			await Preferences.remove({ key: atLocation });
 			token = null;
 		}
 	}
 
-	let newInit: RequestInit | undefined =
-		token === null
-			? init
-			: {
-					...init,
-					headers: {
-						...init?.headers,
-						authorization: `Bearer ${token}`
-					}
-				};
-	return await fetch(info, newInit);
+	return CapacitorHttp.request({
+		...options,
+		headers: {
+			...options.headers,
+			...(token !== null && {
+				authorization: `Bearer ${token}`
+			})
+		}
+	});
 }
 
 /**
@@ -153,31 +131,35 @@ export async function authenticatedFetch(
  */
 export async function logout(): Promise<void> {
 	try {
-		await fetch(`${baseUrl}/logout`, {
-			method: 'POST',
-			credentials: 'include',
+		await CapacitorHttp.post({
+			url: `${baseUrl}/logout`,
 			headers: { 'content-type': 'application/json' }
 		});
 	} catch (_e) {
 		// ignore — we clear local state regardless
 	}
-	localStorage.removeItem(atLocation);
+
+	await Preferences.remove({ key: atLocation });
 	setAuthState('unauthenticated');
 }
 
-export async function refresh(): Promise<string | UnknownError> {
+export async function refreshAccessToken(): Promise<string | UnknownError> {
 	try {
-		const response = await fetch(`${baseUrl}/refresh`, {
-			method: 'POST',
-			credentials: 'include',
-			headers: { 'content-type': 'application/json' }
+		const a = await CapacitorHttp.post({
+			url: `${baseUrl}/refresh`,
+			headers: {
+				origin: window.location.origin,
+				'content-type': 'application/json'
+			}
 		});
-		if (!response.ok) return null;
-		const json = await response.json();
-		const accessToken = json.access_token;
+		if (!a.data || a.status !== 200) return null;
+
+		const accessToken = a.data.access_token;
 		if (typeof accessToken !== 'string') return null;
-		localStorage.setItem(atLocation, accessToken);
+
+		await Preferences.set({ key: 'atLocation', value: accessToken });
 		setAuthState('authenticated');
+
 		return accessToken;
 	} catch (_e) {
 		return null;
