@@ -1,4 +1,4 @@
-import { CapacitorHttp, HttpOptions, HttpResponse } from '@capacitor/core';
+import { CapacitorHttp, type HttpOptions, type HttpResponse } from '@capacitor/core';
 import { Preferences } from '@capacitor/preferences';
 
 export type Provider = 'lu' | 'email' | 'test';
@@ -15,15 +15,15 @@ export function configureAuth(opts: { baseUrl: string }) {
 	baseUrl = opts.baseUrl;
 }
 
-export function getAuthState(): AuthState {
-	const { value: v } = Preferences.get({ key: asLocation });
+export async function getAuthState(): Promise<AuthState> {
+	const { value: v } = await Preferences.get({ key: asLocation });
 	if (v === 'authenticated' || v === 'authenticating') return v;
 
 	return 'unauthenticated';
 }
 
-function setAuthState(state: AuthState) {
-	Preferences.set({ key: asLocation, value: state });
+async function setAuthState(state: AuthState) {
+	await Preferences.set({ key: asLocation, value: state });
 }
 /**
  * Begin logging in with SSO.
@@ -69,7 +69,7 @@ export async function beginLogin(
 		return null;
 	}
 
-	setAuthState('authenticating');
+	await setAuthState('authenticating');
 
 	return redirect;
 }
@@ -78,14 +78,13 @@ export async function authenticatedFetch(
 	options: HttpOptions & { method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' },
 	errorCallback: (userMessage: { [lang: string]: string }) => void
 ): Promise<HttpResponse> {
-	// const at = localStorage.getItem(atLocation);
 	const { value: at } = await Preferences.get({ key: atLocation });
 	const data = at !== null ? JSON.parse(atob(at.split('.')[1])) : {};
 	const now = +new Date() / 1000;
 
 	let token = at;
 
-	if (at === null || data.exp === null || data.nbf + (data.exp - data.nbf) / 2 < now) {
+	if (at === null || data.exp == null || data.nbf + (data.exp - data.nbf) / 2 < now) {
 		if ((await Preferences.get({ key: asLocation })).value === 'authenticated') {
 			// refresh!
 			const newAt = await refreshAccessToken();
@@ -140,7 +139,7 @@ export async function logout(): Promise<void> {
 	}
 
 	await Preferences.remove({ key: atLocation });
-	setAuthState('unauthenticated');
+	await setAuthState('unauthenticated');
 }
 
 export async function refreshAccessToken(): Promise<string | UnknownError> {
@@ -157,8 +156,8 @@ export async function refreshAccessToken(): Promise<string | UnknownError> {
 		const accessToken = a.data.access_token;
 		if (typeof accessToken !== 'string') return null;
 
-		await Preferences.set({ key: 'atLocation', value: accessToken });
-		setAuthState('authenticated');
+		await Preferences.set({ key: atLocation, value: accessToken });
+		await setAuthState('authenticated');
 
 		return accessToken;
 	} catch (_e) {
