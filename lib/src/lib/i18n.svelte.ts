@@ -1,11 +1,11 @@
-export type Lang = 'sv' | 'en'
-export const lang: { lang: Lang } = $state({ lang: 'sv' })
+export type Lang = 'sv' | 'en';
+export const lang: { lang: Lang } = $state({ lang: 'sv' });
 
 export function getLang(): Lang {
-	return lang.lang
+	return lang.lang;
 }
 export function setLang(newLang: Lang) {
-	lang.lang = newLang
+	lang.lang = newLang;
 }
 
 export function intl(msgObject: { [lang: string]: string }): string {
@@ -15,5 +15,5 @@ export function intl(msgObject: { [lang: string]: string }): string {
 		msgObject['en'] ??
 		Object.values(msgObject).at(0) ??
 		'<no strings available>'
-	)
+	);
 }

@@ -58,21 +58,23 @@
 </script>
 
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
-<div
-	class="min-h-screen max-w-screen min-w-screen bg-gray-100
-			pt-[env(safe-area-inset-top)] pr-[env(safe-area-inset-right)]
-			pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)]"
->
-	{#if !session.ready}
+{#if !session.accessToken}
+	{#if session.isProcessing}
 		<div class="grid min-h-screen place-items-center text-sm text-gray-500">
 			{m.auth_signing_in()}
 		</div>
-	{:else if !session.accessToken}
-		<Landing />
 	{:else}
-		{@render children()}
+		<Landing />
 	{/if}
-</div>
+{:else}
+	<div
+		class="min-h-screen max-w-screen min-w-screen bg-gray-100
+			pt-[env(safe-area-inset-top)] pr-[env(safe-area-inset-right)]
+			pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)]"
+	>
+		{@render children()}
+	</div>
+{/if}
 
 <div style="display:none">
 	{#each locales as locale (locale)}
