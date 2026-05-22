@@ -11,7 +11,7 @@ configureAuth({ baseUrl: AUTH_BASE });
 // TODO: I really believe major parts of this auth logic should live in hooks instead (that includes auth-lib).
 export async function bootstrapAuth(): Promise<void> {
 	try {
-		if (getAuthState() === 'authenticated') {
+		if ((await getAuthState()) === 'authenticated') {
 			const token = await refreshAccessToken();
 			if (token) {
 				session.accessToken = token;
@@ -21,11 +21,11 @@ export async function bootstrapAuth(): Promise<void> {
 			}
 		}
 
-		const redirect = await beginLogin('test', 'tappen://auth-callback');
+		const redirect = await beginLogin('test', 'tappen://oauth_callback');
 		if (typeof redirect === 'string') {
 			const response = await InAppBrowser.openSecureWindow({
-				authEndpoint: redirect!.toString(),
-				redirectUri: 'tappen://auth-callback',
+				authEndpoint: redirect,
+				redirectUri: 'tappen://oauth_callback',
 				prefersEphemeralWebBrowserSession: true
 			});
 
