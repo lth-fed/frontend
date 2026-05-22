@@ -1,5 +1,6 @@
 import { logout as authLogout } from 'auth-lib';
 import { session } from '$lib/state/session.svelte';
+import { replaceNavigation } from '$lib/navigation/stackNavigation';
 
 /**
  * Sign the user out: tear down server-side + local auth state, then
@@ -9,6 +10,6 @@ import { session } from '$lib/state/session.svelte';
 export async function logout(): Promise<void> {
 	await authLogout();
 	session.accessToken = null;
-	session.ready = false;
-	window.location.href = '/';
+
+	return replaceNavigation('/');
 }

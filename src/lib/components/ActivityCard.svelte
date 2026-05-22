@@ -101,7 +101,5 @@
 		{@render body()}
 	</a>
 {:else}
-	<button type="button" data-guild={creatorGuild} {onclick} class={cls}
-		>{@render body()}</button
-	>
+	<button type="button" data-guild={creatorGuild} {onclick} class={cls}>{@render body()}</button>
 {/if}

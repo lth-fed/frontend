@@ -1,11 +1,6 @@
 import { error } from '@sveltejs/kit';
 
-export type ApiErrorKind =
-	| 'network'
-	| 'unauthorized'
-	| 'not-found'
-	| 'server'
-	| 'unknown';
+export type ApiErrorKind = 'network' | 'unauthorized' | 'not-found' | 'server' | 'unknown';
 
 const STATUS_FOR: Record<ApiErrorKind, number> = {
 	network: 503,

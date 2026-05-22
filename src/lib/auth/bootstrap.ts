@@ -19,8 +19,6 @@ export async function bootstrapAuth(): Promise<void> {
 	} catch (err) {
 		console.error('Auth bootstrap failed', err);
 	}
-
-	session.ready = true;
 }
 
 /**
@@ -33,6 +31,7 @@ export async function startLogin(): Promise<void> {
 		const redirect = await beginLogin('test', 'tappen://oauth_callback');
 		if (typeof redirect !== 'string') return;
 
+		session.isProcessing = true;
 		const response = await InAppBrowser.openSecureWindow({
 			authEndpoint: redirect,
 			redirectUri: 'tappen://oauth_callback',
@@ -53,6 +52,7 @@ export async function startLogin(): Promise<void> {
 		if (token) {
 			session.accessToken = token;
 		}
+		session.isProcessing = false;
 	} catch (err) {
 		console.error('Login failed to start', err);
 	}

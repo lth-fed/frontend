@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { i18n } from 'common-lib'
+	import { i18n } from 'common-lib';
 </script>
 
 {#if i18n.getLang() !== 'sv'}
@@ -7,8 +7,8 @@
 {/if}
 
 <h1>
-	Överföring av personuppgifter till Teknologappen och sektionsinlogg för medlemmar i TLTH i
-	samband med federerad inloggning (Privacy Policy)
+	Överföring av personuppgifter till Teknologappen och sektionsinlogg för medlemmar i TLTH i samband
+	med federerad inloggning (Privacy Policy)
 </h1>
 <h2>Beskrivning av Teknologappen och sektionsinlogg för medlemmar i TLTH</h2>
 
@@ -17,9 +17,9 @@
 	och övriga studenter aktiva i studentlivet på LTH.
 </p>
 <p>
-	Denna tjänsten finns för att kunnat logga in på teknologappen och våra sektionshemsidor säkert
-	och att kunna verifiera tillhörighet till både LTH och TLTH används LU-inlogg, vilket garanterar
-	ens användarnamn som kan kopplas till medlemskap.
+	Denna tjänsten finns för att kunnat logga in på teknologappen och våra sektionshemsidor säkert och
+	att kunna verifiera tillhörighet till både LTH och TLTH används LU-inlogg, vilket garanterar ens
+	användarnamn som kan kopplas till medlemskap.
 </p>
 <p>
 	Teknologappen och sektionshemsidorna verkar för ett förbättrat studentliv enligt TLTHs
@@ -31,8 +31,8 @@
 
 <p>
 	Personuppgifter överförs från identitetsutfärdaren (din inloggningstjänst) till tjänsten för att
-	säkerställa att du som användare får tillgång till din information i tjänsten samt för att ge
-	dig ett användaranpassat gränssnitt.
+	säkerställa att du som användare får tillgång till din information i tjänsten samt för att ge dig
+	ett användaranpassat gränssnitt.
 </p>
 
 <p>
@@ -56,8 +56,9 @@
 		<tr>
 			<th>Namn</th>
 			<th
-				>Namnet används för att kolla legitimation vid alkoholevent och för att visa vem du
-				är för andra användare</th>
+				>Namnet används för att kolla legitimation vid alkoholevent och för att visa vem du är för
+				andra användare</th
+			>
 			<th>displayName</th>
 		</tr>
 		<tr>
@@ -69,19 +70,18 @@
 </table>
 
 <p>
-	Förutom direkta personuppgifter överförs även indirekta personuppgifter såsom vilken
-	organisation användaren tillhör och vilken identitetsutfärdare som har använts vid inloggningen.
-	I kombination med ovanstående personuppgifter kan dessa användas för att unikt identifiera en
-	person.
+	Förutom direkta personuppgifter överförs även indirekta personuppgifter såsom vilken organisation
+	användaren tillhör och vilken identitetsutfärdare som har använts vid inloggningen. I kombination
+	med ovanstående personuppgifter kan dessa användas för att unikt identifiera en person.
 </p>
 
 <h3>Övrig behandling av personuppgifter i tjänsten</h3>
 
 <p>
 	I tjänsten kommer du kunna ställa in språk som används för att skicka ut notifikationer med rätt
-	språk. Ditt personnummer kan kunna komma att förfrågas för att verifiera ditt medlemskap i
-	kåren. Personnummret sparas aldrig. Uppgifter om medlemskap i TLTH hämtas från kåren och kopplas
-	till kontot.
+	språk. Ditt personnummer kan kunna komma att förfrågas för att verifiera ditt medlemskap i kåren.
+	Personnummret sparas aldrig. Uppgifter om medlemskap i TLTH hämtas från kåren och kopplas till
+	kontot.
 </p>
 
 <h3>Överföring av personuppgifter till tredje part</h3>
@@ -109,8 +109,8 @@
 
 <p>
 	Rättelse av personuppgifter som överförts i samband med inloggning gör du i den
-	identitetsutfärdare som du använder för att logga in. Dessa uppgifter rättas i tjänsten vid
-	första inloggningen efter att personuppgifterna är rättade i identitetsutfärdaren.
+	identitetsutfärdare som du använder för att logga in. Dessa uppgifter rättas i tjänsten vid första
+	inloggningen efter att personuppgifterna är rättade i identitetsutfärdaren.
 </p>
 
 <h3>Rensning av personuppgifter</h3>
@@ -135,7 +135,7 @@
 	Denna tjänst följer det internationella ramverket <a
 		href="http://www.geant.net/uri/dataprotection-code-of-conduct/v1"
 		>GÉANT Data Protection Code of Conduct
-		(http://www.geant.net/uri/dataprotection-code-of-conduct/v1)</a> för överföring av personuppgifter
-	från identitetsutfärdare till tjänsten. Ramverket är avsett för tjänster i Sverige, EU och EES som
-	används inom forskning och högre utbildning.
+		(http://www.geant.net/uri/dataprotection-code-of-conduct/v1)</a
+	> för överföring av personuppgifter från identitetsutfärdare till tjänsten. Ramverket är avsett för
+	tjänster i Sverige, EU och EES som används inom forskning och högre utbildning.
 </p>

@@ -12,6 +12,7 @@ const gitignorePath = path.resolve(import.meta.dirname, '.gitignore');
 
 export default defineConfig(
 	includeIgnoreFile(gitignorePath),
+	{ ignores: ['ios/**', 'android/**'] },
 	js.configs.recommended,
 	ts.configs.recommended,
 	svelte.configs.recommended,
@@ -22,8 +23,35 @@ export default defineConfig(
 		rules: {
 			// typescript-eslint strongly recommend that you do not use the no-undef lint rule on TypeScript projects.
 			// see: https://typescript-eslint.io/troubleshooting/faqs/eslint/#i-get-errors-from-the-no-undef-rule-about-global-variables-not-being-defined-even-though-there-are-no-typescript-errors
-			"no-undef": 'off',
+			'no-undef': 'off',
 			'no-unused-vars': 'off',
+			'no-restricted-imports': [
+				'warn',
+				{
+					paths: [
+						{
+							name: '$app/navigation',
+							importNames: ['goto', 'pushState', 'replaceState'],
+							message:
+								'Prefer using the custom navigation helpers in src/lib/navigation/stackNavigation.ts, unless you have a specific reason not to.'
+						}
+					]
+				}
+			],
+			'no-restricted-syntax': [
+				'warn',
+				{
+					selector: "MemberExpression[object.name='location'][property.name='href']",
+					message:
+						'Prefer using the custom navigation helpers in src/lib/navigation/stackNavigation.ts, unless you have a specific reason not to.'
+				},
+				{
+					selector:
+						"MemberExpression[object.type='MemberExpression'][object.object.name='window'][object.property.name='location'][property.name='href']",
+					message:
+						'Prefer using the custom navigation helpers in src/lib/navigation/stackNavigation.ts, unless you have a specific reason not to.'
+				}
+			],
 			'@typescript-eslint/no-unused-vars': [
 				'error',
 				{
@@ -33,6 +61,13 @@ export default defineConfig(
 					destructuredArrayIgnorePattern: '^_'
 				}
 			]
+		}
+	},
+	{
+		files: ['src/lib/navigation/stackNavigation.ts', 'auth/**'],
+		rules: {
+			'no-restricted-imports': 'off',
+			'no-restricted-syntax': 'off'
 		}
 	},
 	{

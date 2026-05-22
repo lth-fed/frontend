@@ -1,32 +1,32 @@
 <script lang="ts">
-	import { i18n } from 'common-lib'
-	import { m } from '$lib/paraglide/messages'
-	const l = $derived([undefined, { locale: i18n.getLang() }])
+	import { i18n } from 'common-lib';
+	import { m } from '$lib/paraglide/messages';
+	const l = $derived([undefined, { locale: i18n.getLang() }]);
 
-	let whoops = $state(false)
+	let whoops = $state(false);
 
-	const query = new URLSearchParams(location.search)
+	const query = new URLSearchParams(location.search);
 
 	async function approve() {
 		const body = {
 			token: query.get('token')
-		}
+		};
 		const resp = await fetch('/api/v0/providers/email/approve', {
 			method: 'POST',
 			body: JSON.stringify(body),
 			headers: {
 				'content-type': 'application/json; charset=utf-8'
 			}
-		})
+		});
 		if (!resp.ok) {
-			whoops = true
-			return
+			whoops = true;
+			return;
 		}
-		const url = await resp.text()
-		parent.postMessage({ kind: 'validation', validated: true }, '*')
-		location.href = url
+		const url = await resp.text();
+		parent.postMessage({ kind: 'validation', validated: true }, '*');
+		location.href = url;
 	}
-	approve()
+	approve();
 </script>
 
 {#if whoops}

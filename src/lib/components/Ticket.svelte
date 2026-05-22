@@ -71,7 +71,12 @@
 		},
 		{ id: 'wallet' as Action, icon: Wallet, systemIcon: 'wallet.bifold', label: m.tool_wallet() },
 		{ id: 'receipt' as Action, icon: Receipt, systemIcon: 'receipt', label: m.tool_receipt() },
-		{ id: 'activity' as Action, icon: PartyPopper, systemIcon: 'party.popper', label: m.tool_activity() }
+		{
+			id: 'activity' as Action,
+			icon: PartyPopper,
+			systemIcon: 'party.popper',
+			label: m.tool_activity()
+		}
 	]);
 
 	const W = 300;

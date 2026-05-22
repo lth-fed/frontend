@@ -1,19 +1,19 @@
 @import 'tailwindcss';
-@source "../../node_modules/common-lib/";
+@source '../../node_modules/common-lib/';
 @theme {
-  --breakpoint-xs: 25rem;
+	--breakpoint-xs: 25rem;
 }
 @layer base {
-  h1 {
-    font-size: var(--text-3xl);
-  }
-  h2 {
-    font-size: var(--text-2xl);
-  }
-  h3 {
-    font-size: var(--text-xl);
-  }
-  p {
-      @apply py-2;
-  }
+	h1 {
+		font-size: var(--text-3xl);
+	}
+	h2 {
+		font-size: var(--text-2xl);
+	}
+	h3 {
+		font-size: var(--text-xl);
+	}
+	p {
+		@apply py-2;
+	}
 }
