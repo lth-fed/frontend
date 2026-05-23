@@ -132,7 +132,8 @@ export async function logout(): Promise<void> {
 	try {
 		await CapacitorHttp.post({
 			url: `${baseUrl}/logout`,
-			headers: { 'content-type': 'application/json' }
+			headers: { 'content-type': 'application/json' },
+			webFetchExtra: { credentials: 'include' }
 		});
 	} catch (_e) {
 		// ignore — we clear local state regardless
@@ -149,7 +150,11 @@ export async function refreshAccessToken(): Promise<string | UnknownError> {
 			headers: {
 				origin: window.location.origin,
 				'content-type': 'application/json'
-			}
+			},
+			// On web the refresh cookie lives on a sibling subdomain
+			// (auth.teknologappen.se), so we have to opt into sending it.
+			// Ignored by the native HTTP client.
+			webFetchExtra: { credentials: 'include' }
 		});
 		if (!a.data || a.status !== 200) return null;
 
