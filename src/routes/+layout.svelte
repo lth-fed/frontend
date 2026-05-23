@@ -14,11 +14,11 @@
 
 	let { children } = $props();
 
-	let bootstrapped = false;
-	afterNavigate(() => {
+	let bootstrapped = $state(false);
+	afterNavigate(async () => {
 		if (bootstrapped) return;
+		await bootstrapAuth();
 		bootstrapped = true;
-		bootstrapAuth();
 	});
 
 	$effect(() => {
@@ -59,7 +59,7 @@
 
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
 {#if !session.accessToken}
-	{#if session.isProcessing}
+	{#if session.isProcessing || !bootstrapped}
 		<div class="grid min-h-screen place-items-center text-sm text-gray-500">
 			{m.auth_signing_in()}
 		</div>

@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
 	appId: 'se.teknologappen.tappen',
-	appName: 'tappen',
+	appName: 'Tappen',
 	webDir: 'build',
 	ios: {
 		scrollEnabled: true
