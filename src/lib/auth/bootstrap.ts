@@ -71,7 +71,7 @@ async function startNativeLogin(): Promise<void> {
 }
 
 async function startWebLogin(): Promise<void> {
-	const callback = `${window.location.origin}/auth/callback`;
+	const callback = `${window.location.origin}/auth/callback/`;
 	const redirect = await beginLogin('test', callback);
 	if (typeof redirect !== 'string') return;
 
