@@ -1,25 +1,26 @@
-import { beginLogin, configureAuth, getAuthState, refreshAccessToken } from 'auth-lib';
-import { dev } from '$app/environment';
-import { session } from '$lib/state/session.svelte';
-import { InAppBrowser } from '@capgo/inappbrowser';
-import { Capacitor, CapacitorCookies } from '@capacitor/core';
+import { beginLogin, configureAuth, getAuthState, refreshAccessToken } from 'auth-lib'
+import { dev } from '$app/environment'
+import { session } from '$lib/state/session.svelte'
+import { InAppBrowser } from '@capgo/inappbrowser'
+import { Capacitor, CapacitorCookies } from '@capacitor/core'
 
-const AUTH_BASE = dev ? 'http://localhost:8001/api/v0' : 'https://auth.teknologappen.se/api/v0';
-const AUTH_ORIGIN = dev ? 'http://localhost:8001' : 'https://auth.teknologappen.se';
-const NATIVE_CALLBACK = 'tappen://oauth_callback';
+const AUTH_BASE = dev ? 'http://localhost:8001/api/v0' : 'https://auth.teknologappen.se/api/v0'
+const AUTH_ORIGIN = dev ? 'http://localhost:8001' : 'https://auth.teknologappen.se'
+const NATIVE_CONTINUE = 'tappen://oauth_callback'
+const BACKEND_CALLBACK_V1 = 'https://api.teknologappen.se/v0/user/auth-callback/v1'
 
-configureAuth({ baseUrl: AUTH_BASE });
+configureAuth({ baseUrl: AUTH_BASE })
 
 export async function bootstrapAuth(): Promise<void> {
 	try {
 		if ((await getAuthState()) === 'authenticated') {
-			const token = await refreshAccessToken();
+			const token = await refreshAccessToken()
 			if (token) {
-				session.accessToken = token;
+				session.accessToken = token
 			}
 		}
 	} catch (err) {
-		console.error('Auth bootstrap failed', err);
+		console.error('Auth bootstrap failed', err)
 	}
 }
 
@@ -31,29 +32,29 @@ export async function bootstrapAuth(): Promise<void> {
 export async function startLogin(): Promise<void> {
 	try {
 		if (Capacitor.isNativePlatform()) {
-			await startNativeLogin();
+			await startNativeLogin()
 		} else {
-			await startWebLogin();
+			await startWebLogin()
 		}
 	} catch (err) {
-		console.error('Login failed to start', err);
+		console.error('Login failed to start', err)
 	}
 }
 
 async function startNativeLogin(): Promise<void> {
-	const redirect = await beginLogin('test', NATIVE_CALLBACK);
-	if (typeof redirect !== 'string') return;
+	const redirect = await beginLogin('test', NATIVE_CONTINUE, BACKEND_CALLBACK_V1)
+	if (typeof redirect !== 'string') return
 
-	session.isProcessing = true;
+	session.isProcessing = true
 	const response = await InAppBrowser.openSecureWindow({
 		authEndpoint: redirect,
-		redirectUri: NATIVE_CALLBACK,
+		redirectUri: NATIVE_CONTINUE,
 		prefersEphemeralWebBrowserSession: true
-	});
+	})
 
-	const url = new URL(response.redirectedUri);
-	const refreshToken = url.searchParams.get('refresh_token');
-	if (!refreshToken) return;
+	const url = new URL(response.redirectedUri)
+	const refreshToken = url.searchParams.get('refresh_token')
+	if (!refreshToken) return
 
 	// In-app browser cookies are isolated from the WebView jar — copy the
 	// token over so the next /refresh sends it.
@@ -61,22 +62,22 @@ async function startNativeLogin(): Promise<void> {
 		url: AUTH_ORIGIN,
 		key: 'teknologappen-auth-refresh-token',
 		value: refreshToken
-	});
+	})
 
-	const token = await refreshAccessToken();
+	const token = await refreshAccessToken()
 	if (token) {
-		session.accessToken = token;
+		session.accessToken = token
 	}
-	session.isProcessing = false;
+	session.isProcessing = false
 }
 
 async function startWebLogin(): Promise<void> {
-	const callback = `${window.location.origin}/auth/callback/`;
-	const redirect = await beginLogin('test', callback);
-	if (typeof redirect !== 'string') return;
+	const continueUrl = `${window.location.origin}/auth/callback/`
+	const redirect = await beginLogin('test', continueUrl, BACKEND_CALLBACK_V1)
+	if (typeof redirect !== 'string') return
 
-	session.isProcessing = true;
-	window.location.href = redirect;
+	session.isProcessing = true
+	window.location.href = redirect
 }
 
 /**
@@ -85,13 +86,13 @@ async function startWebLogin(): Promise<void> {
  * token. Called from /auth/callback.
  */
 export async function finishWebLogin(): Promise<void> {
-	session.isProcessing = true;
+	session.isProcessing = true
 	try {
-		const token = await refreshAccessToken();
+		const token = await refreshAccessToken()
 		if (token) {
-			session.accessToken = token;
+			session.accessToken = token
 		}
 	} finally {
-		session.isProcessing = false;
+		session.isProcessing = false
 	}
 }
