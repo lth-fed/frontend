@@ -16,8 +16,8 @@
 		"lint": "prettier --check . && eslint .",
 		"format": "prettier --write .",
 		"api:generate:auth": "openapi-typescript http://localhost:8001/api/v0/spec.json -o src/lib/api/generated/auth.d.ts",
-		"api:generate:tickets": "openapi-typescript http://localhost:8000/v0/spec.json -o src/lib/api/generated/tickets.d.ts",
-		"api:generate": "pnpm run api:generate:auth && pnpm run api:generate:tickets"
+		"api:generate:api": "openapi-typescript http://localhost:8000/v0/spec.json -o src/lib/api/generated/api.d.ts",
+		"api:generate": "pnpm run api:generate:auth && pnpm run api:generate:api"
 	},
 	"devDependencies": {
 		"@capacitor/cli": "^8.2.0",

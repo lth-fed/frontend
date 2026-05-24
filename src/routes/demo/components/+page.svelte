@@ -46,7 +46,6 @@
 			badge: 'SITTNING',
 			date: 'Mon, Apr 27 - 17:00',
 			title: 'Annan sittning typ',
-			priceFrom: 120,
 			description:
 				'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
 			location: 'Gasque-salen'
@@ -56,7 +55,6 @@
 			badge: 'FEST',
 			date: 'Fri, May 01 - 21:00',
 			title: 'Vårfest',
-			priceFrom: 80,
 			description:
 				'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
 			location: 'Kårhuset'
@@ -66,7 +64,6 @@
 			badge: 'PUB',
 			date: 'Tue, May 05 - 18:00',
 			title: 'Tisdagspub',
-			priceFrom: 40,
 			description:
 				'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
 			location: 'Pub-lokalen'
@@ -76,33 +73,33 @@
 	const demoTickets = [
 		{
 			name: 'Simon Mechler',
-			title: 'Cool sittning typ',
-			subtitle: 'Guild demo',
-			date: '25 Apr, 2026',
-			time: '17:00 - 23:00',
+			activityTitle: 'Cool sittning typ',
+			creatorName: 'Guild demo',
+			timeStart: new Date('2026-04-25T17:00'),
+			timeEnd: new Date('2026-04-25T23:00'),
 			location: 'Kan inga lokaler',
-			addition: 'Wine Package +1',
-			serial: '#XX-6719284'
+			ticketKindName: 'Wine Package +1',
+			id: '00000000-0000-0000-0000-00000000xx01'
 		},
 		{
 			name: 'Simon Mechler',
-			title: 'Annan sittning typ',
-			subtitle: 'Guild demo',
-			date: '27 Apr, 2026',
-			time: '17:00 - 23:00',
+			activityTitle: 'Annan sittning typ',
+			creatorName: 'Guild demo',
+			timeStart: new Date('2026-04-27T17:00'),
+			timeEnd: new Date('2026-04-27T23:00'),
 			location: 'Gasque-salen',
-			addition: 'Standard',
-			serial: '#XX-6719285'
+			ticketKindName: 'Standard',
+			id: '00000000-0000-0000-0000-00000000xx02'
 		},
 		{
 			name: 'Simon Mechler',
-			title: 'Tredje sittning',
-			subtitle: 'Guild demo',
-			date: '29 Apr, 2026',
-			time: '18:00 - 00:00',
+			activityTitle: 'Tredje sittning',
+			creatorName: 'Guild demo',
+			timeStart: new Date('2026-04-29T18:00'),
+			timeEnd: new Date('2026-04-30T00:00'),
 			location: 'Kårhuset',
-			addition: 'VIP',
-			serial: '#XX-6719286'
+			ticketKindName: 'VIP',
+			id: '00000000-0000-0000-0000-00000000xx03'
 		}
 	];
 </script>
@@ -115,13 +112,13 @@
 			<p class="text-sm font-bold text-gray-600">Ticket</p>
 			<Ticket
 				name="Simon Mechler"
-				title="Cool sittning typ"
-				subtitle="Guild demo"
-				date="25 Apr, 2026"
-				time="17:00 - 23:00"
+				activityTitle="Cool sittning typ"
+				creatorName="Guild demo"
+				timeStart={new Date('2026-04-25T17:00')}
+				timeEnd={new Date('2026-04-25T23:00')}
 				location="Kan inga lokaler"
-				addition="Wine Package +1"
-				serial="#XX-6719284"
+				ticketKindName="Wine Package +1"
+				id="00000000-0000-0000-0000-000000000xx1"
 				onAction={(id) => alert(`Action: ${id}`)}
 			/>
 		</section>
@@ -131,13 +128,13 @@
 			<div class="flex flex-wrap items-start gap-6">
 				<Ticket
 					name="Simon Mechler"
-					title="Vårfestssittning med temat årets största händelse 2026"
-					subtitle="F-sektionen"
-					date="25 Apr, 2026"
-					time="17:00 - 23:00"
+					activityTitle="Vårfestssittning med temat årets största händelse 2026"
+					creatorName="F-sektionen"
+					timeStart={new Date('2026-04-25T17:00')}
+					timeEnd={new Date('2026-04-25T23:00')}
 					location="Kan inga F-lokaler"
-					addition="Wine Package +1"
-					serial="#FG-6719284"
+					ticketKindName="Wine Package +1"
+					id="00000000-0000-0000-0000-00000000fg01"
 				/>
 				<div class="w-90">
 					<ActivityCard
@@ -145,7 +142,6 @@
 						badge="SITTNING"
 						date="Mon, Apr 27 - 17:00"
 						title="Vårens stora avslutningssittning för F-sektionen och vänner"
-						priceFrom={120}
 						description="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
 						location="Gasque-salen"
 					/>
@@ -184,7 +180,7 @@
 				<TopBar
 					native={false}
 					leading={slots.avatar({
-						initials: 'SM',
+						userId: 'test:si1234mc-s',
 						onclick: () => alert(m.top_bar_account_label())
 					})}
 					trailing={slots.bell(() => alert(m.top_bar_notifications_label()))}
@@ -270,7 +266,6 @@
 				badge="SITTNING"
 				date="Mon, Apr 27 - 17:00"
 				title="Annan sittning typ"
-				priceFrom={120}
 				description="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
 				location="Gasque-salen"
 				onclick={() => alert('Activity clicked')}

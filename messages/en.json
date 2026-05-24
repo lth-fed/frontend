@@ -60,5 +60,13 @@
 	"share_label": "Share",
 	"auth_signing_in": "Signing you in…",
 	"auth_landing_title": "Welcome",
-	"auth_log_in": "Log in"
+	"auth_log_in": "Log in",
+
+	"error_title": "Something went wrong",
+	"error_try_again": "Try again",
+	"error_status_unauthorized": "You're not signed in for this.",
+	"error_status_not_found": "We couldn't find that.",
+	"error_status_network": "We can't reach the server right now.",
+	"error_status_server": "The server tripped up.",
+	"error_status_unknown": "Something unexpected happened."
 }

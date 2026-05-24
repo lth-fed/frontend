@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { TicketIcon } from '@lucide/svelte';
-	import { m } from '$lib/paraglide/messages.js';
+	import { formatPrice } from '$lib/format/money';
 
 	interface Props {
 		name: string;
-		/** Price in SEK. 0 renders as "Free"/"Gratis". */
+		/** Price in öre. Rendered via `formatPrice` (0 → "Gratis"/"Free"). */
 		price: number;
 		onclick?: () => void;
 	}
@@ -24,6 +24,6 @@
 	</div>
 	<span class="flex-1 text-[16px] font-medium text-guild-on-surface">{name}</span>
 	<span class="text-[16px] font-semibold text-guild-on-surface">
-		{price === 0 ? m.ticket_price_free() : m.activity_price({ amount: price })}
+		{formatPrice(price)}
 	</span>
 </button>

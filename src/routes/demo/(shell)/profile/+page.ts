@@ -1,7 +1,7 @@
 import type { PageLoad } from './$types';
-import { getProfile } from '$lib/api/profile';
+import { getMe } from '$lib/api/user';
 
 export const load: PageLoad = async ({ fetch }) => {
-	const profile = await getProfile({ fetch });
-	return { profile };
+	const me = await getMe({ fetch });
+	return { me };
 };

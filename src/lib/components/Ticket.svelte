@@ -9,21 +9,28 @@
 	import { navigationBar } from '$lib/plugins/navigationBar/navigationBar';
 	import { isIos26Plus } from '$lib/platform/isIos26Plus';
 	import { m } from '$lib/paraglide/messages.js';
+	import { formatCardDate, formatTimeRange } from '$lib/format/datetime';
 	import type { ToolBarNode } from '$lib/plugins/toolBar/definitions';
 	import { Haptics, ImpactStyle } from '@capacitor/haptics';
 	import type { Guild } from '$lib/types/guild';
 
 	type Action = 'transfer' | 'wallet' | 'receipt' | 'activity';
 
+	/**
+	 * Prop names match the `lib/api/tickets.ts` `Ticket` shape so a
+	 * caller can do `<Ticket {...ticket} name={…} />` without a
+	 * view-model wrapper. The component handles date/time formatting
+	 * and the display serial internally.
+	 */
 	interface Props {
 		status?: string;
-		title: string;
-		subtitle: string;
-		date: string;
-		time: string;
+		activityTitle: string;
+		creatorName: string;
+		timeStart: Date;
+		timeEnd: Date;
 		location?: string;
-		addition?: string;
-		serial: string;
+		ticketKindName: string;
+		id: string;
 		name: string;
 		qrData?: string;
 		creatorGuild?: Guild;
@@ -34,13 +41,13 @@
 
 	let {
 		status,
-		title,
-		subtitle,
-		date,
-		time,
+		activityTitle,
+		creatorName,
+		timeStart,
+		timeEnd,
 		location,
-		addition,
-		serial,
+		ticketKindName,
+		id,
 		name,
 		qrData,
 		creatorGuild,
@@ -48,6 +55,10 @@
 		canFlip = true,
 		onRequestCenter
 	}: Props = $props();
+
+	const date = $derived(formatCardDate(timeStart));
+	const time = $derived(formatTimeRange(timeStart, timeEnd));
+	const serial = $derived(`#${id.slice(0, 8).toUpperCase()}`);
 
 	let showOverlay = $state(false);
 	let overlayReady = $state(false);
@@ -271,8 +282,8 @@
 			</div>
 
 			<div class="flex flex-col gap-1">
-				<h2 class="truncate text-[22px] leading-tight font-bold">{title}</h2>
-				<p class="text-base leading-none opacity-90">{subtitle}</p>
+				<h2 class="truncate text-[22px] leading-tight font-bold">{activityTitle}</h2>
+				<p class="text-base leading-none opacity-90">{creatorName}</p>
 			</div>
 
 			<dl class="grid grid-cols-2 gap-y-3 text-sm">
@@ -300,7 +311,7 @@
 			<div class="grid grid-cols-2 gap-y-3 text-sm text-black">
 				<div>
 					<dt class="text-xs font-medium opacity-75">{m.ticket_label_addition()}</dt>
-					<dd class="font-semibold">{addition ?? '—'}</dd>
+					<dd class="font-semibold">{ticketKindName}</dd>
 				</div>
 				<div class="text-right">
 					<dt class="text-xs font-medium opacity-75">{m.ticket_label_serial()}</dt>
@@ -326,7 +337,7 @@
 {/snippet}
 
 {#snippet ticketBack()}
-	<TicketDetail {name} activity={title} {serial} qrData={qrData ?? serial} />
+	<TicketDetail {name} activity={activityTitle} {serial} qrData={qrData ?? serial} />
 {/snippet}
 
 <button

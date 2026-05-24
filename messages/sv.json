@@ -48,5 +48,13 @@
 	"share_label": "Dela",
 	"auth_signing_in": "Loggar in dig…",
 	"auth_landing_title": "Välkommen",
-	"auth_log_in": "Logga in"
+	"auth_log_in": "Logga in",
+
+	"error_title": "Något gick fel",
+	"error_try_again": "Försök igen",
+	"error_status_unauthorized": "Du är inte inloggad för det här.",
+	"error_status_not_found": "Vi hittade inte det där.",
+	"error_status_network": "Vi når inte servern just nu.",
+	"error_status_server": "Servern sketejdade.",
+	"error_status_unknown": "Något oväntat hände."
 }

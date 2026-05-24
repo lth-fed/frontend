@@ -2,11 +2,13 @@ import createClient, { type Client, type ClientOptions } from 'openapi-fetch';
 import { authenticatedFetch } from 'auth-lib';
 
 import type { paths as AuthPaths } from './generated/auth';
-import type { paths as ApiPaths } from './generated/tickets';
+import type { paths as ApiPaths } from './generated/api';
 
 /**
- * Base URLs per environment. In dev we hit the local poem servers directly;
- * in production both services live behind teknologappen.se.
+ * Base URLs per environment. Both backends ship CORS allowing the dev
+ * frontend origin, so browser calls go direct — no proxy hop. The vite
+ * proxy stays in `vite.config.ts` only to route the server-callback URL
+ * past fed-auth's same-authority check (see `lib/auth/bootstrap.ts`).
  */
 const dev = import.meta.env.DEV;
 const AUTH_BASE = dev ? 'http://localhost:8001/api/v0' : 'https://auth.teknologappen.se/api/v0';
