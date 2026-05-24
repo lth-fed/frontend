@@ -15,6 +15,7 @@
 		type BottomConfig,
 		type TopBarConfig
 	} from '$lib/state/appBars.svelte';
+	import { session } from '$lib/state/session.svelte';
 	import { onMount } from 'svelte';
 	import { isIos26Plus } from '$lib/platform/isIos26Plus';
 
@@ -39,10 +40,10 @@
 	]);
 
 	const navRoutes = {
-		home: '/demo/homepage',
-		links: '/demo/links',
-		profile: '/demo/profile',
-		settings: '/demo/settings'
+		home: '/demo/homepage/',
+		links: '/demo/links/',
+		profile: '/demo/profile/',
+		settings: '/demo/settings/'
 	} satisfies Record<NavId, Pathname | null>;
 
 	const selected = $derived<NavId>(
@@ -60,7 +61,10 @@
 	const bars = createAppBars({ topBar: null, bottom: null });
 
 	const defaultTopBar = $derived<TopBarConfig>({
-		leading: slots.avatar({ initials: 'SM', onclick: () => alert(m.top_bar_account_label()) }),
+		leading: slots.avatar({
+			userId: session.userId,
+			onclick: () => alert(m.top_bar_account_label())
+		}),
 		trailing: slots.bell(() => alert(m.top_bar_notifications_label())),
 		title: navItems.find((it) => it.id === selected)?.label ?? ''
 	});

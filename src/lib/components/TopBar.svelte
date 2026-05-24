@@ -69,7 +69,7 @@
 
 {#snippet renderSlot(slot: TopBarSlot)}
 	{#if slot.kind === 'avatar'}
-		<Avatar initials={slot.initials} onclick={slot.onclick} label={slot.label ?? ''} />
+		<Avatar userId={slot.userId} onclick={slot.onclick} label={slot.label ?? ''} />
 	{:else}
 		{@const Icon = slot.icon}
 		<button

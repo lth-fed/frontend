@@ -6,7 +6,9 @@ import { m } from '$lib/paraglide/messages.js';
 export type TopBarSlot =
 	| {
 			kind: 'avatar';
-			initials: string;
+			/** Backend user id (e.g. `test:si1234mc-s`). `Avatar` parses
+			 *  initials internally — pass `session.userId` straight through. */
+			userId: string | null | undefined;
 			systemIcon: string;
 			onclick?: () => void;
 			label?: string;
@@ -101,10 +103,10 @@ export function useAppBars(getConfig: () => Partial<AppBars>) {
    slots.avatar({ initials, onclick }), slots.bell(onclick).
    ============================================================ */
 export const slots = {
-	avatar(opts: { initials: string; onclick?: () => void }): TopBarSlot {
+	avatar(opts: { userId: string | null | undefined; onclick?: () => void }): TopBarSlot {
 		return {
 			kind: 'avatar',
-			initials: opts.initials,
+			userId: opts.userId,
 			systemIcon: 'person',
 			label: m.top_bar_account_label(),
 			onclick: opts.onclick

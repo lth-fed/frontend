@@ -7,55 +7,8 @@
 	import { Ticket as TicketIcon } from '@lucide/svelte';
 	import { formatCardDate } from '$lib/format/datetime';
 	import type { PageProps } from './$types';
-	import type { Guild } from '$lib/types/guild';
 
 	let { data }: PageProps = $props();
-
-	const tickets: Array<{
-		name: string;
-		title: string;
-		subtitle: string;
-		date: string;
-		time: string;
-		location: string;
-		addition: string;
-		serial: string;
-		creatorGuild: Guild;
-	}> = [
-		{
-			name: 'Simon Mechler',
-			title: 'Vårfest',
-			subtitle: 'V-sektionen',
-			date: '01 May, 2026',
-			time: '21:00 - 02:00',
-			location: 'Kårhuset',
-			addition: 'Early bird',
-			serial: '#VG-6719284',
-			creatorGuild: 'd'
-		},
-		{
-			name: 'Simon Mechler',
-			title: 'Annan sittning typ',
-			subtitle: 'A-sektionen',
-			date: '27 Apr, 2026',
-			time: '17:00 - 23:00',
-			location: 'Gasque-salen',
-			addition: 'Standard',
-			serial: '#AG-6719285',
-			creatorGuild: 'a'
-		},
-		{
-			name: 'Simon Mechler',
-			title: 'Tisdagspub',
-			subtitle: 'I-sektionen',
-			date: '05 May, 2026',
-			time: '18:00 - 23:00',
-			location: 'Pub-lokalen',
-			addition: 'Entré',
-			serial: '#IG-6719286',
-			creatorGuild: 'i'
-		}
-	];
 </script>
 
 <div
@@ -64,15 +17,16 @@
 	<header class="flex items-baseline justify-between px-6">
 		<h2 class="text-[20px] font-semibold">{m.home_my_tickets()}</h2>
 		<span class="text-xs font-bold text-guild-accent"
-			>{m.home_tickets_count({ count: tickets.length })}</span
+			>{m.home_tickets_count({ count: data.tickets.length })}</span
 		>
 	</header>
 
 	<div class="z-30 mt-3.5 overflow-y-visible">
-		<Carousel items={tickets}>
+		<Carousel items={data.tickets}>
 			{#snippet item(t, canFlip, requestCenter)}
 				<Ticket
 					{...t}
+					name={data.me.name}
 					{canFlip}
 					onRequestCenter={requestCenter}
 					onAction={(id) => alert(`Action: ${id}`)}
@@ -98,14 +52,12 @@
 			{#each data.activities as a (a.id)}
 				<ActivityCard
 					image={a.image}
-					badge={a.badge}
 					date={formatCardDate(a.startAt)}
 					title={a.title}
-					priceFrom={a.priceFrom}
 					description={a.description}
 					location={a.location}
 					creatorGuild={a.creatorGuild}
-					href="/demo/activity/{a.id}"
+					href="/demo/activity/{a.id}/"
 					transition="forward"
 				/>
 			{/each}

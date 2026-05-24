@@ -49,7 +49,6 @@
 	<div class="z-10 -mt-24 flex w-full flex-col gap-8.75 px-4">
 		<div in:fly={{ y: -28, duration: 140, delay: 120, easing: quadOut }}>
 			<ActivityHeadCard
-				badge={activity.badge}
 				title={activity.title}
 				date={formatDetailDate(activity.startAt)}
 				time={formatTimeRange(activity.startAt, activity.endAt)}

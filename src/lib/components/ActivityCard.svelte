@@ -2,7 +2,6 @@
 	import type { Pathname } from '$app/types';
 	import { resolve } from '$app/paths';
 	import { MapPin } from '@lucide/svelte';
-	import { m } from '$lib/paraglide/messages.js';
 	import { pushNavigation, replaceNavigation } from '$lib/navigation/stackNavigation';
 	import type { Guild } from '$lib/types/guild';
 
@@ -11,7 +10,6 @@
 		badge?: string;
 		date: string;
 		title: string;
-		priceFrom?: number;
 		description: string;
 		location?: string;
 		href?: Pathname;
@@ -25,7 +23,6 @@
 		badge,
 		date,
 		title,
-		priceFrom,
 		description,
 		location,
 		href,
@@ -51,22 +48,9 @@
 	</div>
 
 	<div class="flex flex-col gap-3.5 px-6 pt-3.5 pb-4">
-		<div class="flex items-center justify-between pt-1.5">
-			<div class="flex flex-col gap-1">
-				<p class="text-sm leading-none font-semibold text-guild-accent">{date}</p>
-				<h3 class="text-[22px] leading-none font-semibold">{title}</h3>
-			</div>
-
-			{#if priceFrom !== undefined}
-				<div class="flex flex-col items-center gap-0.5">
-					<p class="text-xs leading-none font-medium tracking-wide text-gray-500">
-						{m.activity_label_from()}
-					</p>
-					<p class="w-fit text-base leading-none font-semibold text-guild-on-surface">
-						{m.activity_price({ amount: priceFrom })}
-					</p>
-				</div>
-			{/if}
+		<div class="flex flex-col gap-1 pt-1.5">
+			<p class="text-sm leading-none font-semibold text-guild-accent">{date}</p>
+			<h3 class="text-[22px] leading-none font-semibold">{title}</h3>
 		</div>
 
 		<p

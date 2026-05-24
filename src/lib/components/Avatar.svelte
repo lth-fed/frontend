@@ -1,12 +1,25 @@
 <script lang="ts">
+	import { initialsFromStilId } from '$lib/format/user';
+
+	/**
+	 * Prop matches the api `Me.id` shape so a caller can pass it
+	 * straight through without computing display initials at the call
+	 * site. Mirrors how `<Ticket>` accepts `id` / `timeStart` and
+	 * formats internally.
+	 */
 	interface Props {
-		initials: string;
+		userId: string | null | undefined;
 		onclick?: () => void;
 		size?: 'sm' | 'md' | 'lg';
 		label?: string;
 	}
 
-	let { initials, onclick, size = 'md', label }: Props = $props();
+	let { userId, onclick, size = 'md', label }: Props = $props();
+
+	/** `?` keeps the badge non-empty when the id doesn't fit the LU
+	 *  shape (e.g. an email-provider id) — otherwise the round button
+	 *  reads as a styling bug. */
+	const initials = $derived(initialsFromStilId(userId) ?? '?');
 
 	const sizes = {
 		sm: 'size-8 text-xs',
