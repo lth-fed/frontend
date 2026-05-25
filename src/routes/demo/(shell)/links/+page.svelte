@@ -171,7 +171,7 @@
 	const links = $derived(session.guild ? guildLinks[session.guild] : []);
 </script>
 
-<section class="px-6 pt-4">
+<section class="px-6">
 	{#if links.length === 0}
 		<EmptyState icon={LinkIcon} title={m.links_empty_title()} />
 	{:else}
