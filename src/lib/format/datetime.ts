@@ -2,7 +2,7 @@ import { getLocale } from '$lib/paraglide/runtime';
 
 /** Compact form for list cards. Order/words follow current paraglide
  *  locale; first letter capitalized so it reads as the start of the
- *  card line. EN: "Mon, Apr 27 - 17:00". SV: "Mån. 27 apr. - 17:00". */
+ *  card line. EN: "Mon, Apr 27". SV: "Mån. 27 apr.". */
 export function formatCardDate(d: Date): string {
 	const locale = getLocale();
 	const date = new Intl.DateTimeFormat(locale, {
@@ -10,7 +10,7 @@ export function formatCardDate(d: Date): string {
 		day: 'numeric',
 		month: 'short'
 	}).format(d);
-	return `${capitalize(date)} - ${formatTime(d, locale)}`;
+	return `${capitalize(date)}`;
 }
 
 /** Verbose form for the detail head; first letter capitalized.
