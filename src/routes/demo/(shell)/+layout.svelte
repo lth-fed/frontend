@@ -63,7 +63,7 @@
 	const defaultTopBar = $derived<TopBarConfig>({
 		leading: slots.avatar({
 			userId: session.userId,
-			onclick: () => replaceNavigation('/demo/profile/'),
+			onclick: () => replaceNavigation('/demo/profile/')
 		}),
 		trailing: slots.bell(() => alert(m.top_bar_notifications_label())),
 		title: navItems.find((it) => it.id === selected)?.label ?? ''

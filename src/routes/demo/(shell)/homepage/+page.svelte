@@ -38,14 +38,16 @@
 					title={m.home_no_tickets_title()}
 					cta={{
 						label: m.home_browse_activities_cta(),
-						onclick: () => alert(m.home_browse_activities_cta())
+						onclick: () => {
+							document.getElementById('event-flow')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+						}
 					}}
 				/>
 			{/snippet}
 		</Carousel>
 	</div>
 
-	<section class="px-6 pt-6">
+	<section id="event-flow" class="scroll-mt-24 px-6 pt-6">
 		<h2 class="text-[20px] font-semibold">{m.home_upcoming_activities()}</h2>
 
 		<div class="mt-3.5 space-y-5.5">
