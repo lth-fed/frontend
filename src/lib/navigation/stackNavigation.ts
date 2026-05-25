@@ -35,13 +35,16 @@ export async function pushNavigation(url: Pathname, opts?: { noScroll?: boolean 
 	}
 }
 
-export async function replaceNavigation(url: Pathname, opts?: { noScroll?: boolean }) {
+export async function replaceNavigation(
+	url: Pathname,
+	opts?: { noScroll?: boolean; resetDepth?: boolean }
+) {
 	pendingIntent = 'root';
 	try {
 		await goto(resolve(url), {
 			replaceState: true,
 			noScroll: opts?.noScroll ?? false,
-			state: nextState(currentDepth())
+			state: nextState(opts?.resetDepth ? 0 : currentDepth())
 		});
 	} finally {
 		pendingIntent = null;

@@ -4,7 +4,7 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import type { PageProps } from './$types';
 	import { buyFreeTicket } from '$lib/api';
-	import { pushNavigation } from '$lib/navigation/stackNavigation';
+	import { replaceNavigation } from '$lib/navigation/stackNavigation';
 
 	let { data }: PageProps = $props();
 	const activity = $derived(data.activity);
@@ -12,7 +12,7 @@
 	async function handleBuyTicket(ticketKindId: string) {
 		try {
 			await buyFreeTicket({ addonIds: [], ticketKindId });
-			await pushNavigation('/demo/homepage/');
+			await replaceNavigation('/demo/homepage/');
 		} catch (e) {
 			console.log(e);
 			alert(`något gick snett! ${e?.body?.message}`);

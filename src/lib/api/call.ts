@@ -37,7 +37,7 @@ export async function unwrap<T>(call: () => Promise<FetchResult<T>>): Promise<T>
 	try {
 		result = await call();
 	} catch (e) {
-		console.error("network error:", e)
+		console.error('network error:', e);
 		apiError('network');
 	}
 
