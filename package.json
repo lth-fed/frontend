@@ -55,6 +55,7 @@
 		"@capacitor/ios": "8.2.0",
 		"@capacitor/preferences": "^8.0.1",
 		"@capacitor/status-bar": "^8.0.2",
+		"@capawesome/capacitor-android-edge-to-edge-support": "^8.0.8",
 		"@capgo/inappbrowser": "^8.6.8",
 		"@lucide/svelte": "^1.14.0",
 		"auth-lib": "link:./auth-lib",

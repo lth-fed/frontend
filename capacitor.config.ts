@@ -8,9 +8,6 @@ const config: CapacitorConfig = {
 		scrollEnabled: true
 	},
 	plugins: {
-		SystemBars: {
-			insetsHandling: 'css'
-		},
 		StatusBar: {
 			overlaysWebView: true
 		}

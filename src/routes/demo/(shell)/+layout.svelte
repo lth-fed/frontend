@@ -106,7 +106,9 @@
 
 <main
 	bind:this={mainEl}
-	class="h-full {isIos26Native ? 'mt-17' : 'pt-[calc(env(safe-area-inset-top)+1.5rem)]'} mb-20"
+	class="h-full {isIos26Native
+		? 'mt-17 mb-20'
+		: 'pt-[calc(env(safe-area-inset-top)+6rem)] mb-24'}"
 >
 	{@render children()}
 </main>
