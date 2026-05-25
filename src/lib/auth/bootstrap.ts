@@ -2,6 +2,7 @@ import { beginLogin, configureAuth, getAuthState, refreshAccessToken } from 'aut
 import { dev } from '$app/environment';
 import { session } from '$lib/state/session.svelte';
 import { getMe, majorityGuild } from '$lib/api/user';
+import { replaceNavigation } from '$lib/navigation/stackNavigation';
 import { InAppBrowser } from '@capgo/inappbrowser';
 import { Capacitor, CapacitorCookies } from '@capacitor/core';
 
@@ -94,6 +95,9 @@ async function startNativeLogin(): Promise<void> {
 	const token = await refreshAccessToken();
 	if (token) {
 		await activateSession(token);
+		// Token is now in Preferences + session; safe to land on the
+		// authenticated home and let its load fire API calls.
+		await replaceNavigation('/demo/homepage/');
 	}
 	session.isProcessing = false;
 }
