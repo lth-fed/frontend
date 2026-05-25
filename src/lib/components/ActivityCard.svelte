@@ -76,7 +76,7 @@
 			if (onclick) onclick();
 			if (!transition) return;
 			event.preventDefault();
-			if (transition === 'root') replaceNavigation(href);
+			if (transition === 'root') replaceNavigation(href, { resetDepth: true });
 			else pushNavigation(href);
 		}}
 		class={cls}

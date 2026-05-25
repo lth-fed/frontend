@@ -9,6 +9,7 @@
 	import { SvelteMap } from 'svelte/reactivity';
 	import { m } from '$lib/paraglide/messages.js';
 	import { replaceNavigation } from '$lib/navigation/stackNavigation';
+	import Routes from '$lib/navigation/routes';
 	import {
 		createAppBars,
 		slots,
@@ -40,10 +41,10 @@
 	]);
 
 	const navRoutes = {
-		home: '/demo/homepage/',
-		links: '/demo/links/',
-		profile: '/demo/profile/',
-		settings: '/demo/settings/'
+		home: Routes.Home,
+		links: Routes.Links,
+		profile: Routes.Profile,
+		settings: Routes.Settings
 	} satisfies Record<NavId, Pathname | null>;
 
 	const selected = $derived<NavId>(
@@ -54,7 +55,7 @@
 
 	function handleSelect(id: string) {
 		const route = navRoutes[id as NavId];
-		if (route) replaceNavigation(route);
+		if (route) replaceNavigation(route, { resetDepth: true });
 		else alert(`${id} (not implemented)`);
 	}
 
@@ -63,7 +64,7 @@
 	const defaultTopBar = $derived<TopBarConfig>({
 		leading: slots.avatar({
 			userId: session.userId,
-			onclick: () => replaceNavigation('/demo/profile/')
+			onclick: () => replaceNavigation(Routes.Profile, { resetDepth: true })
 		}),
 		trailing: slots.bell(() => alert(m.top_bar_notifications_label())),
 		title: navItems.find((it) => it.id === selected)?.label ?? ''

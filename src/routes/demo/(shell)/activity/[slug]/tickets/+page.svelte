@@ -5,6 +5,8 @@
 	import type { PageProps } from './$types';
 	import { buyFreeTicket } from '$lib/api';
 	import { replaceNavigation } from '$lib/navigation/stackNavigation';
+	import Routes from '$lib/navigation/routes';
+	import { isHttpError } from '@sveltejs/kit';
 
 	let { data }: PageProps = $props();
 	const activity = $derived(data.activity);
@@ -12,10 +14,11 @@
 	async function handleBuyTicket(ticketKindId: string) {
 		try {
 			await buyFreeTicket({ addonIds: [], ticketKindId });
-			await replaceNavigation('/demo/homepage/');
+			await replaceNavigation(Routes.Home, { resetDepth: true });
 		} catch (e) {
 			console.log(e);
-			alert(`något gick snett! ${e?.body?.message}`);
+			const msg = isHttpError(e) ? e.body.message : String(e);
+			alert(`något gick snett! ${msg}`);
 		}
 	}
 
