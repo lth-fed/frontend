@@ -3,6 +3,7 @@ import { dev } from '$app/environment';
 import { session } from '$lib/state/session.svelte';
 import { getMe, majorityGuild } from '$lib/api/user';
 import { replaceNavigation } from '$lib/navigation/stackNavigation';
+import Routes from '$lib/navigation/routes';
 import { InAppBrowser } from '@capgo/inappbrowser';
 import { Capacitor, CapacitorCookies } from '@capacitor/core';
 
@@ -97,7 +98,7 @@ async function startNativeLogin(): Promise<void> {
 		await activateSession(token);
 		// Token is now in Preferences + session; safe to land on the
 		// authenticated home and let its load fire API calls.
-		await replaceNavigation('/demo/homepage/');
+		await replaceNavigation(Routes.Home, { resetDepth: true });
 	}
 	session.isProcessing = false;
 }

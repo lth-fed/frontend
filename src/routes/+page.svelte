@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { ticketWallet } from '$lib/plugins/ticketWallet';
+	import Routes from '$lib/navigation/routes';
 
 	let errorMessage: string | null = $state(null);
 	let successMessage: string | null = $state(null);
@@ -61,5 +62,5 @@
 
 	<br />
 
-	<a href={resolve('/demo')}>demo</a>
+	<a href={resolve(Routes.Demo)}>demo</a>
 </main>

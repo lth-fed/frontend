@@ -9,7 +9,7 @@
 	import { isIos26Plus } from '$lib/platform/isIos26Plus';
 	import { onMount } from 'svelte';
 	import { pushNavigation } from '$lib/navigation/stackNavigation';
-	import type { Pathname } from '$app/types';
+	import Routes from '$lib/navigation/routes';
 	import { fly } from 'svelte/transition';
 	import { quadOut } from 'svelte/easing';
 
@@ -27,7 +27,7 @@
 		}),
 		bottom: buyTicketsBottom({
 			id: `buy-${activity.id}`,
-			onclick: () => pushNavigation(`/demo/activity/${activity.id}/tickets` as Pathname)
+			onclick: () => pushNavigation(Routes.ActivityTickets(activity.id))
 		})
 	}));
 </script>

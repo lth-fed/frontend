@@ -6,6 +6,7 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { Ticket as TicketIcon } from '@lucide/svelte';
 	import { formatCardDate } from '$lib/format/datetime';
+	import Routes from '$lib/navigation/routes';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -59,7 +60,7 @@
 					description={a.description}
 					location={a.location}
 					creatorGuild={a.creatorGuild}
-					href="/demo/activity/{a.id}/"
+					href={Routes.Activity(a.id)}
 					transition="forward"
 				/>
 			{/each}
