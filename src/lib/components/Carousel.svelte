@@ -107,16 +107,14 @@
 	<div class="space-y-4">
 		<div
 			{@attach fromAction(viewportAction)}
-			class="snap-x snap-mandatory overflow-visible overflow-x-auto pt-4 pb-24 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-		>
+			class="snap-x snap-mandatory overflow-visible overflow-x-auto pt-4 pb-24 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
 			<div class="flex w-max gap-1.5">
 				<div class="shrink-0" style="width: {spacerSize}px;" aria-hidden="true"></div>
 				{#each items as it, i (i)}
 					<div
 						{@attach fromAction(itemAction, () => i)}
 						class="shrink-0 snap-center snap-always overflow-visible transition-transform duration-200 ease-out will-change-transform"
-						style={`transform: scale(${itemScales[i] ?? 0.86});`}
-					>
+						style={`transform: scale(${itemScales[i] ?? 0.86});`}>
 						{@render item(it, i === current, () => goTo(i))}
 					</div>
 				{/each}
@@ -125,17 +123,17 @@
 		</div>
 
 		<div class="-mt-24 flex justify-center gap-2">
-			<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
-			{#each items as _, i (i)}
-				<button
-					type="button"
-					onclick={() => goTo(i)}
-					aria-label={m.carousel_slide_label({ n: i + 1 })}
-					class="size-2 rounded-full transition-colors {current === i
-						? 'bg-guild-primary ring-(length:--guild-ring-width) ring-guild-ring'
-						: 'bg-gray-300'}"
-				></button>
-			{/each}
+			{#if items.length > 1}
+				{#each items as _, i (i)}
+					<button
+						type="button"
+						onclick={() => goTo(i)}
+						aria-label={m.carousel_slide_label({ n: i + 1 })}
+						class="size-2 rounded-full transition-colors {current === i
+							? 'bg-guild-primary ring-(length:--guild-ring-width) ring-guild-ring'
+							: 'bg-gray-300'}"></button>
+				{/each}
+			{/if}
 		</div>
 	</div>
 {/if}
