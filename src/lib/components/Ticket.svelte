@@ -394,7 +394,7 @@
 
 		{#if !isIos26Native}
 			<div
-				class="absolute bottom-[env(safe-area-inset-bottom)] left-1/2 -translate-x-1/2 translate-y-2 opacity-0 transition-all duration-180 ease-in"
+				class="absolute bottom-[max(env(safe-area-inset-bottom),1.5rem)] left-1/2 -translate-x-1/2 translate-y-2 opacity-0 transition-all duration-180 ease-in"
 				class:opacity-100={showTools}
 				class:translate-y-0={showTools}
 				class:pointer-events-none={!showTools}
