@@ -8,7 +8,7 @@
 	import type { Pathname } from '$app/types';
 	import { SvelteMap } from 'svelte/reactivity';
 	import { m } from '$lib/paraglide/messages.js';
-	import { replaceNavigation } from '$lib/navigation/stackNavigation';
+	import { pushNavigation, replaceNavigation } from '$lib/navigation/stackNavigation';
 	import {
 		createAppBars,
 		slots,
@@ -63,7 +63,7 @@
 	const defaultTopBar = $derived<TopBarConfig>({
 		leading: slots.avatar({
 			userId: session.userId,
-			onclick: () => alert(m.top_bar_account_label())
+			onclick: () => pushNavigation('/demo/profile/'),
 		}),
 		trailing: slots.bell(() => alert(m.top_bar_notifications_label())),
 		title: navItems.find((it) => it.id === selected)?.label ?? ''
