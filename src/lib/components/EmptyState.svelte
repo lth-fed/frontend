@@ -1,20 +1,20 @@
 <script lang="ts">
-	import type { Component } from 'svelte'
-	import { ArrowDown } from '@lucide/svelte'
+	import type { Component } from 'svelte';
+	import { ArrowDown } from '@lucide/svelte';
 
 	interface Cta {
-		label: string
-		onclick?: () => void
-		href?: string
+		label: string;
+		onclick?: () => void;
+		href?: string;
 	}
 
 	interface Props {
-		icon: Component
-		title: string
-		cta?: Cta
+		icon: Component;
+		title: string;
+		cta?: Cta;
 	}
 
-	let { icon: Icon, title, cta }: Props = $props()
+	let { icon: Icon, title, cta }: Props = $props();
 </script>
 
 <div class="rounded-2xl border-2 border-dashed border-gray-300 bg-white px-6 py-10">

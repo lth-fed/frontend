@@ -32,8 +32,7 @@
 			<TicketKindCard
 				name={ticketKind.name}
 				price={ticketKind.price}
-				onclick={() => handleBuyTicket(ticketKind.id)}
-			/>
+				onclick={() => handleBuyTicket(ticketKind.id)} />
 		{/each}
 	</div>
 </div>
