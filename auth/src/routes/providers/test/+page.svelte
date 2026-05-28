@@ -18,7 +18,7 @@
 		}
 		const body = {
 			id: query.get('id'),
-			stil_id,
+			stil_id: stil_id.toLowerCase(),
 			name
 		};
 		const resp = await fetch('/api/v0/providers/test/approve', {
