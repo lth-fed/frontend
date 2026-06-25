@@ -14,7 +14,7 @@
 
 	async function click() {
 		const body = {
-			id: query.get('id'),
+			code: query.get('code'),
 			email,
 			name
 		};
