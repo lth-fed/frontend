@@ -17,7 +17,7 @@ const NATIVE_CONTINUE = 'tappen://oauth_callback';
  *  api.teknologappen.se. Server-to-server, never reaches the browser
  *  as a navigation. */
 const BACKEND_CALLBACK_V1 = dev
-	? `${typeof window === 'undefined' ? 'http://localhost:5173' : window.location.origin}/_proxy/api/user/auth-callback/v1`
+	? 'http://localhost:8000/v0/user/auth-callback/v1'
 	: 'https://api.teknologappen.se/v0/user/auth-callback/v1';
 
 configureAuth({ baseUrl: AUTH_BASE });

@@ -17,7 +17,7 @@
 			return;
 		}
 		const body = {
-			id: query.get('id'),
+			code: query.get('code'),
 			stil_id: stil_id.toLowerCase(),
 			name
 		};
