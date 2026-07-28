@@ -2,6 +2,22 @@
 
 Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
 
+## Production hosting
+
+Build the main and auth frontends, then start their static Nginx services:
+
+```sh
+pnpm --dir lib package
+pnpm build
+pnpm --dir auth build
+podman compose up -d
+```
+
+`compose.yaml` attaches both services to the external `traefik` network. Traefik serves the main
+frontend at `teknologappen.se` and the auth frontend at `auth.teknologappen.se`; the auth API is
+hosted separately at `api.auth.teknologappen.se`. Set `TRAEFIK_NETWORK`, `TRAEFIK_ENTRYPOINT`,
+`FRONTEND_DOMAIN`, or `AUTH_DOMAIN` to override the defaults.
+
 ## Creating a project
 
 If you're seeing this, you've probably already done this step. Congrats!

@@ -14,10 +14,11 @@ import Routes from '$lib/navigation/routes';
 import { InAppBrowser } from '@capgo/inappbrowser';
 import { Capacitor } from '@capacitor/core';
 
-const AUTH_ORIGIN = dev ? 'http://localhost:8001' : 'https://auth.teknologappen.se';
 /** Which fed-auth provider to log in with. LU (SAML behind OIDC) in
  *  production per krav §2–3; the passwordless test provider in dev. */
 const AUTH_PROVIDER = dev ? ('test' as const) : ('lu' as const);
+const AUTH_BASE = dev ? 'http://localhost:8001/api/v0' : 'https://api.auth.teknologappen.se/api/v0';
+const AUTH_ORIGIN = dev ? 'http://localhost:8001' : 'https://api.auth.teknologappen.se';
 const NATIVE_CONTINUE = 'tappen://oauth_callback';
 /** URL fed-auth POSTs the signed JWT to so the backend can upsert the
  *  user record during the token exchange. Both dev localhost pairs and

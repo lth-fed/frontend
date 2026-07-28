@@ -1,0 +1,47 @@
+name: fed-frontend
+
+networks:
+  traefik:
+    external: true
+    name: ${TRAEFIK_NETWORK:-traefik}
+
+services:
+  frontend:
+    image: nginx:1.31.3-alpine3.24
+    restart: unless-stopped
+    expose:
+      - '80'
+    ports:
+      - '8100:80'
+    networks:
+      - traefik
+    volumes:
+      - ./build:/usr/share/nginx/html:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    labels:
+      traefik.enable: 'true'
+      traefik.docker.network: ${TRAEFIK_NETWORK:-traefik}
+      traefik.http.routers.frontend.rule: Host(`${FRONTEND_DOMAIN:-teknologappen.se}`)
+      traefik.http.routers.frontend.entrypoints: ${TRAEFIK_ENTRYPOINT:-websecure}
+      traefik.http.routers.frontend.tls: 'true'
+      traefik.http.services.frontend.loadbalancer.server.port: '80'
+
+  auth-frontend:
+    image: nginx:1.31.3-alpine3.24
+    restart: unless-stopped
+    expose:
+      - '80'
+    ports:
+      - '8101:80'
+    networks:
+      - traefik
+    volumes:
+      - ./auth/build:/usr/share/nginx/html:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    labels:
+      traefik.enable: 'true'
+      traefik.docker.network: ${TRAEFIK_NETWORK:-traefik}
+      traefik.http.routers.auth-frontend.rule: Host(`${AUTH_DOMAIN:-auth.teknologappen.se}`)
+      traefik.http.routers.auth-frontend.entrypoints: ${TRAEFIK_ENTRYPOINT:-websecure}
+      traefik.http.routers.auth-frontend.tls: 'true'
+      traefik.http.services.auth-frontend.loadbalancer.server.port: '80'

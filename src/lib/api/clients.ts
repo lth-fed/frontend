@@ -12,7 +12,7 @@ import type { paths as ApiPaths } from './generated/api';
  * past fed-auth's same-authority check (see `lib/auth/bootstrap.ts`).
  */
 const dev = import.meta.env.DEV;
-const AUTH_BASE = dev ? 'http://localhost:8001/api/v0' : 'https://auth.teknologappen.se/api/v0';
+const AUTH_BASE = dev ? 'http://localhost:8001/api/v0' : 'https://api.auth.teknologappen.se/api/v0';
 const API_BASE = dev ? 'http://localhost:8000/v0' : 'https://api.teknologappen.se/v0';
 
 type AllowedMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';

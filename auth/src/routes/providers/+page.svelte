@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Button, i18n } from 'common-lib';
 	import { SvelteURLSearchParams } from 'svelte/reactivity';
+	import { AUTH_API_ORIGIN } from '$lib/api';
 	import { m } from '$lib/paraglide/messages';
 	const l = $derived([undefined, { locale: i18n.getLang() }]);
 
@@ -16,7 +17,7 @@
 
 	async function click(provider: Provider) {
 		query.set('providers', provider);
-		location.href = `/oidc/v1/authorize?${query.toString()}`;
+		location.href = `${AUTH_API_ORIGIN}/oidc/v1/authorize?${query.toString()}`;
 	}
 </script>
 
