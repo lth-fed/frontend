@@ -6,8 +6,11 @@ networks:
     name: ${TRAEFIK_NETWORK:-traefik}
 
 services:
-  frontend:
-    image: nginx:1.31.3-alpine3.24
+  fed-frontend:
+    build:
+      context: .
+      target: fed-frontend
+    image: ${CONTAINER_REGISTRY:-localhost}/fed-frontend:${CONTAINER_TAG:-production}
     restart: unless-stopped
     expose:
       - '80'
@@ -15,19 +18,20 @@ services:
       - '8100:80'
     networks:
       - traefik
-    volumes:
-      - ./build:/usr/share/nginx/html:ro
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
     labels:
       traefik.enable: 'true'
       traefik.docker.network: ${TRAEFIK_NETWORK:-traefik}
-      traefik.http.routers.frontend.rule: Host(`${FRONTEND_DOMAIN:-teknologappen.se}`)
-      traefik.http.routers.frontend.entrypoints: ${TRAEFIK_ENTRYPOINT:-websecure}
-      traefik.http.routers.frontend.tls: 'true'
-      traefik.http.services.frontend.loadbalancer.server.port: '80'
+      traefik.http.routers.fed-frontend.rule: Host(`${FRONTEND_DOMAIN:-teknologappen.se}`)
+      traefik.http.routers.fed-frontend.entrypoints: ${TRAEFIK_ENTRYPOINT:-websecure}
+      traefik.http.routers.fed-frontend.tls: 'true'
+      traefik.http.routers.fed-frontend.tls.certresolver: ${TRAEFIK_CERT_RESOLVER:-letsencrypt}
+      traefik.http.services.fed-frontend.loadbalancer.server.port: '80'
 
-  auth-frontend:
-    image: nginx:1.31.3-alpine3.24
+  fed-auth-frontend:
+    build:
+      context: .
+      target: fed-auth-frontend
+    image: ${CONTAINER_REGISTRY:-localhost}/fed-auth-frontend:${CONTAINER_TAG:-production}
     restart: unless-stopped
     expose:
       - '80'
@@ -35,13 +39,11 @@ services:
       - '8101:80'
     networks:
       - traefik
-    volumes:
-      - ./auth/build:/usr/share/nginx/html:ro
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
     labels:
       traefik.enable: 'true'
       traefik.docker.network: ${TRAEFIK_NETWORK:-traefik}
-      traefik.http.routers.auth-frontend.rule: Host(`${AUTH_DOMAIN:-auth.teknologappen.se}`)
-      traefik.http.routers.auth-frontend.entrypoints: ${TRAEFIK_ENTRYPOINT:-websecure}
-      traefik.http.routers.auth-frontend.tls: 'true'
-      traefik.http.services.auth-frontend.loadbalancer.server.port: '80'
+      traefik.http.routers.fed-auth-frontend.rule: Host(`${AUTH_DOMAIN:-auth.teknologappen.se}`)
+      traefik.http.routers.fed-auth-frontend.entrypoints: ${TRAEFIK_ENTRYPOINT:-websecure}
+      traefik.http.routers.fed-auth-frontend.tls: 'true'
+      traefik.http.routers.fed-auth-frontend.tls.certresolver: ${TRAEFIK_CERT_RESOLVER:-letsencrypt}
+      traefik.http.services.fed-auth-frontend.loadbalancer.server.port: '80'

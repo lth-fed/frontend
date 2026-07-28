@@ -1,0 +1,9 @@
+*
+!Dockerfile
+!nginx.conf
+!build/
+!build/**
+!auth/
+auth/node_modules
+!auth/build/
+!auth/build/**

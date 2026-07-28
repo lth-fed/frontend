@@ -1,60 +1,82 @@
-# sv
+# FED Frontend
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+## Local development
 
-## Production hosting
-
-Build the main and auth frontends, then start their static Nginx services:
+Install dependencies and run the main frontend:
 
 ```sh
-pnpm --dir lib package
+pnpm install
+pnpm dev
+```
+
+Run the auth frontend from its directory with `pnpm --dir auth dev`.
+
+## Build and push production images
+
+The two images contain their static files; the deployment host does not need
+Node.js, pnpm, source code, or bind-mounted build directories.
+
+Build the static applications first:
+
+```sh
+pnpm install --frozen-lockfile
 pnpm build
+pnpm --dir auth install --frozen-lockfile
 pnpm --dir auth build
-podman compose up -d
 ```
 
-`compose.yaml` attaches both services to the external `traefik` network. Traefik serves the main
-frontend at `teknologappen.se` and the auth frontend at `auth.teknologappen.se`; the auth API is
-hosted separately at `api.auth.teknologappen.se`. Set `TRAEFIK_NETWORK`, `TRAEFIK_ENTRYPOINT`,
-`FRONTEND_DOMAIN`, or `AUTH_DOMAIN` to override the defaults.
-
-## Creating a project
-
-If you're seeing this, you've probably already done this step. Congrats!
+Then build and push both Nginx images (you HAVE TO have built it just before,
+it doesn't do it automatically):
 
 ```sh
-# create a new project
-npx sv create my-app
+export CONTAINER_REGISTRY=registry.esek.se/esek
+export CONTAINER_TAG=0.0.1-alpha.1
+
+podman login registry.esek.se
+podman compose build
+podman compose push fed-frontend fed-auth-frontend
 ```
 
-To recreate this project with the same configuration:
+No production `.env` file or secrets are needed for either build. Production
+URLs are part of the frontend configuration: the main API is
+`https://api.teknologappen.se`, auth UI is `https://auth.teknologappen.se`,
+and auth API is `https://api.auth.teknologappen.se`.
+
+## Deploy pushed images
+
+The deployment host only needs `compose.yaml` and an untracked `.env`:
+
+```dotenv
+CONTAINER_REGISTRY=registry.esek.se/esek
+CONTAINER_TAG=0.0.1-alpha.1
+
+TRAEFIK_NETWORK=traefik
+TRAEFIK_ENTRYPOINT=websecure
+TRAEFIK_CERT_RESOLVER=letsencrypt
+FRONTEND_DOMAIN=teknologappen.se
+AUTH_DOMAIN=auth.teknologappen.se
+```
+
+It also needs:
+
+- DNS records for both domains pointing to the host.
+- A running Traefik instance with its Docker provider connected to the Podman
+  API socket.
+- A `websecure` entrypoint and an ACME certificate resolver named
+  `letsencrypt` (or matching values in `.env`).
+- The external network shared by Traefik and this stack:
 
 ```sh
-# recreate this project
-pnpm dlx sv@0.15.1 create --template minimal --types ts --add prettier eslint tailwindcss="plugins:none" paraglide="languageTags:en, sv+demo:yes" --install pnpm tappen-frontend
+podman network exists traefik || podman network create traefik
 ```
 
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or
-`yarn`), start a development server:
+Pull and start the pushed images without rebuilding:
 
 ```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+podman compose pull
+podman compose up -d --no-build
 ```
 
-## Building
-
-To create a production version of your app:
-
-```sh
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for
-> your target environment.
+Traefik serves the main frontend at `teknologappen.se` and the auth frontend at
+`auth.teknologappen.se`. The separately deployed backend serves the auth API at
+`api.auth.teknologappen.se`.
