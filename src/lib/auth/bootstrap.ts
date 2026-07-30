@@ -1,26 +1,33 @@
-import { beginLogin, configureAuth, getAuthState, refreshAccessToken } from 'auth-lib';
+import {
+	beginLogin,
+	configureAuth,
+	finishLogin,
+	getAuthState,
+	logout,
+	refreshAccessToken
+} from 'auth-lib';
 import { dev } from '$app/environment';
 import { session } from '$lib/state/session.svelte';
-import { getMe, majorityGuild } from '$lib/api/user';
+import { cachedMe, majorityGuild } from '$lib/api/user';
 import { replaceNavigation } from '$lib/navigation/stackNavigation';
 import Routes from '$lib/navigation/routes';
 import { InAppBrowser } from '@capgo/inappbrowser';
-import { Capacitor, CapacitorCookies } from '@capacitor/core';
+import { Capacitor } from '@capacitor/core';
 
-const AUTH_BASE = dev ? 'http://localhost:8001/api/v0' : 'https://auth.teknologappen.se/api/v0';
 const AUTH_ORIGIN = dev ? 'http://localhost:8001' : 'https://auth.teknologappen.se';
+/** Which fed-auth provider to log in with. LU (SAML behind OIDC) in
+ *  production per krav §2–3; the passwordless test provider in dev. */
+const AUTH_PROVIDER = dev ? ('test' as const) : ('lu' as const);
 const NATIVE_CONTINUE = 'tappen://oauth_callback';
-/** URL fed-auth POSTs the signed JWT to so fed-tickets can upsert the
- *  user record after sign-in. In dev we route through the vite proxy
- *  so fed-auth's callback-authority check (now suffix-matched against
- *  Origin) lines up; in prod the call goes direct to
- *  api.teknologappen.se. Server-to-server, never reaches the browser
- *  as a navigation. */
+/** URL fed-auth POSTs the signed JWT to so the backend can upsert the
+ *  user record during the token exchange. Both dev localhost pairs and
+ *  the prod domain are in fed-auth's allowlist. Server-to-server,
+ *  never reaches the browser as a navigation. */
 const BACKEND_CALLBACK_V1 = dev
 	? 'http://localhost:8000/v0/user/auth-callback/v1'
 	: 'https://api.teknologappen.se/v0/user/auth-callback/v1';
 
-configureAuth({ baseUrl: AUTH_BASE });
+configureAuth({ origin: AUTH_ORIGIN });
 
 /**
  * Set the freshly-minted access token on `session` and resolve the
@@ -32,7 +39,9 @@ configureAuth({ baseUrl: AUTH_BASE });
 async function activateSession(token: string): Promise<void> {
 	session.accessToken = token;
 	try {
-		const me = await getMe();
+		// Through the cache: the identity fetched here is the same one
+		// Home's load reads a moment later.
+		const me = await cachedMe();
 		session.userId = me.id;
 		session.guild = majorityGuild(me.groups) ?? null;
 	} catch (err) {
@@ -42,11 +51,18 @@ async function activateSession(token: string): Promise<void> {
 
 export async function bootstrapAuth(): Promise<void> {
 	try {
-		if ((await getAuthState()) === 'authenticated') {
+		const state = await getAuthState();
+		if (state === 'authenticated') {
 			const token = await refreshAccessToken();
 			if (token) {
 				await activateSession(token);
 			}
+		} else if (state === 'authenticating') {
+			// A previous login never came back (e.g. the SAML flow stranded on
+			// an error page and the user navigated away). The server-side auth
+			// session has a 30-minute TTL, so a pending state found at boot is
+			// stale — reset so Landing offers a fresh attempt.
+			await logout();
 		}
 	} catch (err) {
 		console.error('Auth bootstrap failed', err);
@@ -59,6 +75,7 @@ export async function bootstrapAuth(): Promise<void> {
  * land back on /auth/callback, which finishes the flow.
  */
 export async function startLogin(): Promise<void> {
+	session.loginError = null;
 	try {
 		if (Capacitor.isNativePlatform()) {
 			await startNativeLogin();
@@ -67,63 +84,77 @@ export async function startLogin(): Promise<void> {
 		}
 	} catch (err) {
 		console.error('Login failed to start', err);
+		session.loginError = 'failed';
 	}
 }
 
 async function startNativeLogin(): Promise<void> {
-	const redirect = await beginLogin('test', NATIVE_CONTINUE, BACKEND_CALLBACK_V1);
-	if (typeof redirect !== 'string') return;
+	const redirect = await beginLogin(AUTH_PROVIDER, NATIVE_CONTINUE, BACKEND_CALLBACK_V1);
+	if (typeof redirect !== 'string') {
+		session.loginError = 'failed';
+		return;
+	}
 
 	session.isProcessing = true;
-	const response = await InAppBrowser.openSecureWindow({
-		authEndpoint: redirect,
-		redirectUri: NATIVE_CONTINUE,
-		prefersEphemeralWebBrowserSession: true
-	});
+	try {
+		let response;
+		try {
+			response = await InAppBrowser.openSecureWindow({
+				authEndpoint: redirect,
+				redirectUri: NATIVE_CONTINUE,
+				prefersEphemeralWebBrowserSession: true
+			});
+		} catch (_e) {
+			// The user closed the in-app browser without completing the flow
+			// (or the SAML leg stranded on an error page and they backed out).
+			session.loginError = 'cancelled';
+			return;
+		}
 
-	const url = new URL(response.redirectedUri);
-	const refreshToken = url.searchParams.get('refresh_token');
-	if (!refreshToken) return;
-
-	// In-app browser cookies are isolated from the WebView jar — copy the
-	// token over so the next /refresh sends it.
-	await CapacitorCookies.setCookie({
-		url: AUTH_ORIGIN,
-		key: 'teknologappen-auth-refresh-token',
-		value: refreshToken
-	});
-
-	const token = await refreshAccessToken();
-	if (token) {
-		await activateSession(token);
-		// Token is now in Preferences + session; safe to land on the
-		// authenticated home and let its load fire API calls.
-		await replaceNavigation(Routes.Home, { resetDepth: true });
+		// The in-app browser lands on tappen://oauth_callback?code=…&state=…;
+		// exchange the code for tokens (PKCE) — no cookies involved anymore.
+		const token = await finishLogin(response.redirectedUri);
+		if (token) {
+			await activateSession(token);
+			// Token is now in Preferences + session; safe to land on the
+			// authenticated home and let its load fire API calls.
+			await replaceNavigation(Routes.Home, { resetDepth: true });
+		} else {
+			// `?error=…` on the callback, state mismatch, or a failed exchange.
+			session.loginError = 'failed';
+		}
+	} finally {
+		session.isProcessing = false;
 	}
-	session.isProcessing = false;
 }
 
 async function startWebLogin(): Promise<void> {
 	const continueUrl = `${window.location.origin}/auth/callback/`;
-	const redirect = await beginLogin('test', continueUrl, BACKEND_CALLBACK_V1);
-	if (typeof redirect !== 'string') return;
+	const redirect = await beginLogin(AUTH_PROVIDER, continueUrl, BACKEND_CALLBACK_V1);
+	if (typeof redirect !== 'string') {
+		session.loginError = 'failed';
+		return;
+	}
 
 	session.isProcessing = true;
 	window.location.href = redirect;
 }
 
 /**
- * Finish the web SSO flow. The auth server sets the refresh-token cookie
- * itself during confirm-datasharing, so all we have to do is mint an access
- * token. Called from /auth/callback.
+ * Finish the web SSO flow. The auth server redirected back here with
+ * `?code=…&state=…`; exchange the code for tokens. Called from
+ * /auth/callback. Returns whether a session was established.
  */
-export async function finishWebLogin(): Promise<void> {
+export async function finishWebLogin(): Promise<boolean> {
 	session.isProcessing = true;
 	try {
-		const token = await refreshAccessToken();
+		const token = await finishLogin(window.location.href);
 		if (token) {
 			await activateSession(token);
+			return true;
 		}
+		session.loginError = 'failed';
+		return false;
 	} finally {
 		session.isProcessing = false;
 	}
