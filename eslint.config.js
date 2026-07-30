@@ -12,7 +12,18 @@ const gitignorePath = path.resolve(import.meta.dirname, '.gitignore');
 
 export default defineConfig(
 	includeIgnoreFile(gitignorePath),
-	{ ignores: ['ios/**', 'android/**'] },
+	// .gitignore anchors /.svelte-kit, /build and src/lib/paraglide to the repo root, so the nested
+	// auth/ and lib/ packages leak their build output and generated messages into this scope.
+	{
+		ignores: [
+			'ios/**',
+			'android/**',
+			'**/.svelte-kit/',
+			'**/build/',
+			'**/dist/',
+			'**/src/lib/paraglide/'
+		]
+	},
 	js.configs.recommended,
 	ts.configs.recommended,
 	svelte.configs.recommended,
