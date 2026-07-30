@@ -10,7 +10,9 @@ type Depends = (dep: `app:cache:${string}`) => void;
 
 type RawBrief = components['schemas']['BriefActivity'];
 type RawActivity = components['schemas']['Activity'];
-type RawTicketKind = components['schemas']['TicketKind'];
+// The list endpoint's gating shape. `TicketKind` is now the single-kind
+// detail schema (addons, no window/stock), which this mapper does not read.
+type RawTicketKind = components['schemas']['ActivityTicketKind'];
 type RawHost = components['schemas']['Host'];
 type RawLocation = components['schemas']['Location'];
 

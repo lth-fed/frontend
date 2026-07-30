@@ -105,7 +105,7 @@ export async function buyReservation(
 ): Promise<Attempt<BuyReservationOutcome>> {
 	if (DEMO_MODE) return { ok: { ticketId: crypto.randomUUID() } };
 	const result = await attempt<components['schemas']['BuyTicketResponse']>(() =>
-		api.POST('/tickets/reservation', {
+		api.POST('/tickets/reservation/buy', {
 			body: {
 				ticket_kind: input.ticketKindId,
 				provider: input.provider,
@@ -171,7 +171,9 @@ export async function queueStatus(): Promise<QueueStatus | null> {
 		ticketKindId: data.ticket_kind,
 		placement: data.placement ?? undefined,
 		timeout: data.timeout ? parseDate(data.timeout) : undefined,
-		latestTransaction: data.latest_transaction ? parseDate(data.latest_transaction) : undefined
+		latestTransaction: data.start_transaction_before
+			? parseDate(data.start_transaction_before)
+			: undefined
 	};
 }
 

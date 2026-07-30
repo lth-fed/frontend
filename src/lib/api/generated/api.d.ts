@@ -206,7 +206,7 @@ export interface paths {
 						[name: string]: unknown;
 					};
 					content: {
-						'application/json; charset=utf-8': components['schemas']['TicketKind'][];
+						'application/json; charset=utf-8': components['schemas']['ActivityTicketKind'][];
 					};
 				};
 				/** @description This is for user input errors. */
@@ -883,7 +883,7 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
-	'/tickets/{id}': {
+	'/tickets/{id}/receipt': {
 		parameters: {
 			query?: never;
 			header?: never;
@@ -906,7 +906,91 @@ export interface paths {
 						[name: string]: unknown;
 					};
 					content: {
-						'application/json; charset=utf-8': components['schemas']['TicketKindWithAddons'];
+						'application/octet-stream': string;
+					};
+				};
+				/** @description This is for user input errors. */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+				/** @description This is for auth errors. This usually requires re-login. */
+				401: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+				/** @description This is for client application errors. */
+				403: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+				/**
+				 * @description This is for when the user requests something that doesn't exist. Probably cache invalidaton
+				 *     issue.
+				 */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+				/** @description Shit went down and the team is scrambling to fix it. */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+			};
+		};
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/tickets/ticket-kind/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path: {
+					id: string;
+				};
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['TicketKind'];
 					};
 				};
 				/** @description This is for user input errors. */
@@ -975,7 +1059,8 @@ export interface paths {
 			cookie?: never;
 		};
 		/**
-		 * Get the status of the queue.
+		 * Get the status of the queue. If 404 & user has started transacting, this means the purchase
+		 *     went through!
 		 * @description # Errors
 		 *
 		 *     - 404 not found when the user is not queued (neither reservation queue nor release queue)
@@ -1219,85 +1304,7 @@ export interface paths {
 		};
 		get?: never;
 		put?: never;
-		/**
-		 * # Errors
-		 * @description - addons invalid (they should match the valid addons you got getting the details of this
-		 *     `ticket_kind`)
-		 *     - transaction is already underway
-		 *     - `ticket_kind` doesn't match current reservation
-		 *     - user already owns a ticket from this event
-		 */
-		post: {
-			parameters: {
-				query?: never;
-				header?: never;
-				path?: never;
-				cookie?: never;
-			};
-			requestBody: {
-				content: {
-					'application/json; charset=utf-8': components['schemas']['BuyTicketRequest'];
-				};
-			};
-			responses: {
-				200: {
-					headers: {
-						[name: string]: unknown;
-					};
-					content: {
-						'application/json; charset=utf-8': components['schemas']['BuyTicketResponse'];
-					};
-				};
-				/** @description This is for user input errors. */
-				400: {
-					headers: {
-						[name: string]: unknown;
-					};
-					content: {
-						'application/json; charset=utf-8': components['schemas']['MinilithError'];
-					};
-				};
-				/** @description This is for auth errors. This usually requires re-login. */
-				401: {
-					headers: {
-						[name: string]: unknown;
-					};
-					content: {
-						'application/json; charset=utf-8': components['schemas']['MinilithError'];
-					};
-				};
-				/** @description This is for client application errors. */
-				403: {
-					headers: {
-						[name: string]: unknown;
-					};
-					content: {
-						'application/json; charset=utf-8': components['schemas']['MinilithError'];
-					};
-				};
-				/**
-				 * @description This is for when the user requests something that doesn't exist. Probably cache invalidaton
-				 *     issue.
-				 */
-				404: {
-					headers: {
-						[name: string]: unknown;
-					};
-					content: {
-						'application/json; charset=utf-8': components['schemas']['MinilithError'];
-					};
-				};
-				/** @description Shit went down and the team is scrambling to fix it. */
-				500: {
-					headers: {
-						[name: string]: unknown;
-					};
-					content: {
-						'application/json; charset=utf-8': components['schemas']['MinilithError'];
-					};
-				};
-			};
-		};
+		post?: never;
 		/**
 		 * Cancel the reservation if the user is no longer interested in buying it (e.g. realize they
 		 *     are broke).
@@ -1372,6 +1379,103 @@ export interface paths {
 				};
 			};
 		};
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/tickets/reservation/buy': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/**
+		 * Try to lock in this reservation by purchasing the ticket.
+		 *     If a transaction is already underway, it's cancelled.
+		 * @description # Errors
+		 *
+		 *     - addons invalid (they should match the valid addons you got getting the details of this
+		 *     `ticket_kind`)
+		 *     - `ticket_kind` doesn't match current reservation
+		 *     - could not cancel transaction (500)
+		 *     - user already owns a ticket from this event
+		 */
+		post: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			requestBody: {
+				content: {
+					'application/json; charset=utf-8': components['schemas']['BuyTicketRequest'];
+				};
+			};
+			responses: {
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['BuyTicketResponse'];
+					};
+				};
+				/** @description This is for user input errors. */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+				/** @description This is for auth errors. This usually requires re-login. */
+				401: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+				/** @description This is for client application errors. */
+				403: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+				/**
+				 * @description This is for when the user requests something that doesn't exist. Probably cache invalidaton
+				 *     issue.
+				 */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+				/** @description Shit went down and the team is scrambling to fix it. */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+			};
+		};
+		delete?: never;
 		options?: never;
 		head?: never;
 		patch?: never;
@@ -1753,6 +1857,26 @@ export interface components {
 			/** @description If there are any tickets for this event. */
 			tickets_exist: boolean;
 		};
+		/** ActivityTicketKind */
+		ActivityTicketKind: {
+			/** Format: uuid */
+			id: string;
+			name: {
+				[key: string]: string;
+			};
+			/** Format: int64 */
+			price: number;
+			/** Format: date-time */
+			purchasing_available_start: string;
+			/** Format: date-time */
+			purchasing_available_stop: string;
+			/**
+			 * Format: int32
+			 * @description Null if there's not a shortage of tickets.
+			 */
+			tickets_left?: number;
+			membership_passing: boolean;
+		};
 		/** AddonOption */
 		AddonOption: {
 			/** Format: uuid */
@@ -1818,6 +1942,8 @@ export interface components {
 			/** @description Doesn't matter for free tickets. */
 			provider: components['schemas']['PurchaseProvider'] & unknown;
 			addons: components['schemas']['BoughtAddon'][];
+			/** @description Required for stripe. */
+			stripe_success_url?: string;
 		};
 		/** BuyTicketResponse */
 		BuyTicketResponse: {
@@ -1828,6 +1954,12 @@ export interface components {
 			ticket_id?: string;
 			/** @description Not null when using [`PurchaseProvider::Swish`]. */
 			payment_request_token?: string;
+			/**
+			 * @description Not null when using [`PurchaseProvider::Stripe`].
+			 *     Open this in a new browser context.
+			 *     Close that context when [`BuyTicketRequest::stripe_success_url`] is reached.
+			 */
+			stripe_url?: string;
 		};
 		/** Coords */
 		Coords: {
@@ -1999,7 +2131,7 @@ export interface components {
 			 * @description When transactions at latest should be conducted.
 			 *     Will be not null when placement is 0.
 			 */
-			latest_transaction?: string;
+			start_transaction_before?: string;
 		};
 		/** Responsible */
 		Responsible: {
@@ -2008,26 +2140,6 @@ export interface components {
 		};
 		/** TicketKind */
 		TicketKind: {
-			/** Format: uuid */
-			id: string;
-			name: {
-				[key: string]: string;
-			};
-			/** Format: int64 */
-			price: number;
-			/** Format: date-time */
-			purchasing_available_start: string;
-			/** Format: date-time */
-			purchasing_available_stop: string;
-			/**
-			 * Format: int32
-			 * @description Null if there's not a shortage of tickets.
-			 */
-			tickets_left?: number;
-			membership_passing: boolean;
-		};
-		/** TicketKindWithAddons */
-		TicketKindWithAddons: {
 			/** Format: uuid */
 			ticket_kind_id: string;
 			ticket_kind_name: {
