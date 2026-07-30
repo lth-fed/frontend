@@ -1,0 +1,12 @@
+{
+	"name": "auth-lib",
+	"version": "0.0.2",
+	"description": "OIDC (Authorization Code + PKCE) client for the teknologappen auth service",
+	"main": "index.ts",
+	"types": "index.ts",
+	"exports": {
+		".": "./index.ts"
+	},
+	"keywords": [],
+	"author": "Erik Davidsson <fed@icelk.dev>"
+}
