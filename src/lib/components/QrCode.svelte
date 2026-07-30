@@ -15,7 +15,6 @@
 	aria-label={m.qr_code_alt()}
 	data-qr={data}
 	class="flex items-center justify-center rounded-lg bg-gray-100"
-	style="width: {size}px; height: {size}px;"
->
+	style="width: {size}px; height: {size}px;">
 	<QrIcon class="size-1/2 text-gray-400" aria-hidden="true" />
 </div>

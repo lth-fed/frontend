@@ -14,12 +14,10 @@
 </script>
 
 <div
-	class="flex w-full flex-col gap-5 rounded-[34px] bg-white/80 px-6 pt-6 pb-7 shadow-[0_8px_40px_color-mix(in_srgb,var(--color-guild-primary)_12%,transparent)] ring-1 ring-gray-200 backdrop-blur-md"
->
+	class="flex w-full flex-col gap-5 rounded-[34px] bg-white/80 px-6 pt-6 pb-7 shadow-[0_8px_40px_color-mix(in_srgb,var(--color-guild-primary)_12%,transparent)] ring-1 ring-gray-200 backdrop-blur-md">
 	{#if badge}
 		<div
-			class="w-fit rounded-full bg-white px-2 py-1.5 text-[10px] font-semibold text-guild-on-surface"
-		>
+			class="w-fit rounded-full bg-white px-2 py-1.5 text-[10px] font-semibold text-guild-on-surface">
 			{badge}
 		</div>
 	{/if}

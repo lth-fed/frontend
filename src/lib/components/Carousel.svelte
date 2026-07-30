@@ -107,7 +107,7 @@
 	<div class="space-y-4">
 		<div
 			{@attach fromAction(viewportAction)}
-			class="snap-x snap-mandatory overflow-visible overflow-x-auto pt-4 pb-24 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+			class="snap-x snap-mandatory [scrollbar-width:none] overflow-visible overflow-x-auto pt-4 pb-24 [&::-webkit-scrollbar]:hidden">
 			<div class="flex w-max gap-1.5">
 				<div class="shrink-0" style="width: {spacerSize}px;" aria-hidden="true"></div>
 				{#each items as it, i (i)}

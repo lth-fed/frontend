@@ -40,8 +40,7 @@
 		<img src={image} alt="" class="block aspect-video w-full object-cover" />
 		{#if badge}
 			<span
-				class="absolute top-3 left-3 rounded-full border border-guild-primary-light bg-guild-surface px-2 py-1.5 text-[10px] leading-none font-bold text-guild-on-surface"
-			>
+				class="absolute top-3 left-3 rounded-full border border-guild-primary-light bg-guild-surface px-2 py-1.5 text-[10px] leading-none font-bold text-guild-on-surface">
 				{badge}
 			</span>
 		{/if}
@@ -54,8 +53,7 @@
 		</div>
 
 		<p
-			class="clear-both line-clamp-4 text-justify text-sm leading-tight hyphens-auto text-gray-600"
-		>
+			class="clear-both line-clamp-4 text-justify text-sm leading-tight hyphens-auto text-gray-600">
 			{description}
 		</p>
 
@@ -80,8 +78,7 @@
 			else pushNavigation(href);
 		}}
 		class={cls}
-		data-sveltekit-preload-data="hover"
-	>
+		data-sveltekit-preload-data="hover">
 		{@render body()}
 	</a>
 {:else}

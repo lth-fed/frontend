@@ -22,8 +22,7 @@
 			type="button"
 			aria-label={it.label}
 			onclick={() => onAction(it.id)}
-			class="flex size-12 items-center justify-center rounded-full bg-white text-gray-700 shadow-md"
-		>
+			class="flex size-12 items-center justify-center rounded-full bg-white text-gray-700 shadow-md">
 			<Icon class="size-5" />
 		</button>
 	{/each}

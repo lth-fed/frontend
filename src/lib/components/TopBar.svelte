@@ -76,8 +76,7 @@
 			type="button"
 			aria-label={slot.label}
 			onclick={slot.onclick}
-			class="flex size-11 items-center justify-center"
-		>
+			class="flex size-11 items-center justify-center">
 			<Icon class={slot.iconClass ?? 'size-7 text-guild-accent'} aria-hidden="true" />
 		</button>
 	{/if}
@@ -85,8 +84,7 @@
 
 {#if !isIos26Native}
 	<header
-		class="grid grid-cols-[1fr_auto_1fr] items-center gap-3 bg-guild-surface px-6 pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-4 shadow-sm"
-	>
+		class="grid grid-cols-[1fr_auto_1fr] items-center gap-3 bg-guild-surface px-6 pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-4 shadow-sm">
 		<div class="justify-self-start">
 			{#if leading}{@render renderSlot(leading)}{/if}
 		</div>
