@@ -47,8 +47,7 @@
 		class={inputError ? 'border border-3 border-red-300' : ''}
 		bind:value={email}
 		type="email"
-		disabled={freeze}
-	/>
+		disabled={freeze} />
 </p>
 <p class="flex flex-col">
 	<Input
@@ -56,8 +55,7 @@
 		class={inputError ? 'border border-3 border-red-300' : ''}
 		bind:value={name}
 		disabled={freeze}
-		onkeydown={(e) => (e.key === 'Enter' ? click() : {})}
-	/>
+		onkeydown={(e) => (e.key === 'Enter' ? click() : {})} />
 </p>
 <Button class="mt-5 w-full" onclick={click} disabled={freeze}>{m.login(...l)}</Button>
 {#if continueToMail}
