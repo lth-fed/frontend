@@ -270,12 +270,10 @@
 	<article class="absolute inset-0" style="clip-path: path('{path}');">
 		<div
 			class="absolute inset-x-0 top-0 flex flex-col gap-5 bg-guild-primary px-3.75 pt-5 text-guild-on-primary"
-			style="height: {TOP_H}px;"
-		>
+			style="height: {TOP_H}px;">
 			<div class="flex items-center justify-between">
 				<span
-					class="rounded-full bg-guild-surface px-2.5 py-1.25 text-[11px] leading-none font-medium text-guild-on-surface"
-				>
+					class="rounded-full bg-guild-surface px-2.5 py-1.25 text-[11px] leading-none font-medium text-guild-on-surface">
 					{status ?? m.ticket_status_active()}
 				</span>
 				<TicketIcon class="size-5" aria-hidden="true" />
@@ -306,8 +304,7 @@
 
 		<div
 			class="absolute inset-x-0 bottom-0 flex flex-col bg-white px-3.75 pt-4 text-guild-on-surface"
-			style="height: {H - TOP_H}px;"
-		>
+			style="height: {H - TOP_H}px;">
 			<div class="grid grid-cols-2 gap-y-3 text-sm text-black">
 				<div>
 					<dt class="text-xs font-medium opacity-75">{m.ticket_label_addition()}</dt>
@@ -321,8 +318,7 @@
 
 			<div class="flex flex-1 flex-col items-center justify-center gap-1.25">
 				<div
-					class="flex size-14.5 items-center justify-center rounded-[10px] border border-gray-300 bg-gray-100 p-2.5"
-				>
+					class="flex size-14.5 items-center justify-center rounded-[10px] border border-gray-300 bg-gray-100 p-2.5">
 					<QrCode class="size-full stroke-[1.5] text-gray-500" aria-hidden="true" />
 				</div>
 				<p class="text-sm text-gray-500">{m.ticket_tap_qr()}</p>
@@ -331,8 +327,8 @@
 
 		<div
 			class="absolute right-6 left-6 border-t-2 border-dashed border-guild-primary-light"
-			style="top: {TOP_H}px;"
-		></div>
+			style="top: {TOP_H}px;">
+		</div>
 	</article>
 {/snippet}
 
@@ -347,12 +343,10 @@
 	onclick={openDetails}
 	class="block cursor-pointer rounded-[34px] border-0 bg-guild-primary-light p-0 text-left shadow-[0_8px_40px_color-mix(in_srgb,rgb(0_0_0)_6%,transparent)] [-webkit-tap-highlight-color:transparent] focus:outline-none"
 	class:invisible={showOverlay}
-	style="width: calc({W}px * var(--ticket-scale, 1)); height: calc({H}px * var(--ticket-scale, 1));"
->
+	style="width: calc({W}px * var(--ticket-scale, 1)); height: calc({H}px * var(--ticket-scale, 1));">
 	<div
 		class="relative origin-top-left"
-		style="width: {W}px; height: {H}px; transform: scale(var(--ticket-scale, 1));"
-	>
+		style="width: {W}px; height: {H}px; transform: scale(var(--ticket-scale, 1));">
 		{@render ticketFront()}
 	</div>
 </button>
@@ -363,30 +357,26 @@
 		class="fixed inset-0 z-60 m-0 block h-dvh max-h-none w-dvw max-w-none border-0 bg-transparent p-0 backdrop:bg-transparent"
 		oncancel={handleCancel}
 		aria-label={m.modal_close_label()}
-		{@attach openAsModal}
-	>
+		{@attach openAsModal}>
 		<button
 			type="button"
 			aria-label={m.modal_close_label()}
 			onclick={closeDetails}
 			class="absolute inset-0 bg-black/50 opacity-0 transition-opacity duration-280 ease-in"
-			class:opacity-100={overlayReady}
-		></button>
+			class:opacity-100={overlayReady}></button>
 
 		<div class="pointer-events-none absolute inset-0 perspective-[1800px]">
 			<div
 				class="ticket-flip pointer-events-auto absolute top-0 left-0 h-110 w-75 origin-[center_left] transition-transform duration-560 ease-[cubic-bezier(0.22,0.61,0.36,1)] will-change-transform transform-3d"
 				class:ticket-flip-open={overlayReady}
 				ontransitionend={onFlipTransitionEnd}
-				style={`--origin-x:${originX}px; --origin-y:${originY}px; --origin-scale:${originScale}; --target-x:${targetX}px; --target-y:${targetY}px;`}
-			>
+				style={`--origin-x:${originX}px; --origin-y:${originY}px; --origin-scale:${originScale}; --target-x:${targetX}px; --target-y:${targetY}px;`}>
 				<div class="absolute inset-0 backface-hidden" aria-hidden={overlayReady}>
 					{@render ticketFront()}
 				</div>
 				<div
 					class="absolute inset-0 transform-[rotateY(180deg)] backface-hidden"
-					aria-hidden={!overlayReady}
-				>
+					aria-hidden={!overlayReady}>
 					{@render ticketBack()}
 				</div>
 			</div>
@@ -398,8 +388,7 @@
 				class:opacity-100={showTools}
 				class:translate-y-0={showTools}
 				class:pointer-events-none={!showTools}
-				class:pointer-events-auto={showTools}
-			>
+				class:pointer-events-auto={showTools}>
 				<ToolBar items={tools} onAction={(id) => onAction?.(id)} />
 			</div>
 		{/if}

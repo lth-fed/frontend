@@ -19,3 +19,15 @@ export const guilds: Record<Guild, GuildInfo> = {
 	w: { name: 'W-sektionen', logo: '/guild-logos/w.avif' },
 	i: { name: 'I-sektionen', logo: '/guild-logos/i.avif' }
 };
+
+/** Neutral fallback for users in no (or several) guilds — pairs with the
+ *  `:root` default theme (krav §8: "standard theme"). */
+export const defaultGuildInfo: GuildInfo = {
+	name: 'Teknologappen',
+	logo: '/guild-logos/default.svg'
+};
+
+/** Guild metadata for the user's guild, or the neutral default. */
+export function guildInfo(guild: Guild | null | undefined): GuildInfo {
+	return guild ? guilds[guild] : defaultGuildInfo;
+}

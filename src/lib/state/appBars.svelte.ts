@@ -2,6 +2,7 @@ import { getContext, onDestroy, setContext } from 'svelte';
 import type { Component } from 'svelte';
 import { Bell, ChevronLeft, ShareIcon, TicketIcon } from '@lucide/svelte';
 import { m } from '$lib/paraglide/messages.js';
+import { goBackOrHome } from '$lib/navigation/stackNavigation';
 
 export type TopBarSlot =
 	| {
@@ -127,7 +128,9 @@ export const slots = {
 			icon: ChevronLeft,
 			systemIcon: 'chevron.left',
 			label: m.back_label(),
-			onclick: onclick ?? (() => history.back())
+			// depth-aware default that always escapes (never strands the
+			// user), overridable per page
+			onclick: onclick ?? goBackOrHome
 		};
 	},
 	share(onclick: () => void): TopBarSlot {

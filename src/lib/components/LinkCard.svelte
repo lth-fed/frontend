@@ -12,13 +12,13 @@
 	let { image, title, description, url }: Props = $props();
 </script>
 
+<!-- eslint-disable svelte/no-navigation-without-resolve -- this card only ever links off-app -->
 <a
 	href={url}
 	target="_blank"
 	rel="noopener noreferrer"
 	aria-label={m.links_open_external({ title })}
-	class="flex items-center gap-4 rounded-2xl bg-white p-3 shadow-md ring-1 ring-gray-200"
->
+	class="flex items-center gap-4 rounded-2xl bg-white p-3 shadow-md ring-1 ring-gray-200">
 	<img src={image} alt="" class="size-20 shrink-0 rounded-xl object-cover" />
 
 	<div class="relative min-w-0 flex-1 self-stretch py-1 pr-6">

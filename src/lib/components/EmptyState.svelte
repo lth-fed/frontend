@@ -20,15 +20,17 @@
 <div class="rounded-2xl border-2 border-dashed border-gray-300 bg-white px-6 py-10">
 	<div class="flex flex-col items-center gap-4 text-center">
 		<div
-			class="flex size-16 items-center justify-center rounded-full bg-guild-primary-light text-guild-on-surface"
-		>
+			class="flex size-16 items-center justify-center rounded-full bg-guild-primary-light text-guild-on-surface">
 			<Icon class="size-7" />
 		</div>
 
 		<h3 class="text-xl font-bold text-gray-800">{title}</h3>
 
 		{#if cta}
-			<button type="button" onclick={cta.onclick} class="inline-flex items-center gap-1.5 font-bold text-guild-accent">
+			<button
+				type="button"
+				onclick={cta.onclick}
+				class="inline-flex items-center gap-1.5 font-bold text-guild-accent">
 				{cta.label}
 				<ArrowDown class="size-4" aria-hidden="true" />
 			</button>

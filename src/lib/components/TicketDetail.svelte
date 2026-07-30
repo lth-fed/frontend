@@ -13,8 +13,7 @@
 </script>
 
 <article
-	class="flex size-full flex-col items-center justify-center gap-3.75 rounded-[34px] border border-gray-200 bg-white"
->
+	class="flex size-full flex-col items-center justify-center gap-3.75 rounded-[34px] border border-gray-200 bg-white">
 	<header class="flex w-full items-start justify-between gap-3 px-7.5 pt-3.75 pb-7.5">
 		<div class="flex min-w-0 flex-1 flex-col gap-px">
 			<p class="text-xs text-gray-600">{m.ticket_detail_label_name()}</p>
