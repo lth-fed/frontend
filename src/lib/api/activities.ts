@@ -1,10 +1,12 @@
 import { api } from './clients';
+import { cached, peek, seed } from './cache';
 import { DEMO_MODE, unwrap } from './call';
 import { apiError } from './errors';
 import { guildFromPath, parseDate, pickI18n } from './mappings';
-import type { ApiCallOpts } from './clients';
 import type { components } from './generated/api';
 import type { Guild } from '$lib/types/guild';
+
+type Depends = (dep: `app:cache:${string}`) => void;
 
 type RawBrief = components['schemas']['BriefActivity'];
 type RawActivity = components['schemas']['Activity'];
@@ -52,6 +54,13 @@ export type Activity = {
 	 *  Empty on list view (BriefActivity has no hosts), populated by
 	 *  `getActivity`. */
 	organisers: Guild[];
+	/** `false` while the value is a list-derived placeholder — the
+	 *  detail fetch is in flight and detail-only fields (`organisers`,
+	 *  `ticketsExist`) aren't populated yet. Render skeletons. */
+	full: boolean;
+	/** Whether any ticket kind exists — gates the buy CTA (krav §5).
+	 *  Only known when `full`. */
+	ticketsExist?: boolean;
 };
 
 function mapTicketKind(t: RawTicketKind): TicketKind {
@@ -61,7 +70,9 @@ function mapTicketKind(t: RawTicketKind): TicketKind {
 		price: t.price,
 		purchasingAvailableStart: parseDate(t.purchasing_available_start),
 		purchasingAvailableStop: parseDate(t.purchasing_available_stop),
-		ticketsLeft: t.tickets_left,
+		// The wire value is JSON null when there's no shortage to surface;
+		// normalize so `!== undefined` checks behave.
+		ticketsLeft: t.tickets_left ?? undefined,
 		membershipPassing: t.membership_passing
 	};
 }
@@ -91,7 +102,8 @@ function mapBrief(b: RawBrief): Activity {
 		startAt: parseDate(b.time_start),
 		endAt: parseDate(b.time_end),
 		creatorGuild: guildFromPath(b.creator_path),
-		organisers: []
+		organisers: [],
+		full: false
 	};
 }
 
@@ -105,19 +117,21 @@ function mapActivity(a: RawActivity): Activity {
 		startAt: parseDate(a.time_start),
 		endAt: parseDate(a.time_end),
 		creatorGuild: guildFromPath(a.creator_path),
-		organisers: organisersFromHosts(a.hosts)
+		organisers: organisersFromHosts(a.hosts),
+		full: true,
+		ticketsExist: a.tickets_exist
 	};
 }
 
 /** List activities visible to the signed-in user. */
-export async function listActivities(_opts: ApiCallOpts = {}): Promise<Activity[]> {
+export async function listActivities(): Promise<Activity[]> {
 	const briefs = DEMO_MODE ? _mockBriefs : await unwrap(() => api.GET('/activities', {}));
 	return briefs.map(mapBrief);
 }
 
 /** Fetch a single activity (full host list, no ticket kinds — those
  *  live on `getActivityTicketKinds`). */
-export async function getActivity(id: string, _opts: ApiCallOpts = {}): Promise<Activity> {
+export async function getActivity(id: string): Promise<Activity> {
 	if (DEMO_MODE) {
 		const raw = _mockActivities[id];
 		if (!raw) apiError('not-found', `Activity "${id}" not found`);
@@ -128,10 +142,7 @@ export async function getActivity(id: string, _opts: ApiCallOpts = {}): Promise<
 }
 
 /** Ticket kinds for an activity. Used by the buy-ticket page. */
-export async function getActivityTicketKinds(
-	id: string,
-	_opts: ApiCallOpts = {}
-): Promise<TicketKind[]> {
+export async function getActivityTicketKinds(id: string): Promise<TicketKind[]> {
 	const raw = DEMO_MODE
 		? (_mockTicketKinds[id] ?? [])
 		: await unwrap(() =>
@@ -140,6 +151,32 @@ export async function getActivityTicketKinds(
 				})
 			);
 	return raw.map(mapTicketKind);
+}
+
+/** Cached activity list (spec §3.3: 60 s stale-while-revalidate). */
+export function cachedActivities(depends?: Depends): Promise<Activity[]> {
+	return cached('activities', 60_000, listActivities, depends);
+}
+
+/**
+ * Cached activity detail (5 min TTL). When nothing is cached yet but
+ * the list holds a brief record, that record is seeded as an
+ * always-stale placeholder — the page renders header fields instantly
+ * (`full === false`) while the real fetch runs and re-renders via
+ * load invalidation.
+ */
+export function cachedActivity(id: string, depends?: Depends): Promise<Activity> {
+	const key = `activity:${id}`;
+	if (peek(key) === undefined) {
+		const brief = peek<Activity[]>('activities')?.find((a) => a.id === id);
+		if (brief) seed(key, brief);
+	}
+	return cached(key, 300_000, () => getActivity(id), depends);
+}
+
+/** Cached ticket kinds (15 s TTL — `ticketsLeft` moves fast). */
+export function cachedTicketKinds(id: string, depends?: Depends): Promise<TicketKind[]> {
+	return cached(`kinds:${id}`, 15_000, () => getActivityTicketKinds(id), depends);
 }
 
 const _mockBriefs: RawBrief[] = [

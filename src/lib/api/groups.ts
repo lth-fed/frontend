@@ -1,7 +1,6 @@
 import { api } from './clients';
 import { DEMO_MODE, unwrap } from './call';
 import { pickI18n } from './mappings';
-import type { ApiCallOpts } from './clients';
 import type { components } from './generated/api';
 
 type RawGroup = components['schemas']['Group'];
@@ -56,7 +55,7 @@ function mapAdminship(a: RawAdminship): Adminship {
  * `tlth.e.styrelsen`); callers wanting a guild code need to filter and
  * call `guildFromPath` themselves.
  */
-export async function listGroups(opts: ApiCallOpts = {}): Promise<Group[]> {
+export async function listGroups(): Promise<Group[]> {
 	const raw = DEMO_MODE ? _mockGroups : await unwrap(() => api.GET('/groups', {}));
 	return raw.map(mapGroup);
 }
@@ -66,7 +65,7 @@ export async function listGroups(opts: ApiCallOpts = {}): Promise<Group[]> {
  * must be an admin of the parent; the wrapper surfaces backend 401/4xx
  * via `unwrap`.
  */
-export async function createGroup(input: CreateGroupInput, opts: ApiCallOpts = {}): Promise<Group> {
+export async function createGroup(input: CreateGroupInput): Promise<Group> {
 	const raw: RawGroup = DEMO_MODE
 		? (() => {
 				const created: RawGroup = {
@@ -94,7 +93,7 @@ export async function createGroup(input: CreateGroupInput, opts: ApiCallOpts = {
 }
 
 /** List members of a group. Admin-only on the backend. */
-export async function listMembers(groupId: string, opts: ApiCallOpts = {}): Promise<string[]> {
+export async function listMembers(groupId: string): Promise<string[]> {
 	if (DEMO_MODE) return _mockMembers[groupId] ?? [];
 	return unwrap(() =>
 		api.GET('/groups/{group_id}/members', {
@@ -104,7 +103,7 @@ export async function listMembers(groupId: string, opts: ApiCallOpts = {}): Prom
 }
 
 /** List admins of a group. Admin-only on the backend. */
-export async function listAdmins(groupId: string, opts: ApiCallOpts = {}): Promise<string[]> {
+export async function listAdmins(groupId: string): Promise<string[]> {
 	if (DEMO_MODE) return _mockAdmins[groupId] ?? [];
 	return unwrap(() =>
 		api.GET('/groups/{group_id}/admins', {
@@ -114,11 +113,7 @@ export async function listAdmins(groupId: string, opts: ApiCallOpts = {}): Promi
 }
 
 /** Grant admin rights. Caller must be admin of the parent group. */
-export async function addAdmin(
-	groupId: string,
-	userId: string,
-	opts: ApiCallOpts = {}
-): Promise<Adminship> {
+export async function addAdmin(groupId: string, userId: string): Promise<Adminship> {
 	const raw: RawAdminship = DEMO_MODE
 		? { group_path: _mockGroupPath(groupId) ?? groupId, user_id: userId }
 		: await unwrap(() =>
@@ -131,11 +126,7 @@ export async function addAdmin(
 }
 
 /** Revoke admin rights. Caller must be admin of the parent group. */
-export async function removeAdmin(
-	groupId: string,
-	userId: string,
-	opts: ApiCallOpts = {}
-): Promise<void> {
+export async function removeAdmin(groupId: string, userId: string): Promise<void> {
 	if (DEMO_MODE) return;
 	await unwrap(() =>
 		api.DELETE('/groups/{group_id}/admins/{user_id}', {

@@ -1,9 +1,11 @@
 import { api } from './clients';
+import { cached } from './cache';
 import { DEMO_MODE, unwrap } from './call';
 import { guildFromPath, parseDate, pickI18n } from './mappings';
-import type { ApiCallOpts } from './clients';
 import type { components } from './generated/api';
 import type { Guild } from '$lib/types/guild';
+
+type Depends = (dep: `app:cache:${string}`) => void;
 
 type RawMe = components['schemas']['Me'];
 
@@ -43,9 +45,15 @@ function mapMe(raw: RawMe): Me {
 }
 
 /** Fetch the signed-in user. */
-export async function getMe(opts: ApiCallOpts = {}): Promise<Me> {
+export async function getMe(): Promise<Me> {
 	const raw = DEMO_MODE ? _mockMe : await unwrap(() => api.GET('/user', {}));
 	return mapMe(raw);
+}
+
+/** Cached identity — session lifetime (spec §3.3); cleared on logout
+ *  via `clearCache`, refreshed on login via `invalidate('me')`. */
+export function cachedMe(depends?: Depends): Promise<Me> {
+	return cached('me', Number.POSITIVE_INFINITY, getMe, depends);
 }
 
 /**
