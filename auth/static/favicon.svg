@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+	<rect width="64" height="64" rx="14" fill="#9c6114" />
+	<!-- ticket with notched sides, the app's core object -->
+	<path
+		d="M14 22a4 4 0 0 1 4-4h28a4 4 0 0 1 4 4v6a6 6 0 0 0 0 12v6a4 4 0 0 1-4 4H18a4 4 0 0 1-4-4v-6a6 6 0 0 0 0-12z"
+		fill="#f7f0e5"
+	/>
+	<line x1="40" y1="20" x2="40" y2="48" stroke="#9c6114" stroke-width="3" stroke-dasharray="4 4" />
+</svg>
