@@ -39,6 +39,12 @@ function formatTime(d: Date, locale: string): string {
 	}).format(d);
 }
 
+/** Card date + clock time, e.g. EN "Thu, Jul 30 14:00" / SV
+ *  "Tors. 30 juli 14:00". Used for ticket-release times. */
+export function formatShortDateTime(d: Date): string {
+	return `${formatCardDate(d)} ${formatTime(d, getLocale())}`;
+}
+
 /** Uppercase the first character. Used to make standalone date strings
  *  read as the start of a card line even in locales that lowercase
  *  weekdays / months by grammar (e.g. Swedish). */

@@ -42,7 +42,44 @@ export async function unwrap<T>(call: () => Promise<FetchResult<T>>): Promise<T>
 	}
 
 	if (result.response.ok) return result.data as T;
+	throwFor(result);
+}
 
+/** A 400 from the backend: `message` is the only backend error string
+ *  meant for end users; `field` names the offending request field when
+ *  the backend knows it (felhantering decision). */
+export type BadRequest = { message: string; field?: string };
+export type Attempt<T> = { ok: T; badRequest?: never } | { ok?: never; badRequest: BadRequest };
+
+/**
+ * Like `unwrap`, but 400s come back as data instead of throwing — for
+ * mutation call sites that render the error inline at the offending
+ * control (spec §7) rather than unwinding to the error page. Every
+ * other failure still throws via `apiError`.
+ */
+export async function attempt<T>(call: () => Promise<FetchResult<T>>): Promise<Attempt<T>> {
+	let result: FetchResult<T>;
+	try {
+		result = await call();
+	} catch (e) {
+		console.error('network error:', e);
+		apiError('network');
+	}
+
+	if (result.response.ok) return { ok: result.data as T };
+	if (result.response.status === 400) {
+		const raw = result.error as { message?: string; field?: string | null } | undefined;
+		return {
+			badRequest: {
+				message: raw?.message ?? extractErrorMessage(result.error) ?? 'bad request',
+				field: raw?.field ?? undefined
+			}
+		};
+	}
+	throwFor(result);
+}
+
+function throwFor(result: FetchResult<unknown>): never {
 	const status = result.response.status;
 	const message = extractErrorMessage(result.error);
 	if (status === 401) apiError('unauthorized', message);

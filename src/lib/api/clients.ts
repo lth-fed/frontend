@@ -1,5 +1,6 @@
 import createClient, { type Client, type ClientOptions } from 'openapi-fetch';
 import { authenticatedFetch } from 'auth-lib';
+import { noteServerDate } from './serverClock';
 
 import type { paths as AuthPaths } from './generated/auth';
 import type { paths as ApiPaths } from './generated/api';
@@ -40,22 +41,44 @@ async function fetchViaCapacitor(input: Request): Promise<Response> {
 		() => {}
 	);
 
-	const body =
-		res.data == null ? null : typeof res.data === 'string' ? res.data : JSON.stringify(res.data);
-	return new Response(body, {
-		status: res.status,
-		headers: res.headers as Record<string, string>
-	});
+	noteServerDate(res.headers['Date'] ?? res.headers['date']);
+
+	return new Response(
+		toBodyText(res.data, res.headers['Content-Type'] ?? res.headers['content-type'] ?? ''),
+		{
+			status: res.status,
+			headers: res.headers as Record<string, string>
+		}
+	);
+}
+
+/**
+ * Reconstruct a body string from CapacitorHttp's `data`. Its web layer
+ * auto-parses JSON responses, so a bare JSON string body (e.g. poem
+ * enums like `"Reserved"`) arrives unquoted — re-encode it, or the
+ * downstream JSON.parse fails. Strings that already parse as JSON (or
+ * non-JSON content types) pass through untouched.
+ */
+function toBodyText(data: unknown, contentType: string): string | null {
+	if (data == null) return null;
+	if (typeof data !== 'string') return JSON.stringify(data);
+	if (!contentType.includes('json')) return data;
+	try {
+		JSON.parse(data);
+		return data;
+	} catch {
+		return JSON.stringify(data);
+	}
 }
 
 /**
  * fetch-compatible wrapper that attaches a bearer token from auth-lib
- * (and transparently refreshes it on expiry). The network call goes through
- * CapacitorHttp so cookies (refresh token) are shared with the native auth
- * flow; the `baseFetch` parameter is kept for call-site compatibility but
- * is unused.
+ * (and transparently refreshes it on expiry). The network call goes
+ * through CapacitorHttp so cookies (refresh token) are shared with the
+ * native auth flow — SvelteKit's `load` fetch is deliberately not part
+ * of the transport.
  */
-export function withAuth(_baseFetch: typeof fetch = fetch): (input: Request) => Promise<Response> {
+export function withAuth(): (input: Request) => Promise<Response> {
 	return fetchViaCapacitor;
 }
 
@@ -63,30 +86,12 @@ export function makeAuth(opts: Omit<ClientOptions, 'baseUrl'> = {}): Client<Auth
 	return createClient<AuthPaths>({ baseUrl: AUTH_BASE, ...opts });
 }
 
-/**
- * Build a client for the main app API. The bearer token is attached
- * automatically; pass `fetch` to override the underlying transport
- * (e.g. SvelteKit's `load` fetch). The auth wrapping is always applied.
- */
+/** Build a client for the main app API. The bearer token is attached
+ *  (and refreshed) automatically. */
 export function makeApi(opts: Omit<ClientOptions, 'baseUrl'> = {}): Client<ApiPaths> {
-	const baseFetch = opts.fetch as typeof fetch | undefined;
-	return createClient<ApiPaths>({ ...opts, baseUrl: API_BASE, fetch: withAuth(baseFetch) });
+	return createClient<ApiPaths>({ ...opts, baseUrl: API_BASE, fetch: withAuth() });
 }
 
-/**
- * Default browser-side clients. `api` already wraps fetch with auth-lib;
- * use `make*` inside SvelteKit `load` functions if you need to thread the
- * framework-provided fetch through.
- */
+/** Default clients. `api` already wraps the transport with auth-lib. */
 export const auth = makeAuth();
 export const api = makeApi();
-
-/**
- * Shared options shape for the resource-level api wrappers in
- * `lib/api/*.ts`. Carries the framework `fetch` so SvelteKit's
- * preload/SSR machinery applies when called from a load function;
- * extend per-resource if a call needs more options.
- */
-export type ApiCallOpts = {
-	fetch?: typeof globalThis.fetch;
-};
