@@ -4,7 +4,7 @@ import {
 	finishLogin,
 	getAuthState,
 	logout,
-	refreshAccessToken
+	getAccessToken
 } from 'auth-lib';
 import { dev } from '$app/environment';
 import { session } from '$lib/state/session.svelte';
@@ -53,7 +53,10 @@ export async function bootstrapAuth(): Promise<void> {
 	try {
 		const state = await getAuthState();
 		if (state === 'authenticated') {
-			const token = await refreshAccessToken();
+			// Reuses the stored access token while it's still fresh. Refreshing
+			// unconditionally here spent a single-use refresh token on every page
+			// load, so any navigation landing mid-rotation logged the user out.
+			const token = await getAccessToken();
 			if (token) {
 				await activateSession(token);
 			}
