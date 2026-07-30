@@ -8,6 +8,8 @@
 	},
 	"scripts": {
 		"dev": "vite dev",
+		"render-pass": "node scripts/render-pass.mjs",
+		"dev:swish-pay": "node scripts/dev-swish-pay.mjs",
 		"build": "vite build",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
@@ -36,6 +38,7 @@
 		"eslint-plugin-svelte": "^3.17.0",
 		"globals": "^17.4.0",
 		"openapi-typescript": "^7.13.0",
+		"playwright": "^1.61.1",
 		"prettier": "^3.8.1",
 		"prettier-plugin-svelte": "^3.5.1",
 		"prettier-plugin-tailwindcss": "^0.7.2",
