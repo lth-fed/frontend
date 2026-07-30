@@ -2,7 +2,6 @@
 	import { ParaglideMessage } from '@inlang/paraglide-js-svelte';
 	import { i18n, Link } from 'common-lib';
 	import { m } from '$lib/paraglide/messages';
-	const l = $derived([undefined, { locale: i18n.getLang() }]);
 </script>
 
 <p>

@@ -1,18 +1,20 @@
 <script lang="ts">
 	import { Button, i18n } from 'common-lib';
+	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import { m } from '$lib/paraglide/messages';
 	const l = $derived([undefined, { locale: i18n.getLang() }]);
 
-	const availableProviders = ['lu', 'email', 'test'];
+	const availableProviders = ['lu', 'email', 'test'] as const;
+	type Provider = (typeof availableProviders)[number];
 
-	const query = new URLSearchParams(location.search);
-	const providers =
-		query
-			.get('providers')
-			?.split(' ')
-			.filter((provider) => availableProviders.includes(provider)) ?? availableProviders;
+	const isProvider = (provider: string): provider is Provider =>
+		(availableProviders as readonly string[]).includes(provider);
 
-	async function click(provider: string) {
+	const query = new SvelteURLSearchParams(location.search);
+	const providers: readonly Provider[] =
+		query.get('providers')?.split(' ').filter(isProvider) ?? availableProviders;
+
+	async function click(provider: Provider) {
 		query.set('providers', provider);
 		location.href = `/oidc/v1/authorize?${query.toString()}`;
 	}
@@ -22,7 +24,7 @@
 	{m.providers_description(...l)}
 </p>
 <div class="mt-4 flex flex-col gap-2">
-	{#each providers as provider}
+	{#each providers as provider (provider)}
 		<Button class="m-1 w-full text-left" onclick={(_) => click(provider)}
 			>{m[`providers_${provider}`](...l)}</Button>
 	{/each}
