@@ -57,8 +57,7 @@
 			<th>Namn</th>
 			<th
 				>Namnet används för att kolla legitimation vid alkoholevent och för att visa vem du är för
-				andra användare</th
-			>
+				andra användare</th>
 			<th>displayName</th>
 		</tr>
 		<tr>
@@ -135,7 +134,7 @@
 	Denna tjänst följer det internationella ramverket <a
 		href="http://www.geant.net/uri/dataprotection-code-of-conduct/v1"
 		>GÉANT Data Protection Code of Conduct
-		(http://www.geant.net/uri/dataprotection-code-of-conduct/v1)</a
-	> för överföring av personuppgifter från identitetsutfärdare till tjänsten. Ramverket är avsett för
-	tjänster i Sverige, EU och EES som används inom forskning och högre utbildning.
+		(http://www.geant.net/uri/dataprotection-code-of-conduct/v1)</a> för överföring av personuppgifter
+	från identitetsutfärdare till tjänsten. Ramverket är avsett för tjänster i Sverige, EU och EES som används
+	inom forskning och högre utbildning.
 </p>

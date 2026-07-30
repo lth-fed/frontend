@@ -45,8 +45,7 @@
 	<Input
 		placeholder={m.mail_name(...l)}
 		bind:value={name}
-		onkeydown={(e) => (e.key === 'Enter' ? click() : {})}
-	/>
+		onkeydown={(e) => (e.key === 'Enter' ? click() : {})} />
 </p>
 <Button class="mt-5 w-full" onclick={click}>{m.login(...l)}</Button>
 {#if whoops}
