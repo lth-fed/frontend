@@ -187,29 +187,44 @@ export async function finishLogin(redirectedUrl: string): Promise<string | Unkno
 	return tokens.access_token;
 }
 
+/** Whether a stored access token is still worth sending: parsable, and
+ *  not yet past the half-way point of its validity window. */
+function accessTokenFresh(at: string | null): boolean {
+	if (at === null) return false;
+	let claims: { exp?: number; nbf?: number };
+	try {
+		claims = JSON.parse(atob(at.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+	} catch (_e) {
+		// unparsable token — treat as expired
+		return false;
+	}
+	if (claims.exp == null || claims.nbf == null) return false;
+	return claims.nbf + (claims.exp - claims.nbf) / 2 >= +new Date() / 1000;
+}
+
+/**
+ * The access token to use now: the stored one while it's still fresh,
+ * otherwise a refreshed one.
+ *
+ * Prefer this over calling `refreshAccessToken` directly. Refresh tokens
+ * are single-use, so spending one when the current access token is still
+ * good is how a second page load ends up redeeming a consumed token.
+ */
+export async function getAccessToken(): Promise<string | UnknownError> {
+	const { value: at } = await Preferences.get({ key: atLocation });
+	if (accessTokenFresh(at)) return at;
+	if ((await getAuthState()) !== 'authenticated') return null;
+	return refreshAccessToken();
+}
+
 export async function authenticatedFetch(
 	options: HttpOptions & { method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' },
 	errorCallback: (userMessage: { [lang: string]: string }) => void
 ): Promise<HttpResponse> {
 	const { value: at } = await Preferences.get({ key: atLocation });
-	let claims: { exp?: number; nbf?: number } = {};
-	if (at !== null) {
-		try {
-			claims = JSON.parse(atob(at.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
-		} catch (_e) {
-			// unparsable token — treat as expired
-		}
-	}
-	const now = +new Date() / 1000;
-
 	let token = at;
 
-	if (
-		at === null ||
-		claims.exp == null ||
-		claims.nbf == null ||
-		claims.nbf + (claims.exp - claims.nbf) / 2 < now
-	) {
+	if (!accessTokenFresh(at)) {
 		if ((await Preferences.get({ key: asLocation })).value === 'authenticated') {
 			// refresh!
 			const newAt = await refreshAccessToken();
@@ -274,7 +289,13 @@ export function refreshAccessToken(): Promise<string | UnknownError> {
 async function doRefresh(): Promise<string | UnknownError> {
 	const { value: refreshToken } = await Preferences.get({ key: rtLocation });
 	if (refreshToken === null) return null;
+	return attemptRefresh(refreshToken, true);
+}
 
+async function attemptRefresh(
+	refreshToken: string,
+	mayRetry: boolean
+): Promise<string | UnknownError> {
 	let response: HttpResponse;
 	try {
 		response = await CapacitorHttp.post({
@@ -288,6 +309,15 @@ async function doRefresh(): Promise<string | UnknownError> {
 	}
 
 	if (response.status !== 200 || typeof response.data?.access_token !== 'string') {
+		// The single-flight guard above only covers this JS context. On the web
+		// every page load bootstraps its own refresh, so a navigation that lands
+		// mid-rotation redeems a token the previous page already consumed. That
+		// is a lost race, not a compromised session — if the stored token has
+		// since changed, adopt the winner's result instead of logging out.
+		if (mayRetry) {
+			const rotated = await awaitRotation(refreshToken);
+			if (rotated !== null) return attemptRefresh(rotated, false);
+		}
 		// the server rejected the token (consumed or expired); it will
 		// never work again, so drop to unauthenticated
 		console.error('refresh failed', response.status, response.data);
@@ -299,4 +329,15 @@ async function doRefresh(): Promise<string | UnknownError> {
 
 	await storeTokens(response.data as TokenResponse);
 	return response.data.access_token;
+}
+
+/** Briefly wait for another context to publish a rotated refresh token.
+ *  Resolves to the new token, or null if none appeared. */
+async function awaitRotation(sent: string): Promise<string | null> {
+	for (let attempt = 0; attempt < 10; attempt++) {
+		const { value } = await Preferences.get({ key: rtLocation });
+		if (value !== null && value !== sent) return value;
+		await new Promise((resolve) => setTimeout(resolve, 150));
+	}
+	return null;
 }
