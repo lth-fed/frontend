@@ -1,0 +1,9 @@
+node_modules
+
+# Output
+index.js
+index.js.map
+
+# OS
+.DS_Store
+Thumbs.db
