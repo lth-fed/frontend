@@ -11,14 +11,37 @@
 	import './layout.css';
 	import favicon from '$lib/assets/favicon.svg';
 	import { afterNavigate, beforeNavigate, onNavigate } from '$app/navigation';
+	import { App } from '@capacitor/app';
+	import { onMount } from 'svelte';
+	import { invalidate as invalidateCache } from '$lib/api/cache';
+	import {
+		onResume as onPurchaseResume,
+		restore as restorePurchase
+	} from '$lib/purchase/purchase.svelte';
 
 	let { children } = $props();
+
+	// Coming back to a backgrounded app: revalidate the fast-moving
+	// resources (spec §3.3) and resync any active purchase flow (§4.2).
+	// Pages re-render from cache instantly and refresh in the background.
+	// On web this fires on tab re-focus.
+	onMount(() => {
+		const listener = App.addListener('resume', () => {
+			invalidateCache('activities', 'tickets');
+			onPurchaseResume();
+		});
+		return () => {
+			void listener.then((handle) => handle.remove());
+		};
+	});
 
 	let bootstrapped = $state(false);
 	afterNavigate(async () => {
 		if (bootstrapped) return;
 		await bootstrapAuth();
 		bootstrapped = true;
+		// a queue spot / reservation may have survived the reload
+		if (session.accessToken) void restorePurchase();
 	});
 
 	$effect(() => {
@@ -70,8 +93,7 @@
 	<div
 		class="min-h-screen max-w-screen min-w-screen bg-gray-100
 			pt-[env(safe-area-inset-top)] pr-[env(safe-area-inset-right)]
-			pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)]"
-	>
+			pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)]">
 		{@render children()}
 	</div>
 {/if}

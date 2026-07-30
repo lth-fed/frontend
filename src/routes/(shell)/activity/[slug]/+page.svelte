@@ -1,7 +1,12 @@
 <script lang="ts">
 	import ActivityHeadCard from '$lib/components/ActivityHeadCard.svelte';
 	import OrganiserCard from '$lib/components/OrganiserCard.svelte';
-	import { buyTicketsBottom, detailTopBar, useAppBars } from '$lib/state/appBars.svelte';
+	import {
+		buyTicketsBottom,
+		detailTopBar,
+		emptyBottom,
+		useAppBars
+	} from '$lib/state/appBars.svelte';
 	import { guilds } from '$lib/data/guilds';
 	import { formatDetailDate, formatTimeRange } from '$lib/format/datetime';
 	import { m } from '$lib/paraglide/messages.js';
@@ -25,17 +30,22 @@
 			title: activity.title,
 			onShare: () => alert(`Share ${activity.title}`)
 		}),
-		bottom: buyTicketsBottom({
-			id: `buy-${activity.id}`,
-			onclick: () => pushNavigation(Routes.ActivityTickets(activity.id))
-		})
+		// Buy CTA only when the full record confirms sellable tickets
+		// (krav §5). While `!full` (list-seeded placeholder), no CTA —
+		// the full fetch lands in a moment and re-renders.
+		bottom:
+			activity.full && activity.ticketsExist
+				? buyTicketsBottom({
+						id: `buy-${activity.id}`,
+						onclick: () => pushNavigation(Routes.ActivityTickets(activity.id))
+					})
+				: emptyBottom
 	}));
 </script>
 
 <div
 	data-guild={activity.creatorGuild}
-	class={isIos26Native ? '-mt-[calc(env(safe-area-inset-top)+4.25rem)]' : '-mt-6'}
->
+	class={isIos26Native ? '-mt-[calc(env(safe-area-inset-top)+4.25rem)]' : '-mt-6'}>
 	<div class="z-0 h-75 w-full overflow-hidden">
 		<img class="h-full w-full min-w-full object-cover" src={activity.image} alt={activity.title} />
 	</div>
@@ -52,34 +62,35 @@
 				title={activity.title}
 				date={formatDetailDate(activity.startAt)}
 				time={formatTimeRange(activity.startAt, activity.endAt)}
-				location={activity.location}
-			/>
+				location={activity.location} />
 		</div>
 
 		<div
 			class="flex w-full flex-col gap-3.75"
-			in:fly={{ y: 28, duration: 140, delay: 120, easing: quadOut }}
-		>
+			in:fly={{ y: 28, duration: 140, delay: 120, easing: quadOut }}>
 			<h2 class="text-[24px] font-semibold">{m.activity_about()}</h2>
 			<p class="text-[16px] font-normal">{activity.description}</p>
 		</div>
 
 		<div
 			class="flex w-full flex-col gap-3.75"
-			in:fly={{ y: 28, duration: 140, delay: 120, easing: quadOut }}
-		>
+			in:fly={{ y: 28, duration: 140, delay: 120, easing: quadOut }}>
 			<h2 class="text-[24px] font-semibold">{m.activity_organiser()}</h2>
 			<div class="flex w-full flex-col gap-2">
-				{#each activity.organisers as g (g)}
-					<OrganiserCard guild={g} onFollow={() => alert(`Follow ${guilds[g].name}`)} />
-				{/each}
+				{#if activity.full}
+					{#each activity.organisers as g (g)}
+						<OrganiserCard guild={g} onFollow={() => alert(`Follow ${guilds[g].name}`)} />
+					{/each}
+				{:else}
+					<!-- List-seeded placeholder: hosts arrive with the full fetch. -->
+					<div class="h-16 w-full animate-pulse rounded-3xl bg-gray-200" aria-hidden="true"></div>
+				{/if}
 			</div>
 		</div>
 
 		<div
 			class="flex w-full flex-col gap-3.75"
-			in:fly={{ y: 28, duration: 140, delay: 120, easing: quadOut }}
-		>
+			in:fly={{ y: 28, duration: 140, delay: 120, easing: quadOut }}>
 			<div class="flex items-center justify-between">
 				<h2 class="text-[24px] font-semibold">{m.activity_location()}</h2>
 				<span class="text-sm font-semibold text-guild-on-surface">{m.activity_open_maps()}</span>
@@ -88,8 +99,7 @@
 				<img
 					class="aspect-video w-full rounded-3xl object-cover"
 					src="https://picsum.photos/600/400"
-					alt="Location"
-				/>
+					alt="Location" />
 			</div>
 		</div>
 	</div>

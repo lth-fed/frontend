@@ -11,19 +11,21 @@ class Routes {
 	static Root: Pathname = '/';
 	static AuthCallback: Pathname = '/auth/callback/';
 
-	/** Demo index (development links) */
-	static Demo: Pathname = '/demo/';
+	/** Component gallery (development tool) */
 	static DemoComponents: Pathname = '/demo/components/';
 
 	/** Main tabs — reached via replaceNavigation, all at navDepth 0 */
-	static Home: Pathname = '/demo/homepage/';
-	static Links: Pathname = '/demo/links/';
-	static Profile: Pathname = '/demo/profile/';
-	static Settings: Pathname = '/demo/settings/';
+	static Home: Pathname = '/home/';
+	static Links: Pathname = '/links/';
+	static Profile: Pathname = '/profile/';
+	static Settings: Pathname = '/settings/';
+
+	/** Settings sub-pages */
+	static About: Pathname = '/settings/about/';
 
 	/** Activity sub-pages */
-	static Activity = (slug: string): Pathname => `/demo/activity/${slug}/`;
-	static ActivityTickets = (slug: string): Pathname => `/demo/activity/${slug}/tickets/`;
+	static Activity = (slug: string): Pathname => `/activity/${slug}/`;
+	static ActivityTickets = (slug: string): Pathname => `/activity/${slug}/tickets/`;
 }
 
 export default Routes;

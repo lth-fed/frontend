@@ -2,6 +2,7 @@
 	import TopBar from '$lib/components/TopBar.svelte';
 	import NavBar from '$lib/components/NavBar.svelte';
 	import BottomActionButton from '$lib/components/BottomActionButton.svelte';
+	import PurchasePill from '$lib/components/PurchasePill.svelte';
 	import { Home, Globe, IdCard, Settings } from '@lucide/svelte';
 	import { afterNavigate, beforeNavigate } from '$app/navigation';
 	import { page } from '$app/state';
@@ -106,17 +107,15 @@
 
 <main
 	bind:this={mainEl}
-	class="h-full {isIos26Native
-		? 'mt-17 mb-20'
-		: 'pt-[calc(env(safe-area-inset-top)+6rem)] mb-24'}"
->
+	class="h-full {isIos26Native ? 'mt-17 mb-20' : 'mb-24 pt-[calc(env(safe-area-inset-top)+6rem)]'}">
 	{@render children()}
 </main>
 
+<PurchasePill />
+
 {#if bottom.kind === 'tabs'}
 	<div
-		class="shell-bottom-nav pointer-events-none fixed right-5 bottom-[max(env(safe-area-inset-bottom),1.5rem)] left-5 z-20"
-	>
+		class="shell-bottom-nav pointer-events-none fixed right-5 bottom-[max(env(safe-area-inset-bottom),1.5rem)] left-5 z-20">
 		<div class="pointer-events-auto w-full">
 			<NavBar items={bottom.items} selected={bottom.selected} onSelect={bottom.onSelect} />
 		</div>
@@ -130,8 +129,7 @@
 			systemIcon={bottom.systemIcon}
 			onclick={bottom.onclick}
 			backgroundColor={bottom.backgroundColor}
-			foregroundColor={bottom.foregroundColor}
-		/>
+			foregroundColor={bottom.foregroundColor} />
 	</div>
 {/if}
 
