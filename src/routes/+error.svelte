@@ -3,6 +3,7 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { logout } from '$lib/auth/logout';
 	import { session } from '$lib/state/session.svelte';
+	import { healthcheck } from '$lib/api/healthcheck';
 	import type { ApiErrorKind } from '$lib/api/errors';
 
 	/**
@@ -12,7 +13,21 @@
 	 */
 	const kind = $derived((page.error as { kind?: ApiErrorKind } | null)?.kind);
 
+	// For network/server errors, probe the healthcheck to tell "the
+	// service is down" apart from "your connection is down" (spec §7).
+	let serviceState = $state<'unknown' | 'ok' | 'down'>('unknown');
+	$effect(() => {
+		if (kind === 'network' || kind === 'server') {
+			void healthcheck().then((state) => {
+				serviceState = state;
+			});
+		}
+	});
+
 	const description = $derived.by(() => {
+		if ((kind === 'network' || kind === 'server') && serviceState === 'down' && navigator.onLine) {
+			return m.error_status_service_down();
+		}
 		switch (kind) {
 			case 'unauthorized':
 				return m.error_status_unauthorized();
@@ -45,16 +60,14 @@
 			<button
 				type="button"
 				onclick={handleRetry}
-				class="w-full rounded-full bg-black px-5 py-3.5 text-base font-semibold text-white"
-			>
+				class="w-full rounded-full bg-black px-5 py-3.5 text-base font-semibold text-white">
 				{m.error_try_again()}
 			</button>
 			{#if session.accessToken}
 				<button
 					type="button"
 					onclick={handleSignOut}
-					class="w-full rounded-full border border-gray-200 px-5 py-3.5 text-base font-semibold text-red-600"
-				>
+					class="w-full rounded-full border border-gray-200 px-5 py-3.5 text-base font-semibold text-red-600">
 					{m.profile_sign_out()}
 				</button>
 			{/if}

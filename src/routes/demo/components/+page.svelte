@@ -119,8 +119,7 @@
 				location="Kan inga lokaler"
 				ticketKindName="Wine Package +1"
 				id="00000000-0000-0000-0000-000000000xx1"
-				onAction={(id) => alert(`Action: ${id}`)}
-			/>
+				onAction={(id) => alert(`Action: ${id}`)} />
 		</section>
 
 		<section class="w-full space-y-3">
@@ -134,8 +133,7 @@
 					timeEnd={new Date('2026-04-25T23:00')}
 					location="Kan inga F-lokaler"
 					ticketKindName="Wine Package +1"
-					id="00000000-0000-0000-0000-00000000fg01"
-				/>
+					id="00000000-0000-0000-0000-00000000fg01" />
 				<div class="w-90">
 					<ActivityCard
 						image="https://picsum.photos/seed/long-title/640/360"
@@ -143,8 +141,7 @@
 						date="Mon, Apr 27 - 17:00"
 						title="Vårens stora avslutningssittning för F-sektionen och vänner"
 						description="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
-						location="Gasque-salen"
-					/>
+						location="Gasque-salen" />
 				</div>
 			</div>
 		</section>
@@ -160,8 +157,7 @@
 				name="Simon Mechler"
 				activity="Vinterbal"
 				serial="#FG-6719284"
-				qrData="#FG-6719284"
-			/>
+				qrData="#FG-6719284" />
 		</section>
 
 		<section class="w-full max-w-[320px] space-y-3">
@@ -170,8 +166,7 @@
 				name="Maximilianus Karlsson-Andersson"
 				activity="Inskrivningssittningskommittéens vårfest"
 				serial="#FG-6719284"
-				qrData="#FG-6719284"
-			/>
+				qrData="#FG-6719284" />
 		</section>
 
 		<section class="w-full max-w-100 space-y-3">
@@ -183,8 +178,7 @@
 						userId: 'test:si1234mc-s',
 						onclick: () => alert(m.top_bar_account_label())
 					})}
-					trailing={slots.bell(() => alert(m.top_bar_notifications_label()))}
-				/>
+					trailing={slots.bell(() => alert(m.top_bar_notifications_label()))} />
 			</div>
 		</section>
 
@@ -194,8 +188,7 @@
 				items={navItems}
 				selected={selectedNav}
 				native={false}
-				onSelect={(id) => (selectedNav = id)}
-			/>
+				onSelect={(id) => (selectedNav = id)} />
 		</section>
 
 		<section class="space-y-3">
@@ -211,8 +204,7 @@
 						{...t}
 						{canFlip}
 						onRequestCenter={requestCenter}
-						onAction={(id) => alert(`Action: ${id}`)}
-					/>
+						onAction={(id) => alert(`Action: ${id}`)} />
 				{/snippet}
 			</Carousel>
 		</section>
@@ -226,8 +218,7 @@
 					<EmptyState
 						icon={TicketIcon}
 						title="Your tickets will appear here"
-						cta={{ label: 'Kanske en CTA här?', onclick: () => alert('CTA clicked') }}
-					/>
+						cta={{ label: 'Kanske en CTA här?', onclick: () => alert('CTA clicked') }} />
 				{/snippet}
 			</Carousel>
 		</section>
@@ -249,14 +240,12 @@
 				image="https://picsum.photos/seed/linkcard-a/240/240"
 				title="F-sektionen"
 				description="Officiell hemsida för Fysiksektionen vid LTH."
-				url="https://www.f.kth.se"
-			/>
+				url="https://www.f.kth.se" />
 			<LinkCard
 				image="https://picsum.photos/seed/linkcard-b/240/240"
 				title="Vårens stora avslutningssittning för F-sektionen och vänner"
 				description="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation."
-				url="https://example.com"
-			/>
+				url="https://example.com" />
 		</section>
 
 		<section class="w-full max-w-90 space-y-3">
@@ -268,8 +257,7 @@
 				title="Annan sittning typ"
 				description="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
 				location="Gasque-salen"
-				onclick={() => alert('Activity clicked')}
-			/>
+				onclick={() => alert('Activity clicked')} />
 		</section>
 	</div>
 </main>

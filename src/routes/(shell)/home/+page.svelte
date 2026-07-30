@@ -13,13 +13,11 @@
 </script>
 
 <div
-	style="--ticket-scale: clamp(0.8, calc((100dvh - 340px) / 470px), 1); --carousel-item-width: calc(300px * var(--ticket-scale));"
->
+	style="--ticket-scale: clamp(0.8, calc((100dvh - 340px) / 470px), 1); --carousel-item-width: calc(300px * var(--ticket-scale));">
 	<header class="flex items-baseline justify-between px-6">
 		<h2 class="text-[20px] font-semibold">{m.home_my_tickets()}</h2>
 		<span class="text-xs font-bold text-guild-accent"
-			>{m.home_tickets_count({ count: data.tickets.length })}</span
-		>
+			>{m.home_tickets_count({ count: data.tickets.length })}</span>
 	</header>
 
 	<div class="z-30 mt-3.5 overflow-y-visible">
@@ -30,8 +28,7 @@
 					name={data.me.name}
 					{canFlip}
 					onRequestCenter={requestCenter}
-					onAction={(id) => alert(`Action: ${id}`)}
-				/>
+					onAction={(id) => alert(`Action: ${id}`)} />
 			{/snippet}
 			{#snippet empty()}
 				<EmptyState
@@ -40,10 +37,11 @@
 					cta={{
 						label: m.home_browse_activities_cta(),
 						onclick: () => {
-							document.getElementById('event-flow')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+							document
+								.getElementById('event-flow')
+								?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 						}
-					}}
-				/>
+					}} />
 			{/snippet}
 		</Carousel>
 	</div>
@@ -61,8 +59,7 @@
 					location={a.location}
 					creatorGuild={a.creatorGuild}
 					href={Routes.Activity(a.id)}
-					transition="forward"
-				/>
+					transition="forward" />
 			{/each}
 		</div>
 	</section>

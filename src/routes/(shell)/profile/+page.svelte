@@ -16,8 +16,7 @@
 
 <div class="flex w-full flex-col gap-3.75 px-4">
 	<div
-		class="flex w-full items-center gap-4 rounded-3xl border border-gray-100 bg-white p-5 shadow-[0_4px_10px_color-mix(in_srgb,rgb(0_0_0)_6%,transparent)]"
-	>
+		class="flex w-full items-center gap-4 rounded-3xl border border-gray-100 bg-white p-5 shadow-[0_4px_10px_color-mix(in_srgb,rgb(0_0_0)_6%,transparent)]">
 		<Avatar userId={me.id} size="lg" />
 		<div class="flex min-w-0 flex-1 flex-col gap-1">
 			<h2 class="text-[20px] leading-tight font-semibold text-guild-on-surface">
@@ -39,8 +38,7 @@
 	<button
 		type="button"
 		onclick={handleSignOut}
-		class="mt-3 w-full rounded-3xl border border-gray-100 bg-white p-4 text-center text-[16px] font-semibold text-red-600 shadow-[0_4px_10px_color-mix(in_srgb,rgb(0_0_0)_6%,transparent)]"
-	>
+		class="mt-3 w-full rounded-3xl border border-gray-100 bg-white p-4 text-center text-[16px] font-semibold text-red-600 shadow-[0_4px_10px_color-mix(in_srgb,rgb(0_0_0)_6%,transparent)]">
 		{m.profile_sign_out()}
 	</button>
 </div>

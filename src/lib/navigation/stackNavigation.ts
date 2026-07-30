@@ -2,6 +2,7 @@ import { goto } from '$app/navigation';
 import { resolve } from '$app/paths';
 import { page } from '$app/state';
 import type { Pathname } from '$app/types';
+import Routes from './routes';
 
 type NavigationIntent = 'forward' | 'back' | 'root';
 
@@ -55,4 +56,11 @@ export function backNavigation() {
 	if (currentDepth() <= 0) return false;
 	history.back();
 	return true;
+}
+
+/** Back-chevron default: pop one level, or fall back to Home when
+ *  there's no in-app history to pop (fresh load, reset depth). Always
+ *  escapes — never a no-op that leaves the user stranded on a page. */
+export function goBackOrHome() {
+	if (!backNavigation()) void replaceNavigation(Routes.Home, { resetDepth: true });
 }
