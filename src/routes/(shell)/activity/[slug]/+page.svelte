@@ -7,7 +7,6 @@
 		emptyBottom,
 		useAppBars
 	} from '$lib/state/appBars.svelte';
-	import { guilds } from '$lib/data/guilds';
 	import { formatDetailDate, formatTimeRange } from '$lib/format/datetime';
 	import { m } from '$lib/paraglide/messages.js';
 	import type { PageProps } from './$types';
@@ -78,8 +77,8 @@
 			<h2 class="text-[24px] font-semibold">{m.activity_organiser()}</h2>
 			<div class="flex w-full flex-col gap-2">
 				{#if activity.full}
-					{#each activity.organisers as g (g)}
-						<OrganiserCard guild={g} onFollow={() => alert(`Follow ${guilds[g].name}`)} />
+					{#each activity.organisers as organiser (organiser.id)}
+						<OrganiserCard {organiser} onFollow={() => alert(`Follow ${organiser.name}`)} />
 					{/each}
 				{:else}
 					<!-- List-seeded placeholder: hosts arrive with the full fetch. -->

@@ -94,5 +94,6 @@ const _mockMe: RawMe = {
 			description: { en: 'Physics section', sv: 'Fysiksektionen' },
 			logo_url: '/guild-logos/f.avif'
 		}
-	]
+	],
+	admin_group_ids: []
 };

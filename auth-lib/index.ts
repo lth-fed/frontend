@@ -6,6 +6,7 @@ export type UnknownError = null;
 export type AuthState = 'unauthenticated' | 'authenticating' | 'authenticated';
 
 const CLIENT_ID = 'teknologappen';
+const EXTERNAL_VALIDATION_TOKEN = 'test:external-validation';
 
 const atLocation = 'teknologappen-auth-access-token';
 const rtLocation = 'teknologappen-auth-refresh-token';
@@ -33,6 +34,21 @@ export async function getAuthState(): Promise<AuthState> {
 
 async function setAuthState(state: AuthState) {
 	await Preferences.set({ key: asLocation, value: state });
+}
+
+/**
+ * Start the shared, normal-user session used by external app validators.
+ * The token is deliberately not a secret; minilith accepts only this exact
+ * identity and applies the account's ordinary database permissions.
+ */
+export async function useExternalValidationAccount(): Promise<string> {
+	await Preferences.set({ key: atLocation, value: EXTERNAL_VALIDATION_TOKEN });
+	await Preferences.remove({ key: rtLocation });
+	await Preferences.remove({ key: verifierLocation });
+	await Preferences.remove({ key: oauthStateLocation });
+	await Preferences.remove({ key: redirectUriLocation });
+	await setAuthState('authenticated');
+	return EXTERNAL_VALIDATION_TOKEN;
 }
 
 function base64UrlEncode(bytes: Uint8Array): string {
@@ -191,6 +207,7 @@ export async function finishLogin(redirectedUrl: string): Promise<string | Unkno
  *  not yet past the half-way point of its validity window. */
 function accessTokenFresh(at: string | null): boolean {
 	if (at === null) return false;
+	if (at === EXTERNAL_VALIDATION_TOKEN) return true;
 	let claims: { exp?: number; nbf?: number };
 	try {
 		claims = JSON.parse(atob(at.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));

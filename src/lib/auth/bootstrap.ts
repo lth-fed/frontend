@@ -4,7 +4,8 @@ import {
 	finishLogin,
 	getAuthState,
 	logout,
-	getAccessToken
+	getAccessToken,
+	useExternalValidationAccount
 } from 'auth-lib';
 import { dev } from '$app/environment';
 import { session } from '$lib/state/session.svelte';
@@ -13,6 +14,7 @@ import { replaceNavigation } from '$lib/navigation/stackNavigation';
 import Routes from '$lib/navigation/routes';
 import { InAppBrowser } from '@capgo/inappbrowser';
 import { Capacitor } from '@capacitor/core';
+import { clearCache } from '$lib/api/cache';
 
 /** Which fed-auth provider to log in with. LU (SAML behind OIDC) in
  *  production per krav §2–3; the passwordless test provider in dev. */
@@ -89,6 +91,27 @@ export async function startLogin(): Promise<void> {
 	} catch (err) {
 		console.error('Login failed to start', err);
 		session.loginError = 'failed';
+	}
+}
+
+/** Enter the shared, non-admin account used by external app validators. */
+export async function startExternalValidationLogin(): Promise<void> {
+	session.loginError = null;
+	session.isProcessing = true;
+	try {
+		clearCache();
+		const token = await useExternalValidationAccount();
+		await activateSession(token);
+		await replaceNavigation(Routes.Home, { resetDepth: true });
+	} catch (err) {
+		console.error('External validation login failed', err);
+		await logout();
+		session.accessToken = null;
+		session.userId = null;
+		session.guild = null;
+		session.loginError = 'failed';
+	} finally {
+		session.isProcessing = false;
 	}
 }
 

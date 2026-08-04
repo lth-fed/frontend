@@ -10,6 +10,8 @@ export default defineConfig({
 		paraglideVitePlugin({ project: './project.inlang', outdir: './src/lib/paraglide' })
 	],
 	server: {
+		port: 5173,
+		strictPort: true,
 		// Same-origin pass-through to fed-tickets exclusively so the
 		// server-callback URL (lib/auth/bootstrap.ts BACKEND_CALLBACK_V1)
 		// passes fed-auth's same-authority check in dev — Origin and the

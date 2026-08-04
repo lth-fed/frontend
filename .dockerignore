@@ -7,3 +7,7 @@
 auth/node_modules
 !auth/build/
 !auth/build/**
+!public-website/
+public-website/node_modules
+!public-website/build/
+!public-website/build/**

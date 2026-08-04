@@ -28,10 +28,12 @@ export type Adminship = {
  *  i18n maps the backend stores directly; callers either build them up
  *  from a translation form or pass a single-locale `{ [activeLocale]: ... }`. */
 export type CreateGroupInput = {
+	id: string;
 	path: string;
 	name: Record<string, string>;
 	description: Record<string, string>;
 	limitMembershipVisibility: boolean;
+	logoId: string;
 };
 
 function mapGroup(g: RawGroup): Group {
@@ -56,7 +58,7 @@ function mapAdminship(a: RawAdminship): Adminship {
  * call `guildFromPath` themselves.
  */
 export async function listGroups(): Promise<Group[]> {
-	const raw = DEMO_MODE ? _mockGroups : await unwrap(() => api.GET('/groups', {}));
+	const raw = DEMO_MODE ? _mockGroups : await unwrap(() => api.GET('/groups/tree', {}));
 	return raw.map(mapGroup);
 }
 
@@ -65,38 +67,41 @@ export async function listGroups(): Promise<Group[]> {
  * must be an admin of the parent; the wrapper surfaces backend 401/4xx
  * via `unwrap`.
  */
-export async function createGroup(input: CreateGroupInput): Promise<Group> {
-	const raw: RawGroup = DEMO_MODE
-		? (() => {
-				const created: RawGroup = {
-					id: crypto.randomUUID(),
-					path: input.path,
-					name: input.name,
-					description: input.description,
-					limit_membership_visibility: input.limitMembershipVisibility,
-					deleted: false
-				};
-				_mockGroups = [..._mockGroups, created];
-				return created;
-			})()
-		: await unwrap(() =>
-				api.POST('/groups', {
-					body: {
-						path: input.path,
-						name: input.name,
-						description: input.description,
-						limit_membership_visibility: input.limitMembershipVisibility
-					}
-				})
-			);
-	return mapGroup(raw);
+export async function createGroup(input: CreateGroupInput): Promise<void> {
+	if (DEMO_MODE) {
+		const created: RawGroup = {
+			id: input.id,
+			path: input.path,
+			name: input.name,
+			description: input.description,
+			limit_membership_visibility: input.limitMembershipVisibility,
+			deleted: false,
+			logo_id: input.logoId,
+			logo_url: ''
+		};
+		_mockGroups = [..._mockGroups, created];
+		return;
+	}
+
+	await unwrap(() =>
+		api.PUT('/admin/groups/{id}', {
+			params: { path: { id: input.id } },
+			body: {
+				path: input.path,
+				name: input.name,
+				description: input.description,
+				limit_membership_visibility: input.limitMembershipVisibility,
+				logo_id: input.logoId
+			}
+		})
+	);
 }
 
 /** List members of a group. Admin-only on the backend. */
 export async function listMembers(groupId: string): Promise<string[]> {
 	if (DEMO_MODE) return _mockMembers[groupId] ?? [];
 	return unwrap(() =>
-		api.GET('/groups/{group_id}/members', {
+		api.GET('/admin/groups/{group_id}/members', {
 			params: { path: { group_id: groupId } }
 		})
 	);
@@ -106,7 +111,7 @@ export async function listMembers(groupId: string): Promise<string[]> {
 export async function listAdmins(groupId: string): Promise<string[]> {
 	if (DEMO_MODE) return _mockAdmins[groupId] ?? [];
 	return unwrap(() =>
-		api.GET('/groups/{group_id}/admins', {
+		api.GET('/admin/groups/{group_id}/admins', {
 			params: { path: { group_id: groupId } }
 		})
 	);
@@ -117,7 +122,7 @@ export async function addAdmin(groupId: string, userId: string): Promise<Adminsh
 	const raw: RawAdminship = DEMO_MODE
 		? { group_path: _mockGroupPath(groupId) ?? groupId, user_id: userId }
 		: await unwrap(() =>
-				api.POST('/groups/{group_id}/admins', {
+				api.POST('/admin/groups/{group_id}/admins', {
 					params: { path: { group_id: groupId } },
 					body: { user_id: userId }
 				})
@@ -129,9 +134,8 @@ export async function addAdmin(groupId: string, userId: string): Promise<Adminsh
 export async function removeAdmin(groupId: string, userId: string): Promise<void> {
 	if (DEMO_MODE) return;
 	await unwrap(() =>
-		api.DELETE('/groups/{group_id}/admins/{user_id}', {
-			params: { path: { group_id: groupId, user_id: userId } },
-			body: userId
+		api.DELETE('/admin/groups/{group_id}/admins/{user_id}', {
+			params: { path: { group_id: groupId, user_id: userId } }
 		})
 	);
 }
@@ -150,7 +154,9 @@ let _mockGroups: RawGroup[] = [
 			en: 'The Student Union at Lund University Faculty of Engineering',
 			sv: 'Teknologkåren vid Lunds Tekniska Högskola'
 		},
-		deleted: false
+		deleted: false,
+		logo_id: '00000000-0000-0000-0000-000000000101',
+		logo_url: '/guild-logos/default.svg'
 	},
 	{
 		id: '00000000-0000-0000-0000-000000000002',
@@ -158,7 +164,9 @@ let _mockGroups: RawGroup[] = [
 		limit_membership_visibility: false,
 		name: { en: 'F-section', sv: 'F-sektionen' },
 		description: { en: 'Physics section', sv: 'Fysiksektionen' },
-		deleted: false
+		deleted: false,
+		logo_id: '00000000-0000-0000-0000-000000000102',
+		logo_url: '/guild-logos/f.avif'
 	}
 ];
 

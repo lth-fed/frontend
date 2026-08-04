@@ -21,7 +21,7 @@ services:
     labels:
       traefik.enable: 'true'
       traefik.docker.network: ${TRAEFIK_NETWORK:-traefik}
-      traefik.http.routers.fed-frontend.rule: Host(`${FRONTEND_DOMAIN:-teknologappen.se}`)
+      traefik.http.routers.fed-frontend.rule: Host(`${FRONTEND_DOMAIN:-app.teknologappen.se}`)
       traefik.http.routers.fed-frontend.entrypoints: ${TRAEFIK_ENTRYPOINT:-websecure}
       traefik.http.routers.fed-frontend.tls: 'true'
       traefik.http.routers.fed-frontend.tls.certresolver: ${TRAEFIK_CERT_RESOLVER:-letsencrypt}
@@ -47,3 +47,24 @@ services:
       traefik.http.routers.fed-auth-frontend.tls: 'true'
       traefik.http.routers.fed-auth-frontend.tls.certresolver: ${TRAEFIK_CERT_RESOLVER:-letsencrypt}
       traefik.http.services.fed-auth-frontend.loadbalancer.server.port: '80'
+
+  fed-public:
+    build:
+      context: .
+      target: fed-public
+    image: ${CONTAINER_REGISTRY:-localhost}/fed-public:${CONTAINER_TAG:-production}
+    restart: unless-stopped
+    expose:
+      - '80'
+    ports:
+      - '8104:80'
+    networks:
+      - traefik
+    labels:
+      traefik.enable: 'true'
+      traefik.docker.network: ${TRAEFIK_NETWORK:-traefik}
+      traefik.http.routers.fed-public.rule: Host(`${PUBLIC_DOMAIN:-teknologappen.se}`)
+      traefik.http.routers.fed-public.entrypoints: ${TRAEFIK_ENTRYPOINT:-websecure}
+      traefik.http.routers.fed-public.tls: 'true'
+      traefik.http.routers.fed-public.tls.certresolver: ${TRAEFIK_CERT_RESOLVER:-letsencrypt}
+      traefik.http.services.fed-public.loadbalancer.server.port: '80'

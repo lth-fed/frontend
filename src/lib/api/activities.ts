@@ -31,12 +31,21 @@ export type TicketKind = {
 	membershipPassing: boolean;
 };
 
+export type ActivityOrganiser = {
+	id: string;
+	path: string;
+	name: string;
+	logoUrl: string;
+	/** Known guild theme, when the organiser path maps to one. */
+	guild?: Guild;
+};
+
 /**
  * Activity card / detail shape. Both list and detail endpoints
  * populate everything here; the detail endpoint additionally fills
- * `organisers` from the full `hosts` list. `creatorGuild` is
- * `undefined` when `creator_path` doesn't resolve to a known guild
- * code — components fall back to the default un-themed look.
+ * `organisers` from the full `hosts` list. `creatorGuild` is derived
+ * from the host matching `creator_id`; components fall back to the
+ * default un-themed look when that path has no known guild code.
  *
  * `priceFrom` lives on the buy-ticket flow; it deliberately isn't
  * shown on cards (a single "from X kr" is misleading once after-party
@@ -52,10 +61,9 @@ export type Activity = {
 	startAt: Date;
 	endAt: Date;
 	creatorGuild?: Guild;
-	/** Unique guild codes derived from `hosts` (creator + co-hosts).
-	 *  Empty on list view (BriefActivity has no hosts), populated by
-	 *  `getActivity`. */
-	organisers: Guild[];
+	/** Creator and co-hosts as returned by the backend. Empty on list
+	 *  view (BriefActivity has no hosts), populated by `getActivity`. */
+	organisers: ActivityOrganiser[];
 	/** `false` while the value is a list-derived placeholder — the
 	 *  detail fetch is in flight and detail-only fields (`organisers`,
 	 *  `ticketsExist`) aren't populated yet. Render skeletons. */
@@ -83,15 +91,14 @@ function locationString(loc: RawLocation): string {
 	return pickI18n(loc.name);
 }
 
-/** Dedup unique guild codes from a hosts list. Hosts whose path
- *  doesn't resolve to a known guild are quietly skipped. */
-function organisersFromHosts(hosts: RawHost[]): Guild[] {
-	const seen = new Set<Guild>();
-	for (const h of hosts) {
-		const guild = guildFromPath(h.path);
-		if (guild) seen.add(guild);
-	}
-	return [...seen];
+function mapOrganiser(host: RawHost): ActivityOrganiser {
+	return {
+		id: host.id,
+		path: host.path,
+		name: pickI18n(host.name),
+		logoUrl: host.logo_url,
+		guild: guildFromPath(host.path)
+	};
 }
 
 function mapBrief(b: RawBrief): Activity {
@@ -110,6 +117,7 @@ function mapBrief(b: RawBrief): Activity {
 }
 
 function mapActivity(a: RawActivity): Activity {
+	const creator = a.hosts.find((host) => host.id === a.creator_id) ?? a.hosts[0];
 	return {
 		id: a.id,
 		image: a.image_url,
@@ -118,8 +126,8 @@ function mapActivity(a: RawActivity): Activity {
 		location: locationString(a.location),
 		startAt: parseDate(a.time_start),
 		endAt: parseDate(a.time_end),
-		creatorGuild: guildFromPath(a.creator_path),
-		organisers: organisersFromHosts(a.hosts),
+		creatorGuild: creator ? guildFromPath(creator.path) : undefined,
+		organisers: a.hosts.map(mapOrganiser),
 		full: true,
 		ticketsExist: a.tickets_exist
 	};
@@ -194,7 +202,8 @@ const _mockBriefs: RawBrief[] = [
 		location: { name: { en: 'Gasque Hall', sv: 'Gasque-salen' } },
 		time_start: '2026-04-27T17:00:00Z',
 		time_end: '2026-04-27T23:00:00Z',
-		image_url: 'https://picsum.photos/seed/home-a/640/360'
+		image_url: 'https://picsum.photos/seed/home-a/640/360',
+		is_hidden: false
 	},
 	{
 		id: 'b',
@@ -208,7 +217,8 @@ const _mockBriefs: RawBrief[] = [
 		location: { name: { en: 'Kårhuset', sv: 'Kårhuset' } },
 		time_start: '2026-05-01T21:00:00Z',
 		time_end: '2026-05-02T02:00:00Z',
-		image_url: 'https://picsum.photos/seed/home-b/640/360'
+		image_url: 'https://picsum.photos/seed/home-b/640/360',
+		is_hidden: false
 	},
 	{
 		id: 'c',
@@ -222,15 +232,16 @@ const _mockBriefs: RawBrief[] = [
 		location: { name: { en: 'Pub lokal', sv: 'Pub-lokalen' } },
 		time_start: '2026-05-05T18:00:00Z',
 		time_end: '2026-05-05T23:00:00Z',
-		image_url: 'https://picsum.photos/seed/home-c/640/360'
+		image_url: 'https://picsum.photos/seed/home-c/640/360',
+		is_hidden: false
 	}
 ];
 
 const _mockActivities: Record<string, RawActivity> = {
 	a: {
 		id: 'a',
-		responsible: { id: 'si1234mc-s', name: 'Simon Mechler' },
-		creator_path: 'tlth.a',
+		responsible: { name: 'Simon Mechler', contact: 'mailto:e@example.org' },
+		creator_id: '00000000-0000-0000-0000-0000000000a1',
 		title: { en: 'Other sitting kinda', sv: 'Annan sittning typ' },
 		description: {
 			en: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
@@ -240,6 +251,10 @@ const _mockActivities: Record<string, RawActivity> = {
 		time_start: '2026-04-27T17:00:00Z',
 		time_end: '2026-04-27T23:00:00Z',
 		image_url: 'https://picsum.photos/seed/home-a/640/360',
+		image_id: '00000000-0000-0000-0000-0000000001a1',
+		is_hidden: false,
+		is_hidden_for_other_admins: false,
+		max_tickets: 200,
 		hosts: [
 			{
 				id: '00000000-0000-0000-0000-0000000000a1',
@@ -258,8 +273,8 @@ const _mockActivities: Record<string, RawActivity> = {
 	},
 	b: {
 		id: 'b',
-		responsible: { id: 'si1234mc-s', name: 'Simon Mechler' },
-		creator_path: 'tlth.d',
+		responsible: { name: 'Simon Mechler', contact: 'mailto:e@example.org' },
+		creator_id: '00000000-0000-0000-0000-0000000000d1',
 		title: { en: 'Spring fest', sv: 'Vårfest' },
 		description: {
 			en: 'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
@@ -269,6 +284,10 @@ const _mockActivities: Record<string, RawActivity> = {
 		time_start: '2026-05-01T21:00:00Z',
 		time_end: '2026-05-02T02:00:00Z',
 		image_url: 'https://picsum.photos/seed/home-b/640/360',
+		image_id: '00000000-0000-0000-0000-0000000001b1',
+		is_hidden: false,
+		is_hidden_for_other_admins: false,
+		max_tickets: 400,
 		hosts: [
 			{
 				id: '00000000-0000-0000-0000-0000000000d1',
@@ -281,8 +300,8 @@ const _mockActivities: Record<string, RawActivity> = {
 	},
 	c: {
 		id: 'c',
-		responsible: { id: 'si1234mc-s', name: 'Simon Mechler' },
-		creator_path: 'tlth.i',
+		responsible: { name: 'Simon Mechler', contact: 'mailto:e@example.org' },
+		creator_id: '00000000-0000-0000-0000-0000000000c1',
 		title: { en: 'Tuesday pub', sv: 'Tisdagspub' },
 		description: {
 			en: 'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
@@ -292,9 +311,13 @@ const _mockActivities: Record<string, RawActivity> = {
 		time_start: '2026-05-05T18:00:00Z',
 		time_end: '2026-05-05T23:00:00Z',
 		image_url: 'https://picsum.photos/seed/home-c/640/360',
+		image_id: '00000000-0000-0000-0000-0000000001c1',
+		is_hidden: false,
+		is_hidden_for_other_admins: false,
+		max_tickets: 100,
 		hosts: [
 			{
-				id: '00000000-0000-0000-0000-0000000000i1',
+				id: '00000000-0000-0000-0000-0000000000c1',
 				path: 'tlth.i',
 				name: { en: 'I-sektionen', sv: 'I-sektionen' },
 				logo_url: '/guild-logos/i.avif'

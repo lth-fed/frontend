@@ -7,3 +7,6 @@ COPY build/ /usr/share/nginx/html/
 
 FROM runtime AS fed-auth-frontend
 COPY auth/build/ /usr/share/nginx/html/
+
+FROM runtime AS fed-public
+COPY public-website/build/ /usr/share/nginx/html/

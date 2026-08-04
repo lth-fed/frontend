@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Button, Input, i18n } from 'common-lib';
-	import { AUTH_API_ORIGIN } from '$lib/api';
+	import { authApiUrl } from '$lib/api';
 	import { m } from '$lib/paraglide/messages';
 	const l = $derived([undefined, { locale: i18n.getLang() }]);
 
@@ -17,10 +17,11 @@
 		const body = {
 			code: query.get('code'),
 			email,
-			name
+			name,
+			language: i18n.getLang()
 		};
 		freeze = true;
-		const resp = await fetch(`${AUTH_API_ORIGIN}/api/v0/providers/email/login`, {
+		const resp = await fetch(authApiUrl('/api/v0/providers/email/login'), {
 			method: 'POST',
 			credentials: 'include',
 			body: JSON.stringify(body),

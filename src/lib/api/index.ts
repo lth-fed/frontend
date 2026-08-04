@@ -14,7 +14,7 @@ export {
 	cachedActivity,
 	cachedTicketKinds
 } from './activities';
-export type { Activity, TicketKind } from './activities';
+export type { Activity, ActivityOrganiser, TicketKind } from './activities';
 
 export { listGroups, createGroup, listMembers, listAdmins, addAdmin, removeAdmin } from './groups';
 export type { Group, Adminship, CreateGroupInput } from './groups';

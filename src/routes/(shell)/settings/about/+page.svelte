@@ -73,4 +73,72 @@
 			</span>
 		</a>
 	</section>
+
+	<section class="flex flex-col gap-3">
+		<h2 class="text-lg font-semibold text-guild-on-surface">{m.about_legal_title()}</h2>
+		<article
+			class="flex flex-col gap-3 rounded-3xl border border-gray-100 bg-white p-5 shadow-[0_4px_10px_color-mix(in_srgb,rgb(0_0_0)_6%,transparent)]">
+			<h3 class="text-[16px] font-semibold text-guild-on-surface">
+				{m.about_withdrawal_title()}
+			</h3>
+			<p class="text-[15px] leading-relaxed text-guild-on-surface/80">
+				{m.about_withdrawal_description()}
+			</p>
+			<a
+				href="https://lagen.nu/2005:59#K2R11"
+				target="_blank"
+				rel="noopener noreferrer"
+				class="flex items-center gap-2 font-medium text-guild-primary">
+				{m.about_withdrawal_law_link()}
+				<ExternalLink class="size-4" aria-hidden="true" />
+			</a>
+			<p class="border-t border-gray-100 pt-3 text-[15px] leading-relaxed text-guild-on-surface/80">
+				{m.about_complaints_description()}
+			</p>
+		</article>
+
+		<div class="grid gap-3 sm:grid-cols-2">
+			<article
+				class="rounded-3xl border border-gray-100 bg-white p-5 shadow-[0_4px_10px_color-mix(in_srgb,rgb(0_0_0)_6%,transparent)]">
+				<h3 class="mb-3 text-[16px] font-semibold text-guild-on-surface">
+					{m.about_company_title()}
+				</h3>
+				<strong class="text-[15px] text-guild-on-surface">E-sektionen inom TLTH</strong>
+				<p class="mt-1 text-sm text-guild-on-surface/70">
+					{m.about_organisation_number()}: 845001-2284
+				</p>
+				<address class="mt-3 text-sm leading-relaxed text-guild-on-surface/70 not-italic">
+					Edekvata, plan B i E-huset, LTH<br />
+					Ole Römers väg 3B<br />
+					223 63 Lund
+				</address>
+			</article>
+
+			<div class="flex flex-col gap-3">
+				<article
+					class="rounded-3xl border border-gray-100 bg-white p-5 shadow-[0_4px_10px_color-mix(in_srgb,rgb(0_0_0)_6%,transparent)]">
+					<h3 class="mb-2 text-[16px] font-semibold text-guild-on-surface">
+						{m.about_payment_title()}
+					</h3>
+					<p class="text-sm text-guild-on-surface/70">
+						{m.about_swish_number()}: <strong>1234207205</strong>
+					</p>
+					<p class="mt-2 text-sm leading-relaxed text-guild-on-surface/70">
+						{m.about_vat_description()}
+					</p>
+				</article>
+
+				<article
+					class="rounded-3xl border border-gray-100 bg-white p-5 shadow-[0_4px_10px_color-mix(in_srgb,rgb(0_0_0)_6%,transparent)]">
+					<h3 class="mb-2 text-[16px] font-semibold text-guild-on-surface">
+						{m.about_contact_title()}
+					</h3>
+					<p class="text-sm leading-relaxed text-guild-on-surface/70">
+						{m.about_contact_description()}
+						<a class="font-medium text-guild-primary" href="mailto:info@esek.se">info@esek.se</a>.
+					</p>
+				</article>
+			</div>
+		</div>
+	</section>
 </div>
