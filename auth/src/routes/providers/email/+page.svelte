@@ -9,7 +9,6 @@
 	let continueToMail = $state(false);
 	let whoops = $state(false);
 	let email = $state('');
-	let name = $state('');
 
 	const query = new URLSearchParams(location.search);
 
@@ -17,7 +16,6 @@
 		const body = {
 			code: query.get('code'),
 			email,
-			name,
 			language: i18n.getLang()
 		};
 		freeze = true;
@@ -51,14 +49,6 @@
 		bind:value={email}
 		type="email"
 		disabled={freeze} />
-</p>
-<p class="flex flex-col">
-	<Input
-		placeholder={m.mail_name(...l)}
-		class={inputError ? 'border border-3 border-red-300' : ''}
-		bind:value={name}
-		disabled={freeze}
-		onkeydown={(e) => (e.key === 'Enter' ? click() : {})} />
 </p>
 <Button class="mt-5 w-full" onclick={click} disabled={freeze}>{m.login(...l)}</Button>
 {#if continueToMail}

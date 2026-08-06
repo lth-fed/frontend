@@ -20,5 +20,7 @@
 	"mail_mail": "E-post adress",
 	"mail_name": "För- och efternamn",
 	"login": "Logga in",
-	"whoops": "Något gick väldigt snett. Prova logga in från början igen."
+	"whoops": "Något gick väldigt snett. Prova logga in från början igen.",
+	"personal_information_description": "Detta är första gången du loggar in och vi behöver därför veta lite mer om dig.",
+	"personal_number": "Personnummer (i formatet 0211284473)"
 }

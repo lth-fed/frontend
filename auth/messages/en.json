@@ -20,5 +20,7 @@
 	"mail_mail": "Email address",
 	"mail_name": "Full name",
 	"login": "Log in",
-	"whoops": "Something went very wrong. Please retry the whole login process."
+	"whoops": "Something went very wrong. Please retry the whole login process.",
+	"personal_information_description": "Since this is the first time you log in we need to ask you a few more questions.",
+	"personal_number": "Swedish personal number (e.g. 0211284473)"
 }

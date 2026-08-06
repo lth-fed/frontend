@@ -6,7 +6,6 @@
 
 	let whoops = $state(false);
 	let stil_id = $state('');
-	let name = $state('');
 
 	const query = new URLSearchParams(location.search);
 
@@ -19,8 +18,7 @@
 		}
 		const body = {
 			code: query.get('code'),
-			stil_id: stil_id.toLowerCase(),
-			name
+			stil_id: stil_id.toLowerCase()
 		};
 		const resp = await fetch(authApiUrl('/api/v0/providers/test/approve'), {
 			method: 'POST',
@@ -41,13 +39,11 @@
 </script>
 
 <p class="flex flex-col">
-	<Input placeholder="aa0000bb-s" bind:value={stil_id} />
-</p>
-<p class="flex flex-col">
 	<Input
-		placeholder={m.mail_name(...l)}
-		bind:value={name}
-		onkeydown={(e) => (e.key === 'Enter' ? click() : {})} />
+		placeholder="aa0000bb-s"
+		bind:value={stil_id}
+		onkeydown={(e) => (e.key === 'Enter' ? click() : {})}
+	/>
 </p>
 <Button class="mt-5 w-full" onclick={click}>{m.login(...l)}</Button>
 {#if whoops}
