@@ -63,6 +63,13 @@ export type BuyReservationOutcome = {
 	stripeUrl?: string;
 };
 
+export type TicketKindPurchaseContext = {
+	activityId: string;
+	name: string;
+	basePrice: number;
+	addonOptions: { addonId: string; options: { index: number; price: number }[] }[];
+};
+
 function mapAddon(a: RawAddon): PurchasedAddon {
 	return {
 		id: a.id,
@@ -105,6 +112,26 @@ export async function listMyTickets(): Promise<Ticket[]> {
 export async function listPurchasedTickets(): Promise<Ticket[]> {
 	const raw = DEMO_MODE ? _mockTickets : await unwrap(() => api.GET('/tickets', {}));
 	return raw.map(mapTicket);
+}
+
+/** Recover the metadata needed to resume a reservation when its local
+ * purchase state is missing (for example after reinstalling or when the
+ * reservation was created on another device). */
+export async function getTicketKindPurchaseContext(
+	ticketKindId: string
+): Promise<TicketKindPurchaseContext> {
+	const kind = await unwrap(() =>
+		api.GET('/tickets/ticket-kind/{id}', { params: { path: { id: ticketKindId } } })
+	);
+	return {
+		activityId: kind.activity_id,
+		name: pickI18n(kind.ticket_kind_name),
+		basePrice: kind.price,
+		addonOptions: kind.available_addons.map((addon) => ({
+			addonId: addon.id,
+			options: addon.options.map((option) => ({ index: option.idx, price: option.price }))
+		}))
+	};
 }
 
 /** Cached tickets list (spec §3.3: 60 s stale-while-revalidate;

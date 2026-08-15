@@ -1,7 +1,14 @@
 import { invalidate, invalidatePrefix } from '$lib/api/cache';
 import { parseDate } from '$lib/api/mappings';
 import { serverNow } from '$lib/api/serverClock';
-import { enterQueue, leaveQueue, listMyTickets, queueStatus } from '$lib/api/tickets';
+import {
+	enterQueue,
+	getTicketKindPurchaseContext,
+	leaveQueue,
+	listMyTickets,
+	queueStatus,
+	type TicketKindPurchaseContext
+} from '$lib/api/tickets';
 import { freeGateway, type PaymentGateway } from '$lib/payment/gateway';
 import { m } from '$lib/paraglide/messages.js';
 
@@ -352,24 +359,62 @@ export async function restore(): Promise<void> {
 		clearPersisted();
 		return;
 	}
-	const kind: FlowKind =
-		persisted && persisted.ticketKindId === status.status.ticketKindId
-			? persisted
-			: // Spot exists but metadata was lost (for example on another device).
-				{
-					ticketKindId: status.status.ticketKindId,
-					activityId: '',
-					name: '',
-					requiresPayment: false
-				};
+	const persistedForKind =
+		persisted?.ticketKindId === status.status.ticketKindId ? persisted : undefined;
+	let kind: FlowKind;
+	if (
+		persistedForKind?.activityId &&
+		persistedForKind.name &&
+		typeof persistedForKind.requiresPayment === 'boolean'
+	) {
+		kind = persistedForKind;
+	} else {
+		try {
+			const context = await getTicketKindPurchaseContext(status.status.ticketKindId);
+			kind = restoredKind(context, status.status.ticketKindId, persistedForKind?.addons);
+			persist(kind);
+		} catch (error) {
+			console.warn('Could not recover reservation details yet', error);
+			return;
+		}
+	}
 	await resync(kind);
+}
+
+function restoredKind(
+	context: TicketKindPurchaseContext,
+	ticketKindId: string,
+	addons?: FlowKind['addons']
+): FlowKind {
+	const addonPrice = (addons ?? []).reduce((total, selection) => {
+		const prices = context.addonOptions.find((addon) => addon.addonId === selection.id)?.options;
+		return (
+			total +
+			(selection.selectedOptions ?? []).reduce(
+				(sum, index) => sum + (prices?.find((option) => option.index === index)?.price ?? 0),
+				0
+			)
+		);
+	}, 0);
+	return {
+		ticketKindId,
+		activityId: context.activityId,
+		name: context.name,
+		requiresPayment: context.basePrice + addonPrice !== 0,
+		addons
+	};
 }
 
 /** The purchase screen for the active kind became visible/hidden. */
 export function setAttached(value: boolean): void {
 	attached = value;
 	const flow = purchase.flow;
-	if (value && (flow.state === 'reservation-queued' || flow.state === 'resolving')) {
+	if (
+		value &&
+		(flow.state === 'reservation-queued' ||
+			flow.state === 'resolving' ||
+			flow.state === 'reserved')
+	) {
 		void resync();
 	}
 	if (!value && flow.state === 'reservation-queued' && pollTimer) {
