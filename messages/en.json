@@ -104,6 +104,7 @@
 	"pay_card_discouraged": "Card payments cost us more. Please use Swish if you can.",
 	"addons_title": "Choose additions",
 	"addon_required": "Choose an option for {name}.",
+	"addon_choose_one": "Choose one only — a written answer also counts as one.",
 	"addon_text_placeholder": "Your answer",
 	"addons_continue": "Continue",
 	"queue_delayed": "The release seems delayed. Hang tight or try refreshing.",

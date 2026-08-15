@@ -46,13 +46,16 @@ export type Ticket = {
 };
 
 export type PurchaseProvider = 'free' | 'swish' | 'stripe';
-export type BuyReservationInput = {
+export type ReservationPurchase = {
 	ticketKindId: string;
-	provider: PurchaseProvider;
-	/** Selected addons; MVP sends none (backend addons UI is post-MVP). */
+	/** Selected add-ons included in the reservation purchase. */
 	addons?: { id: string; selectedOptions?: number[]; selectedText?: string }[];
-	stripeSuccessUrl?: string;
 };
+export type BuyReservationInput = ReservationPurchase &
+	(
+		| { provider: 'stripe'; stripeSuccessUrl: string }
+		| { provider: Exclude<PurchaseProvider, 'stripe'>; stripeSuccessUrl?: never }
+	);
 export type BuyReservationOutcome = {
 	/** Set for `swish` — opens the Swish app (step 5 gateway). */
 	paymentRequestToken?: string;

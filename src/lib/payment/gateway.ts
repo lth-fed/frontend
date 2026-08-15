@@ -1,9 +1,14 @@
 import { Capacitor } from '@capacitor/core';
 import { InAppBrowser } from '@capgo/inappbrowser';
 import { buyReservation, type PurchaseProvider } from '$lib/api';
-import type { BuyReservationInput } from '$lib/api/tickets';
+import type { ReservationPurchase } from '$lib/api/tickets';
 import { errorMessage } from '$lib/api/errors';
 import { m } from '$lib/paraglide/messages.js';
+import {
+	STRIPE_CALLBACK_CHANNEL,
+	STRIPE_NATIVE_SUCCESS_URL,
+	STRIPE_WEB_SUCCESS_PATH
+} from './stripeCallback';
 
 /**
  * Payment seam (spec §4.4). The purchase machine holds a reservation
@@ -34,7 +39,7 @@ export type PaymentOutcome =
 export interface PaymentGateway {
 	readonly provider: PurchaseProvider;
 	/** Collect payment for the currently held reservation of this kind. */
-	pay(input: Omit<BuyReservationInput, 'provider'>): Promise<PaymentOutcome>;
+	pay(input: ReservationPurchase): Promise<PaymentOutcome>;
 }
 
 /** 0 kr tickets — the backend settles them inline (no real payment). */
@@ -101,8 +106,8 @@ export const stripeGateway: PaymentGateway = {
 	provider: 'stripe',
 	async pay(input) {
 		const successUrl = Capacitor.isNativePlatform()
-			? 'tappen://payment_callback'
-			: `${window.location.origin}/payment-complete/`;
+			? STRIPE_NATIVE_SUCCESS_URL
+			: `${window.location.origin}${STRIPE_WEB_SUCCESS_PATH}`;
 		let result;
 		try {
 			result = await buyReservation({
@@ -124,15 +129,24 @@ export const stripeGateway: PaymentGateway = {
 		if (!result.ok.stripeUrl)
 			return { kind: 'failed', message: m.error_status_unknown(), retriable: true };
 
-		if (Capacitor.isNativePlatform()) {
-			void InAppBrowser.openSecureWindow({
+		try {
+			await InAppBrowser.openSecureWindow({
 				authEndpoint: result.ok.stripeUrl,
 				redirectUri: successUrl,
+				broadcastChannelName: STRIPE_CALLBACK_CHANNEL,
 				prefersEphemeralWebBrowserSession: false
-			}).catch((error) => console.info('Stripe browser closed', error));
-		} else {
-			window.open(result.ok.stripeUrl, 'tappen-stripe-payment', 'popup,width=500,height=760');
+			});
+		} catch (error) {
+			console.info('Stripe browser closed before the success redirect', error);
+			return {
+				kind: 'failed',
+				message: m.error_status_unknown(),
+				retriable: true
+			};
 		}
+
+		// Reaching stripe_success_url closes the secure browser. Returning
+		// `submitted` makes the purchase machine check the queue immediately.
 		return { kind: 'submitted' };
 	}
 };

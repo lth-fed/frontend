@@ -92,6 +92,7 @@
 	"pay_card_discouraged": "Kortbetalningar kostar oss mer. Använd gärna Swish om du kan.",
 	"addons_title": "Välj tillägg",
 	"addon_required": "Välj ett alternativ för {name}.",
+	"addon_choose_one": "Välj endast ett — ett skrivet svar räknas också som ett val.",
 	"addon_text_placeholder": "Ditt svar",
 	"addons_continue": "Fortsätt",
 	"queue_delayed": "Släppet verkar försenat. Vänta lite eller försök uppdatera.",

@@ -61,7 +61,7 @@ const PERSIST_KEY = 'tappen-purchase-flow';
 const RESOLUTION_POLL_MS = 15_000;
 /** Faster cadence while a payment is in flight — the server callback is
  *  our only completion signal (spec §4.2). */
-const PAYING_POLL_MS = 5_000;
+const PAYING_POLL_MS = 1_000;
 const RESOLUTION_GIVE_UP_MS = 3 * 60_000;
 const QUEUE_POLL_MS = 15_000;
 
@@ -160,7 +160,10 @@ async function poll(kind: FlowKind): Promise<void> {
 	if (document.hidden) {
 		// backgrounded tab: skip the request, try again next interval —
 		// resume()/attach() fire an immediate resync anyway
-		schedulePoll(kind, RESOLUTION_POLL_MS);
+		schedulePoll(
+			kind,
+			purchase.flow.state === 'paying' ? PAYING_POLL_MS : RESOLUTION_POLL_MS
+		);
 		return;
 	}
 	await resync(kind);
@@ -174,6 +177,10 @@ async function poll(kind: FlowKind): Promise<void> {
 		schedulePoll(kind, RESOLUTION_POLL_MS);
 	} else if (state === 'reservation-queued' && attached) {
 		schedulePoll(kind, QUEUE_POLL_MS);
+	} else if (state === 'paying') {
+		// Swish confirms asynchronously. Keep checking until the queue
+		// disappears instead of stopping after the first `Buying` response.
+		schedulePoll(kind, PAYING_POLL_MS);
 	}
 }
 
@@ -197,6 +204,17 @@ export async function resync(kind?: FlowKind): Promise<void> {
 
 	if (status.kind === 'missing') {
 		// Not queued server-side. Purchased, expired, or lost (B8).
+		// Once payment was submitted, the queue contract defines 404 as a
+		// completed purchase. Do not hold the user on this screen while the
+		// tickets listing catches up.
+		if (flow.state === 'paying') {
+			invalidate('tickets', 'purchased-tickets');
+			invalidatePrefix('kinds:');
+			clearTimers();
+			clearPersisted();
+			purchase.flow = { state: 'purchased', kind: activeKind };
+			return;
+		}
 		let tickets;
 		try {
 			tickets = await listMyTickets();

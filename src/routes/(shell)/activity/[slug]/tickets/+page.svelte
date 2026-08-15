@@ -74,6 +74,7 @@
 
 	function toggleOption(addon: AvailableAddon, index: number, checked: boolean) {
 		const current = selectedOptions.get(addon.id) ?? [];
+		if (!addon.multipleAlternatives && checked) selectedTexts.set(addon.id, '');
 		selectedOptions.set(
 			addon.id,
 			addon.multipleAlternatives
@@ -84,6 +85,13 @@
 					? [index]
 					: []
 		);
+	}
+
+	function updateText(addon: AvailableAddon, value: string) {
+		selectedTexts.set(addon.id, value);
+		if (!addon.multipleAlternatives && value.trim() !== '') {
+			selectedOptions.set(addon.id, []);
+		}
 	}
 
 	function configuredAddons(kind: TicketKind) {
@@ -353,6 +361,9 @@
 						<legend class="font-semibold"
 							>{addon.name}{#if addon.required}
 								*{/if}</legend>
+						{#if !addon.multipleAlternatives}
+							<p class="mt-1 text-xs text-gray-500">{m.addon_choose_one()}</p>
+						{/if}
 						<div class="mt-2 space-y-2">
 							{#each addon.options as option (option.id)}
 								<label class="flex items-center gap-3 rounded-2xl bg-gray-50 p-3">
@@ -369,7 +380,7 @@
 								<input
 									type="text"
 									value={selectedTexts.get(addon.id) ?? ''}
-									oninput={(event) => selectedTexts.set(addon.id, event.currentTarget.value)}
+									oninput={(event) => updateText(addon, event.currentTarget.value)}
 									placeholder={m.addon_text_placeholder()}
 									class="w-full rounded-2xl border border-gray-200 px-4 py-3" />
 							{/if}
