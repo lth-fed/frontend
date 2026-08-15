@@ -1,14 +1,9 @@
 import { invalidate, invalidatePrefix } from '$lib/api/cache';
 import { parseDate } from '$lib/api/mappings';
 import { serverNow } from '$lib/api/serverClock';
-import {
-	dropReservation,
-	enterQueue,
-	leaveQueue,
-	listMyTickets,
-	queueStatus
-} from '$lib/api/tickets';
+import { enterQueue, leaveQueue, listMyTickets, queueStatus } from '$lib/api/tickets';
 import { freeGateway, type PaymentGateway } from '$lib/payment/gateway';
+import { m } from '$lib/paraglide/messages.js';
 
 /**
  * The purchase state machine (spec §4.1–§4.2). Global — a queue spot or
@@ -31,8 +26,9 @@ export type FlowKind = {
 	ticketKindId: string;
 	activityId: string;
 	name: string;
-	/** öre */
-	price: number;
+	/** Calculated from the base ticket and selected addon option prices. */
+	requiresPayment: boolean;
+	addons?: { id: string; selectedOptions?: number[]; selectedText?: string }[];
 };
 
 export type PurchaseFlow =
@@ -44,7 +40,13 @@ export type PurchaseFlow =
 	/** Released, no seat yet; `placement` people ahead. */
 	| { state: 'reservation-queued'; kind: FlowKind; placement: number }
 	/** Seat held. Pay before `latestTransaction`; gone at `timeout`. */
-	| { state: 'reserved'; kind: FlowKind; timeout: Date; latestTransaction: Date }
+	| {
+			state: 'reserved';
+			kind: FlowKind;
+			timeout: Date;
+			latestTransaction: Date;
+			paymentRequired?: boolean;
+	  }
 	/** Payment in flight (step 5 — gateway lands here). */
 	| { state: 'paying'; kind: FlowKind; timeout: Date }
 	/** Terminal-ish states; `acknowledge()` returns to idle. */
@@ -114,7 +116,7 @@ function toIdle(): void {
  * inline-displayable error message, or `undefined` on success.
  */
 export async function joinQueue(kind: FlowKind, releaseAt: Date): Promise<string | undefined> {
-	if (purchase.flow.state !== 'idle') return 'another purchase is already in progress';
+	if (purchase.flow.state !== 'idle') return m.queue_another_purchase();
 
 	const result = await enterQueue(kind.ticketKindId);
 	if (result.badRequest) return result.badRequest.message;
@@ -186,11 +188,25 @@ export async function resync(kind?: FlowKind): Promise<void> {
 
 	const status = await queueStatus();
 
-	if (status === null) {
+	if (status.kind === 'retry') {
+		// Unexpected/network responses never collapse into a terminal state.
+		// Retry at the deliberate 5 s recovery cadence.
+		schedulePoll(activeKind, PAYING_POLL_MS);
+		return;
+	}
+
+	if (status.kind === 'missing') {
 		// Not queued server-side. Purchased, expired, or lost (B8).
-		const tickets = await listMyTickets().catch(() => []);
+		let tickets;
+		try {
+			tickets = await listMyTickets();
+		} catch (error) {
+			console.warn('Could not confirm completed purchase yet', error);
+			schedulePoll(activeKind, PAYING_POLL_MS);
+			return;
+		}
 		if (tickets.some((t) => t.ticketKindId === activeKind.ticketKindId)) {
-			invalidate('tickets');
+			invalidate('tickets', 'purchased-tickets');
 			invalidatePrefix('kinds:');
 			clearTimers();
 			clearPersisted();
@@ -208,32 +224,42 @@ export async function resync(kind?: FlowKind): Promise<void> {
 		}
 		return;
 	}
+	const current = status.status;
 
-	if (status.timeout && status.latestTransaction) {
+	if (current.timeout && current.latestTransaction) {
 		const wasPaying = flow.state === 'paying';
+		const paymentRequired =
+			activeKind.requiresPayment || (flow.state === 'reserved' && flow.paymentRequired);
 		if (!wasPaying) {
 			purchase.flow = {
 				state: 'reserved',
 				kind: activeKind,
-				timeout: status.timeout,
-				latestTransaction: status.latestTransaction
+				timeout: current.timeout,
+				latestTransaction: current.latestTransaction,
+				paymentRequired
 			};
 			// just past the hard expiry, one resync flips us to expired/purchased
 			if (expiryTimer) clearTimeout(expiryTimer);
-			const untilExpiry = status.timeout.getTime() - serverNow().getTime() + 3_000;
+			const untilExpiry = current.timeout.getTime() - serverNow().getTime() + 3_000;
 			expiryTimer = setTimeout(() => void resync(activeKind), Math.max(0, untilExpiry));
 
-			// Free kinds: nothing to pay — settle immediately through the
-			// free gateway (the backend routes free tickets through
-			// reservations too, spec §4.4).
-			if (activeKind.price === 0) void pay(freeGateway);
+			// The UI has already calculated the base ticket plus selected addon
+			// prices. Only a truly zero-total purchase uses the free provider.
+			if (!paymentRequired) void pay(freeGateway);
 		}
 		return;
 	}
 
-	if (status.placement !== undefined && status.placement > 0) {
-		purchase.flow = { state: 'reservation-queued', kind: activeKind, placement: status.placement };
+	if (current.placement !== undefined && current.placement > 0) {
+		purchase.flow = { state: 'reservation-queued', kind: activeKind, placement: current.placement };
 		if (attached && !pollTimer) schedulePoll(activeKind, QUEUE_POLL_MS);
+		return;
+	}
+
+	if (current.placement === 0) {
+		// Contract says a held reservation always includes both deadlines.
+		// Treat a partial response as transient instead of inventing state.
+		schedulePoll(activeKind, PAYING_POLL_MS);
 		return;
 	}
 
@@ -265,13 +291,13 @@ export async function resync(kind?: FlowKind): Promise<void> {
 export async function pay(gateway: PaymentGateway): Promise<{ error?: string }> {
 	const flow = purchase.flow;
 	if (flow.state !== 'reserved') return {};
-	const { kind, timeout, latestTransaction } = flow;
+	const { kind, timeout, latestTransaction, paymentRequired } = flow;
 	purchase.flow = { state: 'paying', kind, timeout };
 
-	const outcome = await gateway.pay(kind.ticketKindId);
+	const outcome = await gateway.pay({ ticketKindId: kind.ticketKindId, addons: kind.addons });
 
 	if (outcome.kind === 'completed') {
-		invalidate('tickets');
+		invalidate('tickets', 'purchased-tickets');
 		invalidatePrefix('kinds:');
 		clearTimers();
 		clearPersisted();
@@ -279,21 +305,18 @@ export async function pay(gateway: PaymentGateway): Promise<{ error?: string }> 
 		return {};
 	}
 	if (outcome.kind === 'submitted') {
-		schedulePoll(kind, PAYING_POLL_MS);
+		// Check once immediately; the normal recovery cadence starts after that.
+		schedulePoll(kind, 0);
 		return {};
 	}
 	// failed. Transient (5xx/network): the reservation still stands, so
 	// return to `reserved` with the countdown intact and surface the
 	// message inline for a retry (krav §6).
 	if (outcome.retriable) {
-		purchase.flow = { state: 'reserved', kind, timeout, latestTransaction };
+		purchase.flow = { state: 'reserved', kind, timeout, latestTransaction, paymentRequired };
 		return { error: outcome.message };
 	}
-	// Permanent (business rule — already own a ticket / not allowed):
-	// retrying is pointless and the seat is wasted, so release the
-	// reservation and land in a terminal `failed` state the user can only
-	// dismiss. No dead-end with a forever-failing Pay button.
-	void dropReservation();
+	// Permanent business-rule errors cannot succeed on retry.
 	clearTimers();
 	clearPersisted();
 	purchase.flow = { state: 'failed', kind, message: outcome.message };
@@ -306,18 +329,21 @@ export async function restore(): Promise<void> {
 	if (purchase.flow.state !== 'idle') return;
 	const persisted = readPersisted();
 	const status = await queueStatus();
-	if (status === null) {
+	if (status.kind === 'retry') return;
+	if (status.kind === 'missing') {
 		clearPersisted();
 		return;
 	}
 	const kind: FlowKind =
-		persisted && persisted.ticketKindId === status.ticketKindId
+		persisted && persisted.ticketKindId === status.status.ticketKindId
 			? persisted
-			: // spot exists but we lost the metadata (other device?) —
-				// degrade: unknown activity (pill navigates Home) and UNKNOWN
-				// price: NaN never equals 0, so the free-purchase auto-complete
-				// can't fire on a paid reservation we know nothing about
-				{ ticketKindId: status.ticketKindId, activityId: '', name: '', price: Number.NaN };
+			: // Spot exists but metadata was lost (for example on another device).
+				{
+					ticketKindId: status.status.ticketKindId,
+					activityId: '',
+					name: '',
+					requiresPayment: false
+				};
 	await resync(kind);
 }
 
@@ -343,16 +369,10 @@ export async function cancel(): Promise<void> {
 		case 'resolving':
 			await leaveQueue();
 			break;
-		case 'reserved': {
-			const result = await dropReservation();
-			if (result === 'TransactionCancelling') {
-				purchase.flow = { state: 'paying', kind: flow.kind, timeout: flow.timeout };
-				schedulePoll(flow.kind, PAYING_POLL_MS);
-				return;
-			}
+		case 'reserved':
+			await leaveQueue();
 			invalidatePrefix('kinds:');
 			break;
-		}
 		case 'reservation-queued':
 			// no endpoint — local abandon; the server spot lapses on its own
 			break;

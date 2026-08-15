@@ -1,5 +1,17 @@
 import { baseLocale, getLocale, locales } from '$lib/paraglide/runtime';
 import type { Guild } from '$lib/types/guild';
+import type { components } from './generated/api';
+
+type RawLocation = components['schemas']['Location'];
+
+/** Every location representation supported by minilith. Fields may be
+ * combined (for example a named venue with coordinates and directions). */
+export type Location = {
+	name?: string;
+	directions?: string;
+	coordinates?: { north: number; east: number };
+	url?: string;
+};
 
 /**
  * Backend sends localized strings as `{ "en": "...", "sv": "..." }`. The
@@ -38,4 +50,35 @@ export function guildFromPath(path: string): Guild | undefined {
 /** Backend dates are ISO 8601 strings; component code wants `Date`. */
 export function parseDate(iso: string): Date {
 	return new Date(iso);
+}
+
+export function mapLocation(location: RawLocation): Location {
+	return {
+		name: pickI18n(location.name) || undefined,
+		directions: pickI18n(location.directions) || undefined,
+		coordinates: location.coordinate_wgs84
+			? {
+					north: location.coordinate_wgs84.north,
+					east: location.coordinate_wgs84.east
+				}
+			: undefined,
+		url: location.url || undefined
+	};
+}
+
+/** Human-readable fallback for cards and ticket faces. */
+export function locationLabel(location: Location): string {
+	if (location.name) return location.name;
+	if (location.directions) return location.directions;
+	if (location.url) {
+		try {
+			return new URL(location.url).hostname.replace(/^www\./, '');
+		} catch {
+			return location.url;
+		}
+	}
+	if (location.coordinates) {
+		return `${location.coordinates.north.toFixed(5)}, ${location.coordinates.east.toFixed(5)}`;
+	}
+	return '';
 }

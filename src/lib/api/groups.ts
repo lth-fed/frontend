@@ -1,10 +1,14 @@
 import { api } from './clients';
+import { cached, invalidate } from './cache';
 import { DEMO_MODE, unwrap } from './call';
 import { pickI18n } from './mappings';
 import type { components } from './generated/api';
 
 type RawGroup = components['schemas']['Group'];
 type RawAdminship = components['schemas']['Adminship'];
+type RawJoinableGroup = components['schemas']['JoinableGroup'];
+
+type Depends = (dep: `app:cache:${string}`) => void;
 
 /** Backend `name` / `description` arrive as i18n maps — picked at the
  *  api boundary so the rest of the frontend can treat groups as flat
@@ -17,6 +21,16 @@ export type Group = {
 	description: string;
 	limitMembershipVisibility: boolean;
 	deleted: boolean;
+	logoUrl: string;
+};
+
+export type JoinableGroup = Group & { requested: boolean };
+
+export type NotificationLevel = components['schemas']['NotificationLevel'];
+export type GroupSetting = {
+	groupId: string;
+	visible: boolean;
+	notificationLevel: NotificationLevel;
 };
 
 export type Adminship = {
@@ -43,8 +57,13 @@ function mapGroup(g: RawGroup): Group {
 		name: pickI18n(g.name),
 		description: pickI18n(g.description),
 		limitMembershipVisibility: g.limit_membership_visibility,
-		deleted: g.deleted
+		deleted: g.deleted,
+		logoUrl: g.logo_url
 	};
+}
+
+function mapJoinableGroup(group: RawJoinableGroup): JoinableGroup {
+	return { ...mapGroup(group), requested: group.requested };
 }
 
 function mapAdminship(a: RawAdminship): Adminship {
@@ -60,6 +79,69 @@ function mapAdminship(a: RawAdminship): Adminship {
 export async function listGroups(): Promise<Group[]> {
 	const raw = DEMO_MODE ? _mockGroups : await unwrap(() => api.GET('/groups/tree', {}));
 	return raw.map(mapGroup);
+}
+
+export function cachedGroups(depends?: Depends): Promise<Group[]> {
+	return cached('groups', 60_000, listGroups, depends);
+}
+
+export async function getGroup(id: string): Promise<Group> {
+	const groups = await listGroups();
+	const group = groups.find((candidate) => candidate.id === id);
+	if (!group) throw new Error(`Group ${id} is not visible to this user`);
+	return group;
+}
+
+export function cachedGroup(id: string, depends?: Depends): Promise<Group> {
+	return cached(`group:${id}`, 60_000, () => getGroup(id), depends);
+}
+
+export async function listJoinableGroups(): Promise<JoinableGroup[]> {
+	if (DEMO_MODE) return [];
+	const groups = await unwrap(() => api.GET('/groups/joinable', {}));
+	return groups.filter((group) => !group.deleted).map(mapJoinableGroup);
+}
+
+export async function requestGroupMembership(groupId: string): Promise<void> {
+	if (!DEMO_MODE) {
+		await unwrap(() =>
+			api.PUT('/groups/{group_id}/member-request', { params: { path: { group_id: groupId } } })
+		);
+	}
+	invalidate('joinable-groups');
+}
+
+export function cachedJoinableGroups(depends?: Depends): Promise<JoinableGroup[]> {
+	return cached('joinable-groups', 30_000, listJoinableGroups, depends);
+}
+
+export async function listGroupSettings(): Promise<GroupSetting[]> {
+	if (DEMO_MODE) return [];
+	const settings = await unwrap(() => api.GET('/user/group-settings', {}));
+	return settings.map((setting) => ({
+		groupId: setting.group_id,
+		visible: setting.visible,
+		notificationLevel: setting.notification_level
+	}));
+}
+
+export function cachedGroupSettings(depends?: Depends): Promise<GroupSetting[]> {
+	return cached('group-settings', 60_000, listGroupSettings, depends);
+}
+
+export async function setGroupSetting(setting: GroupSetting): Promise<void> {
+	if (!DEMO_MODE) {
+		await unwrap(() =>
+			api.PUT('/user/group-settings', {
+				body: {
+					group_id: setting.groupId,
+					visible: setting.visible,
+					notification_level: setting.notificationLevel
+				}
+			})
+		);
+	}
+	invalidate('group-settings', 'activities');
 }
 
 /**
@@ -98,23 +180,25 @@ export async function createGroup(input: CreateGroupInput): Promise<void> {
 }
 
 /** List members of a group. Admin-only on the backend. */
-export async function listMembers(groupId: string): Promise<string[]> {
-	if (DEMO_MODE) return _mockMembers[groupId] ?? [];
-	return unwrap(() =>
+export async function listMembers(groupId: string): Promise<{ userId: string; name?: string }[]> {
+	if (DEMO_MODE) return (_mockMembers[groupId] ?? []).map((userId) => ({ userId }));
+	const users = await unwrap(() =>
 		api.GET('/admin/groups/{group_id}/members', {
 			params: { path: { group_id: groupId } }
 		})
 	);
+	return users.map((user) => ({ userId: user.user_id, name: user.name }));
 }
 
 /** List admins of a group. Admin-only on the backend. */
-export async function listAdmins(groupId: string): Promise<string[]> {
-	if (DEMO_MODE) return _mockAdmins[groupId] ?? [];
-	return unwrap(() =>
+export async function listAdmins(groupId: string): Promise<{ userId: string; name?: string }[]> {
+	if (DEMO_MODE) return (_mockAdmins[groupId] ?? []).map((userId) => ({ userId }));
+	const users = await unwrap(() =>
 		api.GET('/admin/groups/{group_id}/admins', {
 			params: { path: { group_id: groupId } }
 		})
 	);
+	return users.map((user) => ({ userId: user.user_id, name: user.name }));
 }
 
 /** Grant admin rights. Caller must be admin of the parent group. */

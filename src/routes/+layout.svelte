@@ -18,6 +18,7 @@
 		onResume as onPurchaseResume,
 		restore as restorePurchase
 	} from '$lib/purchase/purchase.svelte';
+	import { monitorNetwork } from '$lib/state/network.svelte';
 
 	let { children } = $props();
 
@@ -26,11 +27,15 @@
 	// Pages re-render from cache instantly and refresh in the background.
 	// On web this fires on tab re-focus.
 	onMount(() => {
+		const stopMonitoringNetwork = monitorNetwork(() => {
+			invalidateCache('me', 'activities', 'tickets', 'purchased-tickets', 'joinable-groups');
+		});
 		const listener = App.addListener('resume', () => {
 			invalidateCache('activities', 'tickets');
 			onPurchaseResume();
 		});
 		return () => {
+			stopMonitoringNetwork();
 			void listener.then((handle) => handle.remove());
 		};
 	});
@@ -45,7 +50,7 @@
 	});
 
 	$effect(() => {
-		const g = session.guild;
+		const g = session.themeGuild;
 		const els = [document.documentElement, document.body];
 		if (g) els.forEach((el) => (el.dataset.guild = g));
 		else els.forEach((el) => delete el.dataset.guild);

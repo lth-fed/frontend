@@ -4,12 +4,49 @@
 	import Carousel from '$lib/components/Carousel.svelte';
 	import EmptyState from '$lib/components/EmptyState.svelte';
 	import { m } from '$lib/paraglide/messages.js';
-	import { Ticket as TicketIcon } from '@lucide/svelte';
+	import { ListFilter, Ticket as TicketIcon } from '@lucide/svelte';
 	import { formatCardDate } from '$lib/format/datetime';
 	import Routes from '$lib/navigation/routes';
 	import type { PageProps } from './$types';
+	import { receiptBlob, transferTicket, type Ticket as TicketData } from '$lib/api/tickets';
+	import { pushNavigation } from '$lib/navigation/stackNavigation';
+	import { errorMessage } from '$lib/api/errors';
+	import { network } from '$lib/state/network.svelte';
 
 	let { data }: PageProps = $props();
+	const networkUnavailable = $derived(!network.online || data.networkUnavailable);
+
+	async function ticketAction(
+		ticket: TicketData,
+		action: 'transfer' | 'wallet' | 'receipt' | 'activity'
+	) {
+		if (networkUnavailable) {
+			alert(m.offline_action_unavailable());
+			return;
+		}
+		try {
+			if (action === 'activity') {
+				await pushNavigation(Routes.Activity(ticket.activityId));
+				return;
+			}
+			if (action === 'receipt') {
+				const blob = await receiptBlob(ticket.id);
+				const url = URL.createObjectURL(blob);
+				const anchor = document.createElement('a');
+				anchor.href = url;
+				anchor.download = `receipt-${ticket.id.slice(0, 8)}.pdf`;
+				anchor.click();
+				setTimeout(() => URL.revokeObjectURL(url), 30_000);
+				return;
+			}
+			if (action === 'transfer') {
+				const recipient = prompt(m.transfer_recipient_prompt());
+				if (recipient?.trim()) await transferTicket(ticket.id, recipient.trim());
+			}
+		} catch (cause) {
+			alert(errorMessage(cause) ?? m.error_status_unknown());
+		}
+	}
 </script>
 
 <div
@@ -25,10 +62,11 @@
 			{#snippet item(t, canFlip, requestCenter)}
 				<Ticket
 					{...t}
-					name={data.me.name}
+					name={data.ownerName}
+					offline={networkUnavailable}
 					{canFlip}
 					onRequestCenter={requestCenter}
-					onAction={(id) => alert(`Action: ${id}`)} />
+					onAction={(id) => void ticketAction(t, id)} />
 			{/snippet}
 			{#snippet empty()}
 				<EmptyState
@@ -47,20 +85,37 @@
 	</div>
 
 	<section id="event-flow" class="scroll-mt-24 px-6 pt-6">
-		<h2 class="text-[20px] font-semibold">{m.home_upcoming_activities()}</h2>
-
-		<div class="mt-3.5 space-y-5.5">
-			{#each data.activities as a (a.id)}
-				<ActivityCard
-					image={a.image}
-					date={formatCardDate(a.startAt)}
-					title={a.title}
-					description={a.description}
-					location={a.location}
-					creatorGuild={a.creatorGuild}
-					href={Routes.Activity(a.id)}
-					transition="forward" />
-			{/each}
+		<div class="flex items-center justify-between gap-3">
+			<h2 class="text-[20px] font-semibold">{m.home_upcoming_activities()}</h2>
+			{#if !networkUnavailable}
+				<button
+					type="button"
+					onclick={() => pushNavigation(Routes.Filters)}
+					class="flex items-center gap-2 rounded-full border border-guild-ring bg-white px-3 py-2 text-sm font-semibold text-guild-on-surface">
+					<ListFilter class="size-4" aria-hidden="true" />
+					{m.filters_title()}
+				</button>
+			{/if}
 		</div>
+
+		{#if networkUnavailable}
+			<p class="mt-3.5 rounded-2xl bg-white p-4 text-sm text-guild-on-surface/70">
+				{m.offline_activities_unavailable()}
+			</p>
+		{:else}
+			<div class="mt-3.5 space-y-5.5">
+				{#each data.activities as a (a.id)}
+					<ActivityCard
+						image={a.image}
+						date={formatCardDate(a.startAt)}
+						title={a.title}
+						description={a.description}
+						location={a.location}
+						creatorGuild={a.creatorGuild}
+						href={Routes.Activity(a.id)}
+						transition="forward" />
+				{/each}
+			</div>
+		{/if}
 	</section>
 </div>

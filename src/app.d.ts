@@ -15,6 +15,7 @@ declare global {
 		interface PageState {
 			navDepth?: number;
 			navTransition?: 'forward' | 'back' | 'root';
+			returnTo?: string;
 		}
 		// interface Platform {}
 	}

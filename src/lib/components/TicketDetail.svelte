@@ -7,9 +7,10 @@
 		activity: string;
 		serial: string;
 		qrData: string;
+		offline?: boolean;
 	}
 
-	let { name, activity, serial, qrData }: Props = $props();
+	let { name, activity, serial, qrData, offline = false }: Props = $props();
 </script>
 
 <article
@@ -30,4 +31,7 @@
 	</div>
 
 	<p class="text-center text-sm font-medium text-gray-600">{serial}</p>
+	{#if offline}
+		<p class="px-6 text-center text-xs text-amber-800">{m.offline_ticket_actions()}</p>
+	{/if}
 </article>

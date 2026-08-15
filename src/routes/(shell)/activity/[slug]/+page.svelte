@@ -71,6 +71,23 @@
 			<p class="text-[16px] font-normal">{activity.description}</p>
 		</div>
 
+		{#if activity.contact}
+			<div
+				class="flex w-full flex-col gap-3.75"
+				in:fly={{ y: 28, duration: 140, delay: 120, easing: quadOut }}>
+				<h2 class="text-[24px] font-semibold">{m.activity_contact()}</h2>
+				<div class="rounded-3xl border border-gray-100 bg-white p-5">
+					<p class="font-semibold text-guild-on-surface">{activity.contact.name}</p>
+					<!-- eslint-disable svelte/no-navigation-without-resolve -- API-validated mailto/tel contact URI -->
+					<a
+						href={activity.contact.uri}
+						class="mt-1 block text-sm font-semibold break-all text-guild-accent">
+						{activity.contact.display}
+					</a>
+				</div>
+			</div>
+		{/if}
+
 		<div
 			class="flex w-full flex-col gap-3.75"
 			in:fly={{ y: 28, duration: 140, delay: 120, easing: quadOut }}>
@@ -87,19 +104,30 @@
 			</div>
 		</div>
 
-		<div
-			class="flex w-full flex-col gap-3.75"
-			in:fly={{ y: 28, duration: 140, delay: 120, easing: quadOut }}>
-			<div class="flex items-center justify-between">
-				<h2 class="text-[24px] font-semibold">{m.activity_location()}</h2>
-				<span class="text-sm font-semibold text-guild-on-surface">{m.activity_open_maps()}</span>
+		{#if activity.location || activity.locationDetails.directions || activity.locationDetails.url}
+			<div
+				class="flex w-full flex-col gap-3.75"
+				in:fly={{ y: 28, duration: 140, delay: 120, easing: quadOut }}>
+				<div class="flex items-center justify-between">
+					<h2 class="text-[24px] font-semibold">{m.activity_location()}</h2>
+					{#if activity.locationDetails.url}
+						<!-- eslint-disable svelte/no-navigation-without-resolve -- external API-provided venue/map URL -->
+						<a
+							href={activity.locationDetails.url}
+							target="_blank"
+							rel="noopener noreferrer"
+							class="text-sm font-semibold text-guild-accent">{m.activity_open_maps()}</a>
+					{/if}
+				</div>
+				<div class="w-full rounded-3xl border border-gray-100 bg-white p-5">
+					<p class="font-semibold text-guild-on-surface">{activity.location}</p>
+					{#if activity.locationDetails.directions}
+						<p class="mt-2 text-sm whitespace-pre-line text-guild-on-surface/75">
+							{activity.locationDetails.directions}
+						</p>
+					{/if}
+				</div>
 			</div>
-			<div class="w-full rounded-3xl border border-gray-100">
-				<img
-					class="aspect-video w-full rounded-3xl object-cover"
-					src="https://picsum.photos/600/400"
-					alt="Location" />
-			</div>
-		</div>
+		{/if}
 	</div>
 </div>

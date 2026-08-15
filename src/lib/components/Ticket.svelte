@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Ticket as TicketIcon, QrCode } from '@lucide/svelte';
-	import { ArrowLeftRight, Wallet, Receipt, PartyPopper } from '@lucide/svelte';
+	import { ArrowLeftRight, Receipt, PartyPopper } from '@lucide/svelte';
 	import { onDestroy, onMount } from 'svelte';
 	import TicketDetail from './TicketDetail.svelte';
 	import ToolBar from './ToolBar.svelte';
@@ -13,6 +13,7 @@
 	import type { ToolBarNode } from '$lib/plugins/toolBar/definitions';
 	import { Haptics, ImpactStyle } from '@capacitor/haptics';
 	import type { Guild } from '$lib/types/guild';
+	import { ticketQrPayload } from '$lib/api/validation';
 
 	type Action = 'transfer' | 'wallet' | 'receipt' | 'activity';
 
@@ -37,6 +38,7 @@
 		onAction?: (id: Action) => void;
 		canFlip?: boolean;
 		onRequestCenter?: () => void;
+		offline?: boolean;
 	}
 
 	let {
@@ -53,12 +55,15 @@
 		creatorGuild,
 		onAction,
 		canFlip = true,
-		onRequestCenter
+		onRequestCenter,
+		offline = false
 	}: Props = $props();
 
 	const date = $derived(formatCardDate(timeStart));
 	const time = $derived(formatTimeRange(timeStart, timeEnd));
 	const serial = $derived(`#${id.slice(0, 8).toUpperCase()}`);
+	let qrNow = $state(Date.now());
+	const currentQrData = $derived(qrData ?? ticketQrPayload(id, qrNow));
 
 	let showOverlay = $state(false);
 	let overlayReady = $state(false);
@@ -80,7 +85,7 @@
 			systemIcon: 'arrow.left.arrow.right',
 			label: m.tool_transfer()
 		},
-		{ id: 'wallet' as Action, icon: Wallet, systemIcon: 'wallet.bifold', label: m.tool_wallet() },
+		// { id: 'wallet' as Action, icon: Wallet, systemIcon: 'wallet.bifold', label: m.tool_wallet() },
 		{ id: 'receipt' as Action, icon: Receipt, systemIcon: 'receipt', label: m.tool_receipt() },
 		{
 			id: 'activity' as Action,
@@ -124,7 +129,7 @@
 	]);
 
 	function configureNativeToolBar(visible: boolean) {
-		if (!isIos26Native) return;
+		if (!isIos26Native || offline) return;
 		void toolBar.configure({
 			nodes: nativeToolBarNodes,
 			visible
@@ -167,9 +172,11 @@
 	}
 
 	onMount(() => {
+		const qrTimer = setInterval(() => (qrNow = Date.now()), 1_000);
 		void (async () => {
 			isIos26Native = await isIos26Plus();
 		})();
+		return () => clearInterval(qrTimer);
 	});
 
 	onDestroy(() => {
@@ -195,9 +202,9 @@
 		originScale = rect.width / W;
 		targetX = window.innerWidth / 2 + (W * 1.18) / 2;
 		targetY = window.innerHeight / 2 - (H * 1.18) / 2;
-		showTools = !isIos26Native;
+		showTools = !isIos26Native && !offline;
 		setShellNavbarHidden(true);
-		if (isIos26Native) {
+		if (isIos26Native && !offline) {
 			showNativeBars();
 			configureNativeToolBar(true);
 			attachNativeToolBarListener();
@@ -333,7 +340,7 @@
 {/snippet}
 
 {#snippet ticketBack()}
-	<TicketDetail {name} activity={activityTitle} {serial} qrData={qrData ?? serial} />
+	<TicketDetail {name} activity={activityTitle} {serial} qrData={currentQrData} {offline} />
 {/snippet}
 
 <button
@@ -382,7 +389,7 @@
 			</div>
 		</div>
 
-		{#if !isIos26Native}
+		{#if !isIos26Native && !offline}
 			<div
 				class="absolute bottom-[max(env(safe-area-inset-bottom),1.5rem)] left-1/2 -translate-x-1/2 translate-y-2 opacity-0 transition-all duration-180 ease-in"
 				class:opacity-100={showTools}

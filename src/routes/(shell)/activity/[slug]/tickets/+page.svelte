@@ -15,12 +15,15 @@
 		resync,
 		setAttached
 	} from '$lib/purchase/purchase.svelte';
-	import { gatewayFor } from '$lib/payment/gateway';
+	import { freeGateway, paidGatewayFor } from '$lib/payment/gateway';
 	import { formatPrice } from '$lib/format/money';
 	import { replaceNavigation } from '$lib/navigation/stackNavigation';
 	import Routes from '$lib/navigation/routes';
 	import { onMount } from 'svelte';
 	import { SvelteMap } from 'svelte/reactivity';
+	import { getLocale } from '$lib/paraglide/runtime';
+	import type { AvailableAddon } from '$lib/api/activities';
+	import { errorMessage } from '$lib/api/errors';
 
 	let { data }: PageProps = $props();
 	const activity = $derived(data.activity);
@@ -55,21 +58,91 @@
 	// All purchases go through the queue/reservation machine (spec §4.2) —
 	// the backend routes free tickets through reservations too; the machine
 	// auto-completes those with `provider: 'free'`.
-	async function handleBuy(kind: TicketKind) {
+	let configuringKind = $state<TicketKind | undefined>();
+	const selectedOptions = new SvelteMap<string, number[]>();
+	const selectedTexts = new SvelteMap<string, string>();
+	let addonError = $state('');
+
+	function beginBuy(kind: TicketKind) {
+		if (kind.addons.length) {
+			configuringKind = kind;
+			addonError = '';
+			return;
+		}
+		void handleBuy(kind);
+	}
+
+	function toggleOption(addon: AvailableAddon, index: number, checked: boolean) {
+		const current = selectedOptions.get(addon.id) ?? [];
+		selectedOptions.set(
+			addon.id,
+			addon.multipleAlternatives
+				? checked
+					? [...new Set([...current, index])]
+					: current.filter((value) => value !== index)
+				: checked
+					? [index]
+					: []
+		);
+	}
+
+	function configuredAddons(kind: TicketKind) {
+		return kind.addons.map((addon) => ({
+			id: addon.id,
+			selectedOptions: selectedOptions.get(addon.id) ?? [],
+			selectedText:
+				selectedTexts.get(addon.id)?.trim() === '' ? undefined : selectedTexts.get(addon.id)
+		}));
+	}
+
+	async function confirmAddons() {
+		const kind = configuringKind;
+		if (!kind) return;
+		for (const addon of kind.addons) {
+			const options = selectedOptions.get(addon.id) ?? [];
+			const text = (selectedTexts.get(addon.id) ?? '').trim();
+			if (addon.required && options.length === 0 && (!addon.hasTextField || !text)) {
+				addonError = m.addon_required({ name: addon.name });
+				return;
+			}
+		}
+		configuringKind = undefined;
+		await handleBuy(kind, configuredAddons(kind));
+	}
+
+	async function handleBuy(
+		kind: TicketKind,
+		addons: { id: string; selectedOptions?: number[]; selectedText?: string }[] = []
+	) {
 		if (busyKindId) return;
 		errors.delete(kind.id);
 		busyKindId = kind.id;
 		try {
+			const totalPrice = addons.reduce((total, selection) => {
+				const addon = kind.addons.find((candidate) => candidate.id === selection.id);
+				if (!addon) return total;
+				return (
+					total +
+					(selection.selectedOptions ?? []).reduce(
+						(sum, index) =>
+							sum + (addon.options.find((option) => option.index === index)?.price ?? 0),
+						0
+					)
+				);
+			}, kind.price);
 			const error = await joinQueue(
 				{
 					ticketKindId: kind.id,
 					activityId: activity.id,
 					name: kind.name,
-					price: kind.price
+					requiresPayment: totalPrice !== 0,
+					addons
 				},
 				kind.purchasingAvailableStart
 			);
 			if (error) errors.set(kind.id, error);
+		} catch (cause) {
+			errors.set(kind.id, errorMessage(cause) ?? m.error_status_unknown());
 		} finally {
 			busyKindId = null;
 		}
@@ -80,19 +153,45 @@
 		return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
 	}
 
-	// Payment confirmation (krav §6 "test view"): the reserved kind's Pay
-	// button opens this; confirming hands off to the price-appropriate
-	// gateway (spec §4.4). Errors surface inline and keep the reservation.
+	// Payment confirmation (krav §6 "test view"): the complete frontend
+	// selection determines whether a paid provider is needed.
 	let confirmingPay = $state(false);
 	let payError = $state<string | undefined>(undefined);
+	let promptedPaymentKindId = $state<string | undefined>(undefined);
 
-	async function confirmPay() {
+	async function tryFreePayment() {
+		payError = undefined;
+		if (flow.state !== 'reserved') return;
+		const { error } = await pay(freeGateway);
+		if (error) payError = error;
+	}
+
+	function openOrRetryPayment() {
+		if (flow.state !== 'reserved') return;
+		if (flow.paymentRequired) confirmingPay = true;
+		else void tryFreePayment();
+	}
+
+	async function confirmPay(provider: 'swish' | 'stripe') {
 		confirmingPay = false;
 		payError = undefined;
 		if (flow.state !== 'reserved') return;
-		const { error } = await pay(gatewayFor(flow.kind.price));
+		const { error } = await pay(paidGatewayFor(provider));
 		if (error) payError = error;
 	}
+
+	$effect(() => {
+		if (flow.state === 'idle') {
+			promptedPaymentKindId = undefined;
+		} else if (
+			flow.state === 'reserved' &&
+			flow.paymentRequired &&
+			promptedPaymentKindId !== flow.kind.ticketKindId
+		) {
+			promptedPaymentKindId = flow.kind.ticketKindId;
+			confirmingPay = true;
+		}
+	});
 
 	useAppBars(() => ({
 		topBar: detailTopBar({ title: activity.title }),
@@ -128,10 +227,7 @@
 				{#if serverNow() < flow.latestTransaction}
 					<button
 						type="button"
-						onclick={() => {
-							payError = undefined;
-							confirmingPay = true;
-						}}
+						onclick={openOrRetryPayment}
 						class="w-full rounded-full bg-guild-primary px-5 py-3.5 text-base font-semibold text-guild-on-primary">
 						{m.queue_pay_cta()}
 					</button>
@@ -186,14 +282,14 @@
 				busy={busyKindId === ticketKind.id}
 				inFlow={flowKindId === ticketKind.id}
 				flowActive={flow.state !== 'idle'}
-				onclick={() => handleBuy(ticketKind)} />
+				onclick={() => beginBuy(ticketKind)} />
 		{/each}
 	</div>
 </div>
 
-{#if confirmingPay && flow.state === 'reserved'}
+{#if confirmingPay && flow.state === 'reserved' && flow.paymentRequired}
 	<!-- Payment confirmation (krav §6). Backdrop button / Cancel dismisses. -->
-	<div class="fixed inset-0 z-50 grid place-items-end sm:place-items-center">
+	<div class="fixed inset-0 z-50 grid place-items-end justify-center sm:place-items-center">
 		<button
 			type="button"
 			aria-label={m.queue_cancel()}
@@ -204,15 +300,32 @@
 			class="relative w-full max-w-sm rounded-t-3xl bg-white p-6 sm:rounded-3xl">
 			<h3 class="text-lg font-semibold text-guild-on-surface">{m.pay_confirm_title()}</h3>
 			<p class="mt-2 text-sm text-guild-on-surface/80">
-				{m.pay_confirm_body({ name: flow.kind.name, price: formatPrice(flow.kind.price) })}
+				{m.pay_confirm_body()}
 			</p>
+			{#if getLocale() === 'en'}
+				<p class="mt-3 rounded-2xl bg-guild-primary-light p-3 text-sm text-guild-on-surface/80">
+					{m.pay_card_discouraged()}
+				</p>
+			{/if}
 			<div class="mt-5 flex flex-col gap-2">
-				<button
-					type="button"
-					onclick={confirmPay}
-					class="w-full rounded-full bg-guild-primary px-5 py-3.5 text-base font-semibold text-guild-on-primary">
-					{m.pay_confirm_cta({ price: formatPrice(flow.kind.price) })}
-				</button>
+				{#if getLocale() === 'en'}
+					<button
+						type="button"
+						onclick={() => confirmPay('swish')}
+						class="w-full rounded-full bg-guild-primary px-5 py-3.5 text-base font-semibold text-guild-on-primary"
+						>{m.pay_with_swish()}</button>
+					<button
+						type="button"
+						onclick={() => confirmPay('stripe')}
+						class="w-full rounded-full border border-guild-ring px-5 py-3.5 text-base font-semibold text-guild-on-surface"
+						>{m.pay_with_stripe()}</button>
+				{:else}
+					<button
+						type="button"
+						onclick={() => confirmPay('swish')}
+						class="w-full rounded-full bg-guild-primary px-5 py-3.5 text-base font-semibold text-guild-on-primary"
+						>{m.pay_with_swish()}</button>
+				{/if}
 				<button
 					type="button"
 					onclick={() => (confirmingPay = false)}
@@ -220,6 +333,56 @@
 					{m.queue_cancel()}
 				</button>
 			</div>
+		</div>
+	</div>
+{/if}
+
+{#if configuringKind}
+	<div class="fixed inset-0 z-50 grid place-items-end justify-center sm:place-items-center">
+		<button
+			type="button"
+			aria-label={m.queue_cancel()}
+			class="absolute inset-0 bg-black/40"
+			onclick={() => (configuringKind = undefined)}></button>
+		<div
+			class="relative max-h-[85dvh] w-full max-w-sm overflow-y-auto rounded-t-3xl bg-white p-6 sm:rounded-3xl">
+			<h3 class="text-xl font-semibold">{m.addons_title()}</h3>
+			<div class="mt-4 space-y-5">
+				{#each configuringKind.addons as addon (addon.id)}
+					<fieldset>
+						<legend class="font-semibold"
+							>{addon.name}{#if addon.required}
+								*{/if}</legend>
+						<div class="mt-2 space-y-2">
+							{#each addon.options as option (option.id)}
+								<label class="flex items-center gap-3 rounded-2xl bg-gray-50 p-3">
+									<input
+										type={addon.multipleAlternatives ? 'checkbox' : 'radio'}
+										name={`addon-${addon.id}`}
+										checked={(selectedOptions.get(addon.id) ?? []).includes(option.index)}
+										onchange={(event) =>
+											toggleOption(addon, option.index, event.currentTarget.checked)} />
+									<span class="flex-1">{option.name}</span><span>{formatPrice(option.price)}</span>
+								</label>
+							{/each}
+							{#if addon.hasTextField}
+								<input
+									type="text"
+									value={selectedTexts.get(addon.id) ?? ''}
+									oninput={(event) => selectedTexts.set(addon.id, event.currentTarget.value)}
+									placeholder={m.addon_text_placeholder()}
+									class="w-full rounded-2xl border border-gray-200 px-4 py-3" />
+							{/if}
+						</div>
+					</fieldset>
+				{/each}
+			</div>
+			{#if addonError}<p class="mt-3 text-sm text-red-700" role="alert">{addonError}</p>{/if}
+			<button
+				type="button"
+				onclick={confirmAddons}
+				class="mt-5 w-full rounded-full bg-guild-primary px-5 py-3.5 font-semibold text-guild-on-primary"
+				>{m.addons_continue()}</button>
 		</div>
 	</div>
 {/if}

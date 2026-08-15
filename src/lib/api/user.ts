@@ -1,5 +1,5 @@
 import { api } from './clients';
-import { cached } from './cache';
+import { cachedPersistent, invalidate } from './cache';
 import { DEMO_MODE, unwrap } from './call';
 import { guildFromPath, parseDate, pickI18n } from './mappings';
 import type { components } from './generated/api';
@@ -50,10 +50,25 @@ export async function getMe(): Promise<Me> {
 	return mapMe(raw);
 }
 
-/** Cached identity — session lifetime (spec §3.3); cleared on logout
- *  via `clearCache`, refreshed on login via `invalidate('me')`. */
+/** Cached identity, persisted alongside owned tickets so ticket-holder
+ *  details and theme state remain available offline. Cleared on logout. */
 export function cachedMe(depends?: Depends): Promise<Me> {
-	return cached('me', Number.POSITIVE_INFINITY, getMe, depends);
+	return cachedPersistent(
+		'me',
+		0,
+		getMe,
+		(value) => {
+			const me = value as Me;
+			return { ...me, creation: new Date(me.creation) };
+		},
+		depends
+	);
+}
+
+export async function setLanguage(language: string): Promise<void> {
+	if (!DEMO_MODE) await unwrap(() => api.PUT('/user/language', { body: language }));
+	_mockMe.language = language;
+	invalidate('me');
 }
 
 /**
@@ -79,6 +94,17 @@ export function majorityGuild(groups: MyGroup[]): Guild | undefined {
 		}
 	}
 	return best;
+}
+
+/** Use the neutral theme when a user directly belongs to multiple guilds. */
+export function themeGuild(groups: MyGroup[]): Guild | undefined {
+	const directGuilds = new Set(
+		groups
+			.filter((group) => group.path.split('.').length === 2)
+			.map((group) => guildFromPath(group.path))
+			.filter((guild): guild is Guild => guild !== undefined)
+	);
+	return directGuilds.size > 1 ? undefined : majorityGuild(groups);
 }
 
 const _mockMe: RawMe = {

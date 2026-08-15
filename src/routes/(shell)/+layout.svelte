@@ -20,6 +20,7 @@
 	import { session } from '$lib/state/session.svelte';
 	import { onMount } from 'svelte';
 	import { isIos26Plus } from '$lib/platform/isIos26Plus';
+	import { network } from '$lib/state/network.svelte';
 
 	let { children } = $props();
 
@@ -67,7 +68,7 @@
 			userId: session.userId,
 			onclick: () => replaceNavigation(Routes.Profile, { resetDepth: true })
 		}),
-		trailing: slots.bell(() => alert(m.top_bar_notifications_label())),
+		// trailing: slots.bell(() => alert(m.top_bar_notifications_label())),
 		title: navItems.find((it) => it.id === selected)?.label ?? ''
 	});
 
@@ -107,7 +108,16 @@
 
 <main
 	bind:this={mainEl}
-	class="h-full {isIos26Native ? 'mt-17 mb-20' : 'mb-24 pt-[calc(env(safe-area-inset-top)+6rem)]'}">
+	class="h-dvh overflow-y-auto overscroll-y-contain {isIos26Native
+		? 'pt-17 pb-20'
+		: 'pt-[calc(env(safe-area-inset-top)+6rem)] pb-24'}">
+	{#if !network.online}
+		<p
+			class="mx-4 mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
+			role="status">
+			{m.offline_banner()}
+		</p>
+	{/if}
 	{@render children()}
 </main>
 

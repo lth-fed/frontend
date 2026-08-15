@@ -8,7 +8,8 @@ export function formatCardDate(d: Date): string {
 	const date = new Intl.DateTimeFormat(locale, {
 		weekday: 'short',
 		day: 'numeric',
-		month: 'short'
+		month: 'short',
+		year: yearIfNotCurrent(d)
 	}).format(d);
 	return `${capitalize(date)}`;
 }
@@ -20,9 +21,14 @@ export function formatDetailDate(d: Date): string {
 		new Intl.DateTimeFormat(getLocale(), {
 			weekday: 'long',
 			day: 'numeric',
-			month: 'short'
+			month: 'short',
+			year: yearIfNotCurrent(d)
 		}).format(d)
 	);
+}
+
+function yearIfNotCurrent(d: Date): 'numeric' | undefined {
+	return d.getFullYear() === new Date().getFullYear() ? undefined : 'numeric';
 }
 
 /** Time range, e.g. "17:00 - 23:00". 24-hour in both locales. */

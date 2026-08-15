@@ -20,6 +20,7 @@ type CacheEntry = {
 };
 
 const store = new Map<string, CacheEntry>();
+const PERSISTENT_PREFIX = 'tappen-api-cache:';
 
 const dep = (key: string) => `app:cache:${key}` as const;
 
@@ -86,6 +87,58 @@ export async function cached<T>(
 	}
 }
 
+/**
+ * Opt-in persistent variant for the small amount of user data that must
+ * remain available offline. Persisted values are served immediately and
+ * revalidated through the normal stale-while-revalidate path.
+ */
+export function cachedPersistent<T>(
+	key: string,
+	ttlMs: number,
+	fetcher: () => Promise<T>,
+	revive: (value: unknown) => T,
+	depends?: (dep: `app:cache:${string}`) => void
+): Promise<T> {
+	const storageKey = `${PERSISTENT_PREFIX}${key}`;
+	if (browser && !store.has(key)) {
+		try {
+			const raw = localStorage.getItem(storageKey);
+			if (raw) {
+				const saved = JSON.parse(raw) as { value: unknown; fetchedAt: number };
+				store.set(key, {
+					value: revive(saved.value),
+					fetchedAt: saved.fetchedAt,
+					inflight: null
+				});
+			}
+		} catch {
+			try {
+				localStorage.removeItem(storageKey);
+			} catch {
+				// Storage is unavailable; continue with the memory cache.
+			}
+		}
+	}
+
+	const effectiveTtl = browser && !navigator.onLine ? Number.POSITIVE_INFINITY : ttlMs;
+	return cached(
+		key,
+		effectiveTtl,
+		async () => {
+			const fresh = await fetcher();
+			if (browser) {
+				try {
+					localStorage.setItem(storageKey, JSON.stringify({ value: fresh, fetchedAt: Date.now() }));
+				} catch {
+					// Storage can be unavailable or full; the memory cache still works.
+				}
+			}
+			return fresh;
+		},
+		depends
+	);
+}
+
 /** Cached value regardless of freshness (or `undefined`). */
 export function peek<T>(key: string): T | undefined {
 	return store.get(key)?.value as T | undefined;
@@ -119,4 +172,14 @@ export function invalidatePrefix(prefix: string): void {
 /** Drop everything — called on logout so no data crosses sessions. */
 export function clearCache(): void {
 	store.clear();
+	if (browser) {
+		try {
+			for (let index = localStorage.length - 1; index >= 0; index -= 1) {
+				const key = localStorage.key(index);
+				if (key?.startsWith(PERSISTENT_PREFIX)) localStorage.removeItem(key);
+			}
+		} catch {
+			// Storage is unavailable; the in-memory session data is still cleared.
+		}
+	}
 }

@@ -6,11 +6,11 @@
 	// The most involved contributors, per docs/agreements/maintainers.md.
 	// Update alongside that document when the maintainer list changes.
 	const maintainers: { name: string; guild: string }[] = [
-		{ name: 'Felix Hellborg', guild: 'F' },
-		{ name: 'Åke Amcoff', guild: 'F' },
 		{ name: 'Erik Davidsson', guild: 'E' },
+		{ name: 'Åke Amcoff', guild: 'F' },
 		{ name: 'Axel Andersson', guild: 'E' },
-		{ name: 'Simon Mechler', guild: 'D' }
+		{ name: 'Simon Mechler', guild: 'D' },
+		{ name: 'Felix Hellborg', guild: 'F' }
 	];
 
 	const initials = (name: string) =>
@@ -88,7 +88,7 @@
 				href="https://lagen.nu/2005:59#K2R11"
 				target="_blank"
 				rel="noopener noreferrer"
-				class="flex items-center gap-2 font-medium text-guild-primary">
+				class="flex items-center gap-2 font-semibold text-guild-accent underline decoration-current underline-offset-2">
 				{m.about_withdrawal_law_link()}
 				<ExternalLink class="size-4" aria-hidden="true" />
 			</a>
@@ -121,7 +121,7 @@
 						{m.about_payment_title()}
 					</h3>
 					<p class="text-sm text-guild-on-surface/70">
-						{m.about_swish_number()}: <strong>1234207205</strong>
+						{m.about_swish_number()}: <strong>1234994018</strong>
 					</p>
 					<p class="mt-2 text-sm leading-relaxed text-guild-on-surface/70">
 						{m.about_vat_description()}

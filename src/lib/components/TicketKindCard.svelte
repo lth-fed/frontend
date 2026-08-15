@@ -50,8 +50,6 @@
 				return m.purchase_releases_at({ datetime: formatShortDateTime(state.releaseAt) });
 			case 'closed':
 				return m.purchase_closed();
-			case 'members-only':
-				return m.purchase_members_only();
 			case 'sold-out':
 				return m.purchase_join_queue();
 			case 'open':

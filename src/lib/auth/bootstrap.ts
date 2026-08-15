@@ -9,17 +9,19 @@ import {
 } from 'auth-lib';
 import { dev } from '$app/environment';
 import { session } from '$lib/state/session.svelte';
-import { cachedMe, majorityGuild } from '$lib/api/user';
+import { cachedMe, majorityGuild, themeGuild } from '$lib/api/user';
 import { replaceNavigation } from '$lib/navigation/stackNavigation';
 import Routes from '$lib/navigation/routes';
 import { InAppBrowser } from '@capgo/inappbrowser';
 import { Capacitor } from '@capacitor/core';
 import { clearCache } from '$lib/api/cache';
+import { invalidate } from '$lib/api/cache';
+import { getLocale, locales, setLocale } from '$lib/paraglide/runtime';
+import { registerPushDevice } from '$lib/api/push';
 
 /** Which fed-auth provider to log in with. LU (SAML behind OIDC) in
  *  production per krav §2–3; the passwordless test provider in dev. */
 const AUTH_PROVIDER = dev ? ('test' as const) : ('lu' as const);
-const AUTH_BASE = dev ? 'http://localhost:8001/api/v0' : 'https://api.auth.teknologappen.se/api/v0';
 const AUTH_ORIGIN = dev ? 'http://localhost:8001' : 'https://api.auth.teknologappen.se';
 const NATIVE_CONTINUE = 'tappen://oauth_callback';
 /** URL fed-auth POSTs the signed JWT to so the backend can upsert the
@@ -34,8 +36,8 @@ configureAuth({ origin: AUTH_ORIGIN });
 
 /**
  * Set the freshly-minted access token on `session` and resolve the
- * user-derived view of session state — currently the active theming
- * guild (majority vote across the user's group memberships). Wrapped
+ * user-derived view of session state — guild context plus the visual
+ * theme (neutral for direct members of multiple guilds). Wrapped
  * so the three sign-in entry points (bootstrap restore, native finish,
  * web callback) stay consistent without copy-pasted logic.
  */
@@ -45,8 +47,16 @@ async function activateSession(token: string): Promise<void> {
 		// Through the cache: the identity fetched here is the same one
 		// Home's load reads a moment later.
 		const me = await cachedMe();
+		const preferred = me.language.toLowerCase().split('-')[0];
+		if (locales.some((locale) => locale === preferred) && preferred !== getLocale()) {
+			await setLocale(preferred as (typeof locales)[number], { reload: false });
+			invalidate('me', 'activities', 'tickets', 'purchased-tickets', 'groups', 'joinable-groups');
+			document.documentElement.lang = preferred;
+		}
 		session.userId = me.id;
 		session.guild = majorityGuild(me.groups) ?? null;
+		session.themeGuild = themeGuild(me.groups) ?? null;
+		void registerPushDevice().catch((error) => console.warn('Push registration failed', error));
 	} catch (err) {
 		console.error('Failed to derive session state from /user', err);
 	}
@@ -109,6 +119,7 @@ export async function startExternalValidationLogin(): Promise<void> {
 		session.accessToken = null;
 		session.userId = null;
 		session.guild = null;
+		session.themeGuild = null;
 		session.loginError = 'failed';
 	} finally {
 		session.isProcessing = false;
@@ -164,6 +175,7 @@ async function startWebLogin(): Promise<void> {
 	}
 
 	session.isProcessing = true;
+	// eslint-disable-next-line no-restricted-syntax -- leaving the SPA for the external OIDC provider
 	window.location.href = redirect;
 }
 
@@ -175,6 +187,7 @@ async function startWebLogin(): Promise<void> {
 export async function finishWebLogin(): Promise<boolean> {
 	session.isProcessing = true;
 	try {
+		// eslint-disable-next-line no-restricted-syntax -- auth-lib needs the complete external callback URL
 		const token = await finishLogin(window.location.href);
 		if (token) {
 			await activateSession(token);

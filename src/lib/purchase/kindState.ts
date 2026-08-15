@@ -10,7 +10,6 @@ export const ENTRY_WINDOW_MS = 10 * 60 * 1000;
  * Priority: membership > closed > pre-release > stock.
  */
 export type KindState =
-	| { state: 'members-only' }
 	| { state: 'closed' }
 	/** Before the entry window opens. */
 	| { state: 'not-yet'; releaseAt: Date }
@@ -23,7 +22,6 @@ export type KindState =
 	| { state: 'open'; ticketsLeft?: number };
 
 export function deriveKindState(kind: TicketKind, now: Date): KindState {
-	if (!kind.membershipPassing) return { state: 'members-only' };
 	if (now >= kind.purchasingAvailableStop) return { state: 'closed' };
 	if (now < kind.purchasingAvailableStart) {
 		const untilRelease = kind.purchasingAvailableStart.getTime() - now.getTime();

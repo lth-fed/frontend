@@ -1,5 +1,9 @@
 import { Capacitor } from '@capacitor/core';
+import { InAppBrowser } from '@capgo/inappbrowser';
 import { buyReservation, type PurchaseProvider } from '$lib/api';
+import type { BuyReservationInput } from '$lib/api/tickets';
+import { errorMessage } from '$lib/api/errors';
+import { m } from '$lib/paraglide/messages.js';
 
 /**
  * Payment seam (spec §4.4). The purchase machine holds a reservation
@@ -30,21 +34,25 @@ export type PaymentOutcome =
 export interface PaymentGateway {
 	readonly provider: PurchaseProvider;
 	/** Collect payment for the currently held reservation of this kind. */
-	pay(ticketKindId: string): Promise<PaymentOutcome>;
+	pay(input: Omit<BuyReservationInput, 'provider'>): Promise<PaymentOutcome>;
 }
 
 /** 0 kr tickets — the backend settles them inline (no real payment). */
 export const freeGateway: PaymentGateway = {
 	provider: 'free',
-	async pay(ticketKindId) {
+	async pay(input) {
 		try {
-			const result = await buyReservation({ ticketKindId, provider: 'free' });
+			const result = await buyReservation({ ...input, provider: 'free' });
 			if (result.badRequest)
 				return { kind: 'failed', message: result.badRequest.message, retriable: false };
-			return { kind: 'completed', ticketId: result.ok.ticketId };
+			return { kind: 'completed' };
 		} catch (err) {
 			console.error('free settlement failed', err);
-			return { kind: 'failed', retriable: true };
+			return {
+				kind: 'failed',
+				message: errorMessage(err) ?? m.error_status_unknown(),
+				retriable: true
+			};
 		}
 	}
 };
@@ -58,31 +66,78 @@ export const freeGateway: PaymentGateway = {
  */
 export const swishGateway: PaymentGateway = {
 	provider: 'swish',
-	async pay(ticketKindId) {
+	async pay(input) {
 		let result;
 		try {
-			result = await buyReservation({ ticketKindId, provider: 'swish' });
+			result = await buyReservation({ ...input, provider: 'swish' });
 		} catch (err) {
 			console.error('swish initiation failed', err);
-			return { kind: 'failed', retriable: true };
+			return {
+				kind: 'failed',
+				message: errorMessage(err) ?? m.error_status_unknown(),
+				retriable: true
+			};
 		}
 		if (result.badRequest)
 			return { kind: 'failed', message: result.badRequest.message, retriable: false };
 
 		const token = result.ok.paymentRequestToken;
-		if (token && Capacitor.isNativePlatform()) {
+		if (token) {
 			// Open the Swish app via its scheme (not in-app navigation, so
 			// the stack helpers don't apply). It returns via the universal
 			// link; the machine's poll picks up the server callback.
-			// eslint-disable-next-line no-restricted-syntax -- external app deep link
-			window.location.href = `swish://paymentrequest?token=${encodeURIComponent(token)}`;
+			const callbackUrl = Capacitor.isNativePlatform()
+				? 'tappen://payment_callback'
+				: // eslint-disable-next-line no-restricted-syntax -- callback must be the exact current browser URL
+					location.href;
+			// eslint-disable-next-line no-restricted-syntax -- external Swish hand-off cannot use in-app navigation
+			window.location.href = `swish://paymentrequest?token=${encodeURIComponent(token)}&callbackurl=${encodeURIComponent(callbackUrl)}`;
 		}
 		return { kind: 'submitted' };
 	}
 };
 
-/** Gateway for a kind, chosen by price (free vs Swish). Stripe/others
- *  slot in here later without touching callers. */
-export function gatewayFor(priceOre: number): PaymentGateway {
-	return priceOre === 0 ? freeGateway : swishGateway;
+export const stripeGateway: PaymentGateway = {
+	provider: 'stripe',
+	async pay(input) {
+		const successUrl = Capacitor.isNativePlatform()
+			? 'tappen://payment_callback'
+			: `${window.location.origin}/payment-complete/`;
+		let result;
+		try {
+			result = await buyReservation({
+				...input,
+				provider: 'stripe',
+				stripeSuccessUrl: successUrl
+			});
+		} catch (error) {
+			console.error('stripe initiation failed', error);
+			return {
+				kind: 'failed',
+				message: errorMessage(error) ?? m.error_status_unknown(),
+				retriable: true
+			};
+		}
+		if (result.badRequest) {
+			return { kind: 'failed', message: result.badRequest.message, retriable: false };
+		}
+		if (!result.ok.stripeUrl)
+			return { kind: 'failed', message: m.error_status_unknown(), retriable: true };
+
+		if (Capacitor.isNativePlatform()) {
+			void InAppBrowser.openSecureWindow({
+				authEndpoint: result.ok.stripeUrl,
+				redirectUri: successUrl,
+				prefersEphemeralWebBrowserSession: false
+			}).catch((error) => console.info('Stripe browser closed', error));
+		} else {
+			window.open(result.ok.stripeUrl, 'tappen-stripe-payment', 'popup,width=500,height=760');
+		}
+		return { kind: 'submitted' };
+	}
+};
+
+/** Resolve an explicitly selected paid provider. */
+export function paidGatewayFor(provider: 'swish' | 'stripe'): PaymentGateway {
+	return provider === 'stripe' ? stripeGateway : swishGateway;
 }

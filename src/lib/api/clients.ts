@@ -24,32 +24,47 @@ async function fetchViaCapacitor(input: Request): Promise<Response> {
 	});
 
 	const method = input.method.toUpperCase() as AllowedMethod;
+	const responseType = input.headers.get('accept')?.includes('application/octet-stream')
+		? 'arraybuffer'
+		: 'text';
 	let data: unknown;
 	if (method !== 'GET') {
 		const text = await input.text();
-		if (text) {
-			try {
-				data = JSON.parse(text);
-			} catch {
-				data = text;
-			}
-		}
+		// `Request.body` is already serialized by openapi-fetch. Keep it verbatim:
+		// Capacitor treats string data as a complete request body, so parsing a JSON
+		// string such as `"sv"` here would make it send the invalid bare value `sv`.
+		if (text) data = text;
 	}
 
 	const res = await authenticatedFetch(
-		{ url: input.url, method, headers, data, responseType: 'text' },
+		{ url: input.url, method, headers, data, responseType },
 		() => {}
 	);
 
+	const contentType = res.headers['Content-Type'] ?? res.headers['content-type'] ?? '';
 	noteServerDate(res.headers['Date'] ?? res.headers['date']);
 
-	return new Response(
-		toBodyText(res.data, res.headers['Content-Type'] ?? res.headers['content-type'] ?? ''),
-		{
-			status: res.status,
-			headers: res.headers as Record<string, string>
-		}
-	);
+	return new Response(toResponseBody(res.data, contentType, res.status, responseType), {
+		status: res.status,
+		headers: res.headers as Record<string, string>
+	});
+}
+
+function toResponseBody(
+	data: unknown,
+	contentType: string,
+	status: number,
+	responseType: 'arraybuffer' | 'text'
+): BodyInit | null {
+	if (responseType === 'text' || contentType.includes('json') || status < 200 || status >= 300) {
+		return toBodyText(data, contentType);
+	}
+	if (typeof data !== 'string') return toBodyText(data, contentType);
+
+	const binary = atob(data);
+	const bytes = new Uint8Array(binary.length);
+	for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+	return bytes;
 }
 
 /**

@@ -48,6 +48,7 @@
 		class={inputError ? 'border border-3 border-red-300' : ''}
 		bind:value={email}
 		type="email"
+		onkeydown={(e) => (e.key === 'Enter' ? click() : {})}
 		disabled={freeze} />
 </p>
 <Button class="mt-5 w-full" onclick={click} disabled={freeze}>{m.login(...l)}</Button>

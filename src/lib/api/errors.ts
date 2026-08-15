@@ -43,3 +43,25 @@ export function extractErrorMessage(body: unknown): string | undefined {
 	}
 	return undefined;
 }
+
+/** Extract the backend message from thrown `HttpError`s and ordinary errors. */
+export function errorMessage(cause: unknown): string | undefined {
+	const genericKinds = new Set(['network', 'unauthorized', 'not-found', 'server', 'unknown']);
+	if (cause && typeof cause === 'object') {
+		const bodyMessage = extractErrorMessage((cause as { body?: unknown }).body);
+		if (bodyMessage && !genericKinds.has(bodyMessage)) return bodyMessage;
+	}
+	return cause instanceof Error && cause.message && !genericKinds.has(cause.message)
+		? cause.message
+		: undefined;
+}
+
+/** Whether a failed request can be represented as temporarily unavailable. */
+export function isConnectivityError(cause: unknown): boolean {
+	const kind =
+		cause && typeof cause === 'object'
+			? ((cause as { body?: { kind?: ApiErrorKind } }).body?.kind ??
+				(cause as { kind?: ApiErrorKind }).kind)
+			: undefined;
+	return kind === 'network' || kind === 'server';
+}
