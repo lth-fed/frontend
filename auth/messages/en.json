@@ -22,5 +22,7 @@
 	"login": "Log in",
 	"whoops": "Something went very wrong. Please retry the whole login process.",
 	"personal_information_description": "Since this is the first time you log in we need to ask you a few more questions.",
-	"personal_number": "Swedish personal number (e.g. 0211284473)"
+	"personal_number": "Swedish personal number (e.g. 0211284473)",
+	"personal_number_none": "I don't have a Swedish personal number",
+	"personal_number_none_result": "You will need to ask someone in the board to add you to the guild group in the app. Reload the page if pressing this button was a mistake."
 }

@@ -7,6 +7,7 @@
 	let freeze = $state(false);
 	let inputError: string | null = $state(null);
 	let whoops = $state('');
+	let noPn = $state(false);
 	let name = $state('');
 	let personalNumber = $state('');
 
@@ -15,7 +16,7 @@
 
 	async function click() {
 		let personal_number;
-		if (personalNumber === '') {
+		if (personalNumber === '' || noPn) {
 			personal_number = null;
 		} else {
 			personal_number = personalNumber.replaceAll('-', '').replaceAll(' ', '');
@@ -64,14 +65,24 @@
 		onkeydown={(e) => (e.key === 'Enter' ? click() : {})} />
 </p>
 {#if sub?.startsWith('lund-university:') || sub?.startsWith('test:')}
-	<p class="flex flex-col">
-		<Input
-			placeholder={m.personal_number(...l)}
-			class={inputError === 'personal_number' ? 'border-3 border-red-300' : ''}
-			bind:value={personalNumber}
-			disabled={freeze}
-			onkeydown={(e) => (e.key === 'Enter' ? click() : {})} />
-	</p>
+	{#if noPn}
+		<p>
+			{m.personal_number_none_result(...l)}
+		</p>
+	{:else}
+		<p class="flex flex-col">
+			<Input
+				placeholder={m.personal_number(...l)}
+				class={inputError === 'personal_number' ? 'border-3 border-red-300' : ''}
+				bind:value={personalNumber}
+				disabled={freeze}
+				onkeydown={(e) => (e.key === 'Enter' ? click() : {})} />
+		</p>
+		<Button
+			class="h-6 from-gray-100! to-gray-200! px-2! py-0! text-left text-gray-500 enabled:scale-100!"
+			onclick={() => (noPn = true)}
+			disabled={freeze}>{m.personal_number_none(...l)}</Button>
+	{/if}
 {/if}
 <Button class="mt-5 w-full" onclick={click} disabled={freeze}>{m.login(...l)}</Button>
 {#if whoops}

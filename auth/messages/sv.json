@@ -22,5 +22,7 @@
 	"login": "Logga in",
 	"whoops": "Något gick väldigt snett. Prova logga in från början igen.",
 	"personal_information_description": "Detta är första gången du loggar in och vi behöver därför veta lite mer om dig.",
-	"personal_number": "Personnummer (i formatet 0211284473)"
+	"personal_number": "Personnummer (i formatet 0211284473)",
+	"personal_number_none": "Jag har inget personnummer",
+	"personal_number_none_result": "Du kommer behöva fråga någon i styrelsen att lägga till dig i sektionsgruppen i appen. Ladda om sidan om detta var ett misstag."
 }
