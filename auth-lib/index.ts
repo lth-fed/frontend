@@ -238,40 +238,23 @@ export async function authenticatedFetch(
 	options: HttpOptions & { method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' },
 	errorCallback: (userMessage: { [lang: string]: string }) => void
 ): Promise<HttpResponse> {
-	const { value: at } = await Preferences.get({ key: atLocation });
-	let token = at;
-
-	if (!accessTokenFresh(at)) {
-		if ((await Preferences.get({ key: asLocation })).value === 'authenticated') {
-			// refresh!
-			const newAt = await refreshAccessToken();
-
-			if (newAt === null) {
-				// we couldn't get a new token!
-				await Preferences.remove({ key: atLocation });
-				token = null;
-
-				errorCallback({
-					sv: 'Du kan ha blivit hackad! Autentifieringen misslyckades. Antingen var det mer än ett år sedan du loggade in eller så har någon tagit kontroll över din webbläsare och använder nu ditt konto.',
-					en: 'You may have been hacked! Authentication failed. Either your last login was over a year ago, or someone has taken control of your browser and is now using your account.'
-				});
-			} else {
-				token = newAt;
-			}
-		} else {
-			// we don't have a token or it's invalid
-			await Preferences.remove({ key: atLocation });
-			token = null;
-		}
+	// Every protected request passes this gate. It returns the current access
+	// token only while fresh and otherwise completes the single-flight refresh
+	// before the Minilith request is allowed onto the network.
+	const token = await getAccessToken();
+	if (token === null) {
+		errorCallback({
+			sv: 'Kunde inte förnya inloggningen. Försök igen när du har internetanslutning.',
+			en: 'Could not refresh the login. Try again when you have a network connection.'
+		});
+		throw new Error('A fresh access token is required before making an API request');
 	}
 
 	return CapacitorHttp.request({
 		...options,
 		headers: {
 			...options.headers,
-			...(token !== null && {
-				authorization: `Bearer ${token}`
-			})
+			authorization: `Bearer ${token}`
 		}
 	});
 }
@@ -326,6 +309,13 @@ async function attemptRefresh(
 	}
 
 	if (response.status !== 200 || typeof response.data?.access_token !== 'string') {
+		// A refresh token has no time-based expiry. Transport/server failures and
+		// malformed successful responses therefore must not destroy it; keep the
+		// authenticated state so the next API attempt can retry the refresh.
+		if (response.status >= 500 || response.status === 429 || response.status === 200) {
+			console.error('temporary refresh failure', response.status, response.data);
+			return null;
+		}
 		// The single-flight guard above only covers this JS context. On the web
 		// every page load bootstraps its own refresh, so a navigation that lands
 		// mid-rotation redeems a token the previous page already consumed. That
@@ -335,8 +325,9 @@ async function attemptRefresh(
 			const rotated = await awaitRotation(refreshToken);
 			if (rotated !== null) return attemptRefresh(rotated, false);
 		}
-		// the server rejected the token (consumed or expired); it will
-		// never work again, so drop to unauthenticated
+		// The server rejected this token (normally because another context
+		// consumed it during rotation). Refresh tokens have no time-based
+		// expiry, but a consumed token cannot be redeemed again.
 		console.error('refresh failed', response.status, response.data);
 		await Preferences.remove({ key: atLocation });
 		await Preferences.remove({ key: rtLocation });

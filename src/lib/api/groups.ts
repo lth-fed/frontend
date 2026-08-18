@@ -5,6 +5,7 @@ import { pickI18n } from './mappings';
 import type { components } from './generated/api';
 
 type RawGroup = components['schemas']['Group'];
+type RawFatGroup = components['schemas']['FatGroup'];
 type RawAdminship = components['schemas']['Adminship'];
 type RawJoinableGroup = components['schemas']['JoinableGroup'];
 
@@ -22,6 +23,8 @@ export type Group = {
 	limitMembershipVisibility: boolean;
 	deleted: boolean;
 	logoUrl: string;
+	/** User IDs of the group's direct administrators. Only populated by the tree endpoint. */
+	adminIds: string[];
 };
 
 export type JoinableGroup = Group & { requested: boolean };
@@ -50,7 +53,7 @@ export type CreateGroupInput = {
 	logoId: string;
 };
 
-function mapGroup(g: RawGroup): Group {
+function mapGroup(g: RawGroup | RawFatGroup): Group {
 	return {
 		id: g.id,
 		path: g.path,
@@ -58,7 +61,8 @@ function mapGroup(g: RawGroup): Group {
 		description: pickI18n(g.description),
 		limitMembershipVisibility: g.limit_membership_visibility,
 		deleted: g.deleted,
-		logoUrl: g.logo_url
+		logoUrl: g.logo_url,
+		adminIds: 'admin_ids' in g ? (g.admin_ids ?? []) : []
 	};
 }
 
@@ -71,10 +75,10 @@ function mapAdminship(a: RawAdminship): Adminship {
 }
 
 /**
- * List all groups the signed-in user is a direct or transitive member
- * of. Includes the root `tlth` and deeper subgroups (e.g.
- * `tlth.e.styrelsen`); callers wanting a guild code need to filter and
- * call `guildFromPath` themselves.
+ * List groups with upcoming activities in the signed-in user's accessible
+ * trees, including the groups' ancestors. Administrators receive their full
+ * accessible trees. Callers wanting a guild code need to filter and call
+ * `guildFromPath` themselves.
  */
 export async function listGroups(): Promise<Group[]> {
 	const raw = DEMO_MODE ? _mockGroups : await unwrap(() => api.GET('/groups/tree', {}));
@@ -83,6 +87,16 @@ export async function listGroups(): Promise<Group[]> {
 
 export function cachedGroups(depends?: Depends): Promise<Group[]> {
 	return cached('groups', 60_000, listGroups, depends);
+}
+
+/** Groups relevant to the visibility and notification filter interface. */
+export async function listFilterGroups(): Promise<Group[]> {
+	const raw = DEMO_MODE ? _mockGroups : await unwrap(() => api.GET('/groups/for-filters', {}));
+	return raw.map(mapGroup);
+}
+
+export function cachedFilterGroups(depends?: Depends): Promise<Group[]> {
+	return cached('filter-groups', 60_000, listFilterGroups, depends);
 }
 
 export async function getGroup(id: string): Promise<Group> {
@@ -141,7 +155,17 @@ export async function setGroupSetting(setting: GroupSetting): Promise<void> {
 			})
 		);
 	}
-	invalidate('group-settings', 'activities');
+	invalidate('group-settings', 'filter-groups', 'activities');
+}
+
+/** Leave a group the signed-in user directly belongs to. */
+export async function leaveGroup(groupId: string): Promise<void> {
+	if (!DEMO_MODE) {
+		await unwrap(() =>
+			api.DELETE('/groups/{group_id}', { params: { path: { group_id: groupId } } })
+		);
+	}
+	invalidate('me', 'groups', 'filter-groups', 'group-settings', 'activities');
 }
 
 /**
@@ -228,7 +252,7 @@ function _mockGroupPath(id: string): string | undefined {
 	return _mockGroups.find((g) => g.id === id)?.path;
 }
 
-let _mockGroups: RawGroup[] = [
+let _mockGroups: RawFatGroup[] = [
 	{
 		id: '00000000-0000-0000-0000-000000000001',
 		path: 'tlth',
@@ -240,7 +264,8 @@ let _mockGroups: RawGroup[] = [
 		},
 		deleted: false,
 		logo_id: '00000000-0000-0000-0000-000000000101',
-		logo_url: '/guild-logos/default.svg'
+		logo_url: '/guild-logos/default.svg',
+		admin_ids: ['test:admin']
 	},
 	{
 		id: '00000000-0000-0000-0000-000000000002',
@@ -250,7 +275,8 @@ let _mockGroups: RawGroup[] = [
 		description: { en: 'Physics section', sv: 'Fysiksektionen' },
 		deleted: false,
 		logo_id: '00000000-0000-0000-0000-000000000102',
-		logo_url: '/guild-logos/f.avif'
+		logo_url: '/guild-logos/f.avif',
+		admin_ids: ['test:f-admin']
 	}
 ];
 

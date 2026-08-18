@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { ActivityOrganiser } from '$lib/api/activities';
-	import { m } from '$lib/paraglide/messages.js';
 	import { pushNavigation } from '$lib/navigation/stackNavigation';
 	import Routes from '$lib/navigation/routes';
 	import { seed } from '$lib/api/cache';
@@ -16,7 +15,8 @@
 			description: '',
 			limitMembershipVisibility: false,
 			deleted: false,
-			logoUrl: organiser.logoUrl
+			logoUrl: organiser.logoUrl,
+			adminIds: []
 		});
 		void pushNavigation(Routes.Group(organiser.id));
 	}
@@ -26,7 +26,7 @@
 		onFollow?: () => void;
 	}
 
-	let { organiser, onFollow }: Props = $props();
+	let { organiser, onFollow: _onFollow }: Props = $props();
 </script>
 
 <div

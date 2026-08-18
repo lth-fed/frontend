@@ -3,6 +3,7 @@
 	import { resolve } from '$app/paths';
 	import { MapPin } from '@lucide/svelte';
 	import { pushNavigation, replaceNavigation } from '$lib/navigation/stackNavigation';
+	import { markdownToPlainText } from '$lib/markdown';
 	import type { Guild } from '$lib/types/guild';
 
 	interface Props {
@@ -33,6 +34,7 @@
 
 	const cls =
 		'block w-full overflow-hidden rounded-3xl bg-white text-left shadow-[0_4px_20px_color-mix(in_srgb,rgb(0_0_0)_12%,transparent)]';
+	const descriptionPreview = $derived(markdownToPlainText(description));
 </script>
 
 {#snippet body()}
@@ -49,12 +51,12 @@
 	<div class="flex flex-col gap-3.5 px-6 pt-3.5 pb-4">
 		<div class="flex flex-col gap-1 pt-1.5">
 			<p class="text-sm leading-none font-semibold text-guild-accent">{date}</p>
-			<h3 class="text-[22px] leading-none font-semibold">{title}</h3>
+			<h3 class="text-[22px] leading-none font-semibold [overflow-wrap:anywhere]">{title}</h3>
 		</div>
 
 		<p
 			class="clear-both line-clamp-4 text-justify text-sm leading-tight hyphens-auto text-gray-600">
-			{description}
+			{descriptionPreview}
 		</p>
 
 		{#if location}

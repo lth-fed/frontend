@@ -148,11 +148,11 @@ export const slots = {
 export function detailTopBar(opts: {
 	title: string;
 	onBack?: () => void;
-	onShare?: () => void;
+	// onShare?: () => void;
 }): TopBarConfig {
 	return {
 		leading: slots.back(opts.onBack),
-		trailing: opts.onShare ? slots.share(opts.onShare) : null,
+		// trailing: opts.onShare ? slots.share(opts.onShare) : null,
 		title: opts.title
 	};
 }

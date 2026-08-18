@@ -1,9 +1,9 @@
 import type { PageLoad } from './$types';
-import { cachedGroups, cachedGroupSettings } from '$lib/api/groups';
+import { cachedFilterGroups, cachedGroupSettings } from '$lib/api/groups';
 
 export const load: PageLoad = async ({ depends }) => {
 	const [groups, settings] = await Promise.all([
-		cachedGroups(depends),
+		cachedFilterGroups(depends),
 		cachedGroupSettings(depends)
 	]);
 	return { groups, settings };

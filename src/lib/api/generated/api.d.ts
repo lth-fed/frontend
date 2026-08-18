@@ -1143,77 +1143,7 @@ export interface paths {
 			path?: never;
 			cookie?: never;
 		};
-		/** Gets a named ticket-kind notification. */
-		get: {
-			parameters: {
-				query?: never;
-				header?: never;
-				path: {
-					ticket_kind_id: string;
-					kind: string;
-				};
-				cookie?: never;
-			};
-			requestBody?: never;
-			responses: {
-				200: {
-					headers: {
-						[name: string]: unknown;
-					};
-					content: {
-						'application/json; charset=utf-8': components['schemas']['TicketNotification'];
-					};
-				};
-				/** @description This is for user input errors. */
-				400: {
-					headers: {
-						[name: string]: unknown;
-					};
-					content: {
-						'application/json; charset=utf-8': components['schemas']['MinilithError'];
-					};
-				};
-				/** @description This is for auth errors. This usually requires re-login. */
-				401: {
-					headers: {
-						[name: string]: unknown;
-					};
-					content: {
-						'application/json; charset=utf-8': components['schemas']['MinilithError'];
-					};
-				};
-				/** @description This is for client application errors. */
-				403: {
-					headers: {
-						[name: string]: unknown;
-					};
-					content: {
-						'application/json; charset=utf-8': components['schemas']['MinilithError'];
-					};
-				};
-				/**
-				 * @description This is for when the user requests something that doesn't exist. Probably cache invalidaton
-				 *     issue.
-				 */
-				404: {
-					headers: {
-						[name: string]: unknown;
-					};
-					content: {
-						'application/json; charset=utf-8': components['schemas']['MinilithError'];
-					};
-				};
-				/** @description Shit went down and the team is scrambling to fix it. */
-				500: {
-					headers: {
-						[name: string]: unknown;
-					};
-					content: {
-						'application/json; charset=utf-8': components['schemas']['MinilithError'];
-					};
-				};
-			};
-		};
+		get?: never;
 		/** Creates or replaces a named notification for a ticket kind. */
 		put: {
 			parameters: {
@@ -1227,7 +1157,7 @@ export interface paths {
 			};
 			requestBody: {
 				content: {
-					'application/json; charset=utf-8': components['schemas']['PutTicketNotification'];
+					'application/json; charset=utf-8': components['schemas']['PutNotification'];
 				};
 			};
 			responses: {
@@ -1470,6 +1400,7 @@ export interface paths {
 		 *     - webp
 		 *     - png
 		 *     - avif
+		 *     - svg
 		 *
 		 *     Notably, no GIF support.
 		 *
@@ -2981,6 +2912,252 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/admin/groups/{group_id}/notifications/{id}': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		/** Creates or replaces a notification for a group. All direct & descendant members see it. */
+		put: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path: {
+					group_id: string;
+					id: string;
+				};
+				cookie?: never;
+			};
+			requestBody: {
+				content: {
+					'application/json; charset=utf-8': components['schemas']['PutNotification'];
+				};
+			};
+			responses: {
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['GroupNotification'];
+					};
+				};
+				/** @description This is for user input errors. */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+				/** @description This is for auth errors. This usually requires re-login. */
+				401: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+				/** @description This is for client application errors. */
+				403: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+				/**
+				 * @description This is for when the user requests something that doesn't exist. Probably cache invalidaton
+				 *     issue.
+				 */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+				/** @description Shit went down and the team is scrambling to fix it. */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+			};
+		};
+		post?: never;
+		/** Deletes a named group notification that has not been sent yet. */
+		delete: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path: {
+					group_id: string;
+					id: string;
+				};
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content?: never;
+				};
+				/** @description This is for user input errors. */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+				/** @description This is for auth errors. This usually requires re-login. */
+				401: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+				/** @description This is for client application errors. */
+				403: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+				/**
+				 * @description This is for when the user requests something that doesn't exist. Probably cache invalidaton
+				 *     issue.
+				 */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+				/** @description Shit went down and the team is scrambling to fix it. */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+			};
+		};
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/admin/groups/{group_id}/notifications': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Lists notifications that are still scheduled for a group, ordered by delivery time.
+		 *     Successfully processed notifications are not retained.
+		 */
+		get: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path: {
+					group_id: string;
+				};
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['GroupNotification'][];
+					};
+				};
+				/** @description This is for user input errors. */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+				/** @description This is for auth errors. This usually requires re-login. */
+				401: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+				/** @description This is for client application errors. */
+				403: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+				/**
+				 * @description This is for when the user requests something that doesn't exist. Probably cache invalidaton
+				 *     issue.
+				 */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+				/** @description Shit went down and the team is scrambling to fix it. */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+			};
+		};
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/activities': {
 		parameters: {
 			query?: never;
@@ -3262,8 +3439,97 @@ export interface paths {
 			cookie?: never;
 		};
 		/**
-		 * List all groups the user is a direct or transitive member of. Useful for setting the filters
+		 * List all groups the user is a direct or transitive member of.
 		 *     for groups.
+		 * @description # Errors
+		 *
+		 *     DB, AUTH
+		 */
+		get: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['FatGroup'][];
+					};
+				};
+				/** @description This is for user input errors. */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+				/** @description This is for auth errors. This usually requires re-login. */
+				401: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+				/** @description This is for client application errors. */
+				403: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+				/**
+				 * @description This is for when the user requests something that doesn't exist. Probably cache invalidaton
+				 *     issue.
+				 */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+				/** @description Shit went down and the team is scrambling to fix it. */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+			};
+		};
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/groups/for-filters': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * List all groups the user has visibility/notification settings for and groups with events
+		 *     in the future or recent path.
 		 * @description # Errors
 		 *
 		 *     DB, AUTH
@@ -5424,6 +5690,25 @@ export interface components {
 			 */
 			total: number;
 		};
+		/** FatGroup */
+		FatGroup: {
+			/** Format: uuid */
+			id: string;
+			/** Format: group_path */
+			path: string;
+			limit_membership_visibility: boolean;
+			name: {
+				[key: string]: string;
+			};
+			description: {
+				[key: string]: string;
+			};
+			deleted: boolean;
+			/** Format: uuid */
+			logo_id: string;
+			logo_url: string;
+			admin_ids?: string[];
+		};
 		/** Group */
 		Group: {
 			/** Format: uuid */
@@ -5446,6 +5731,19 @@ export interface components {
 		GroupIdRequest: {
 			/** Format: uuid */
 			group_id: string;
+		};
+		/** GroupNotification */
+		GroupNotification: {
+			/** Format: uuid */
+			id: string;
+			title: {
+				[key: string]: string;
+			};
+			content: {
+				[key: string]: string;
+			};
+			/** Format: date-time */
+			send_at: string;
 		};
 		/** GroupSetting */
 		GroupSetting: {
@@ -5678,6 +5976,17 @@ export interface components {
 			/** Format: uuid */
 			logo_id: string;
 		};
+		/** PutNotification */
+		PutNotification: {
+			title: {
+				[key: string]: string;
+			};
+			content: {
+				[key: string]: string;
+			};
+			/** Format: date-time */
+			send_at: string;
+		};
 		/** PutTicketKind */
 		PutTicketKind: {
 			/** Format: uuid */
@@ -5702,17 +6011,6 @@ export interface components {
 			allow_transfer_ticket_bypass_allowed_groups: boolean;
 			allowed_group_ids: string[];
 			addons: components['schemas']['AvailableAddon'][];
-		};
-		/** PutTicketNotification */
-		PutTicketNotification: {
-			title: {
-				[key: string]: string;
-			};
-			content: {
-				[key: string]: string;
-			};
-			/** Format: date-time */
-			send_at: string;
 		};
 		/** QueueRequest */
 		QueueRequest: {

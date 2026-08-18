@@ -11,11 +11,11 @@ import { dev } from '$app/environment';
 import { session } from '$lib/state/session.svelte';
 import { cachedMe, majorityGuild, themeGuild } from '$lib/api/user';
 import { replaceNavigation } from '$lib/navigation/stackNavigation';
+import { invalidateAll } from '$app/navigation';
 import Routes from '$lib/navigation/routes';
 import { InAppBrowser } from '@capgo/inappbrowser';
 import { Capacitor } from '@capacitor/core';
 import { clearCache } from '$lib/api/cache';
-import { invalidate } from '$lib/api/cache';
 import { getLocale, locales, setLocale } from '$lib/paraglide/runtime';
 import { registerPushDevice } from '$lib/api/push';
 
@@ -50,8 +50,11 @@ async function activateSession(token: string): Promise<void> {
 		const preferred = me.language.toLowerCase().split('-')[0];
 		if (locales.some((locale) => locale === preferred) && preferred !== getLocale()) {
 			await setLocale(preferred as (typeof locales)[number], { reload: false });
-			invalidate('me', 'activities', 'tickets', 'purchased-tickets', 'groups', 'joinable-groups');
+			// API mappings flatten i18n records using the active locale, so stale
+			// values cannot safely survive a language change.
+			clearCache();
 			document.documentElement.lang = preferred;
+			await invalidateAll();
 		}
 		session.userId = me.id;
 		session.guild = majorityGuild(me.groups) ?? null;

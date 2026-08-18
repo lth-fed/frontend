@@ -47,6 +47,13 @@
 	"group_requested": "Requested",
 	"group_members_private": "This group's membership list is private.",
 	"group_subgroups": "Subgroups",
+	"group_admins": "Administrators",
+	"group_no_admins": "No administrators are listed.",
+	"group_settings": "Activity visibility and notifications",
+	"group_visible": "Show this group's activities",
+	"group_leave": "Leave group",
+	"group_leave_confirm": "Are you sure you want to leave {group}?",
+	"group_leave_failed": "Could not leave the group.",
 
 	"carousel_slide_label": "Go to slide {n}",
 	"qr_code_alt": "QR code",

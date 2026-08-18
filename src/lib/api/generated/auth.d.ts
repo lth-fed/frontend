@@ -4,42 +4,7 @@
  */
 
 export interface paths {
-	'/verifying-key': {
-		parameters: {
-			query?: never;
-			header?: never;
-			path?: never;
-			cookie?: never;
-		};
-		/** Returns the public key as it's raw bytes (32 bytes). */
-		get: {
-			parameters: {
-				query?: never;
-				header?: never;
-				path?: never;
-				cookie?: never;
-			};
-			requestBody?: never;
-			responses: {
-				200: {
-					headers: {
-						[name: string]: unknown;
-					};
-					content: {
-						'application/octet-stream': string;
-					};
-				};
-			};
-		};
-		put?: never;
-		post?: never;
-		delete?: never;
-		options?: never;
-		head?: never;
-		patch?: never;
-		trace?: never;
-	};
-	'/refresh': {
+	'/personal-information': {
 		parameters: {
 			query?: never;
 			header?: never;
@@ -48,107 +13,10 @@ export interface paths {
 		};
 		get?: never;
 		put?: never;
-		/** Get JWT access token and a new refresh token. */
-		post: {
-			parameters: {
-				query?: never;
-				header?: never;
-				path?: never;
-				cookie?: never;
-			};
-			requestBody?: never;
-			responses: {
-				200: {
-					headers: {
-						[name: string]: unknown;
-					};
-					content: {
-						'application/json; charset=utf-8': components['schemas']['RefreshResponse'];
-					};
-				};
-			};
-		};
-		delete?: never;
-		options?: never;
-		head?: never;
-		patch?: never;
-		trace?: never;
-	};
-	'/logout': {
-		parameters: {
-			query?: never;
-			header?: never;
-			path?: never;
-			cookie?: never;
-		};
-		get?: never;
-		put?: never;
-		/** Removes the refresh token. */
-		post: {
-			parameters: {
-				query?: never;
-				header?: never;
-				path?: never;
-				cookie?: never;
-			};
-			requestBody?: never;
-			responses: {
-				200: {
-					headers: {
-						[name: string]: unknown;
-					};
-					content?: never;
-				};
-			};
-		};
-		delete?: never;
-		options?: never;
-		head?: never;
-		patch?: never;
-		trace?: never;
-	};
-	'/verify-access-token': {
-		parameters: {
-			query?: never;
-			header?: never;
-			path?: never;
-			cookie?: never;
-		};
-		get?: never;
-		put?: never;
-		/** Verifies that your access token is correct. */
-		post: {
-			parameters: {
-				query?: never;
-				header?: never;
-				path?: never;
-				cookie?: never;
-			};
-			requestBody?: never;
-			responses: {
-				200: {
-					headers: {
-						[name: string]: unknown;
-					};
-					content?: never;
-				};
-			};
-		};
-		delete?: never;
-		options?: never;
-		head?: never;
-		patch?: never;
-		trace?: never;
-	};
-	'/confirm-datasharing': {
-		parameters: {
-			query?: never;
-			header?: never;
-			path?: never;
-			cookie?: never;
-		};
-		get?: never;
-		put?: never;
+		/**
+		 * # Errors
+		 * @description - `personal_number`: `xxxxxxxxxx` where x: /[0-9]/
+		 */
 		post: {
 			parameters: {
 				query?: never;
@@ -158,7 +26,7 @@ export interface paths {
 			};
 			requestBody: {
 				content: {
-					'application/json; charset=utf-8': components['schemas']['ConfirmRequest'];
+					'application/json; charset=utf-8': components['schemas']['InfoCompletion'];
 				};
 			};
 			responses: {
@@ -170,119 +38,52 @@ export interface paths {
 						'text/plain; charset=utf-8': string;
 					};
 				};
-			};
-		};
-		delete?: never;
-		options?: never;
-		head?: never;
-		patch?: never;
-		trace?: never;
-	};
-	'/providers/lu': {
-		parameters: {
-			query?: never;
-			header?: never;
-			path?: never;
-			cookie?: never;
-		};
-		get?: never;
-		put?: never;
-		/** Get URL to redirect user to to authenticate by LU SSO */
-		post: {
-			parameters: {
-				query?: never;
-				header?: never;
-				path?: never;
-				cookie?: never;
-			};
-			requestBody: {
-				content: {
-					'application/json; charset=utf-8': components['schemas']['ProviderRequest'];
-				};
-			};
-			responses: {
-				200: {
+				/** @description This is for user input errors. */
+				400: {
 					headers: {
 						[name: string]: unknown;
 					};
 					content: {
-						'text/plain; charset=utf-8': string;
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
 					};
 				};
-			};
-		};
-		delete?: never;
-		options?: never;
-		head?: never;
-		patch?: never;
-		trace?: never;
-	};
-	'/providers/email': {
-		parameters: {
-			query?: never;
-			header?: never;
-			path?: never;
-			cookie?: never;
-		};
-		get?: never;
-		put?: never;
-		post: {
-			parameters: {
-				query?: never;
-				header?: never;
-				path?: never;
-				cookie?: never;
-			};
-			requestBody: {
-				content: {
-					'application/json; charset=utf-8': components['schemas']['ProviderRequest'];
-				};
-			};
-			responses: {
-				200: {
+				/** @description This is for auth errors. This usually requires re-login. */
+				401: {
 					headers: {
 						[name: string]: unknown;
 					};
 					content: {
-						'text/plain; charset=utf-8': string;
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
 					};
 				};
-			};
-		};
-		delete?: never;
-		options?: never;
-		head?: never;
-		patch?: never;
-		trace?: never;
-	};
-	'/providers/test': {
-		parameters: {
-			query?: never;
-			header?: never;
-			path?: never;
-			cookie?: never;
-		};
-		get?: never;
-		put?: never;
-		post: {
-			parameters: {
-				query?: never;
-				header?: never;
-				path?: never;
-				cookie?: never;
-			};
-			requestBody: {
-				content: {
-					'application/json; charset=utf-8': components['schemas']['ProviderRequest'];
-				};
-			};
-			responses: {
-				200: {
+				/** @description This is for client application errors. */
+				403: {
 					headers: {
 						[name: string]: unknown;
 					};
 					content: {
-						'text/plain; charset=utf-8': string;
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+				/**
+				 * @description This is for when the user requests something that doesn't exist. Probably cache invalidaton
+				 *     issue.
+				 */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+				/** @description Shit went down and the team is scrambling to fix it. */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
 					};
 				};
 			};
@@ -322,6 +123,54 @@ export interface paths {
 					};
 					content?: never;
 				};
+				/** @description This is for user input errors. */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+				/** @description This is for auth errors. This usually requires re-login. */
+				401: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+				/** @description This is for client application errors. */
+				403: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+				/**
+				 * @description This is for when the user requests something that doesn't exist. Probably cache invalidaton
+				 *     issue.
+				 */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+				/** @description Shit went down and the team is scrambling to fix it. */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
 			};
 		};
 		delete?: never;
@@ -359,6 +208,54 @@ export interface paths {
 					};
 					content: {
 						'text/plain; charset=utf-8': string;
+					};
+				};
+				/** @description This is for user input errors. */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+				/** @description This is for auth errors. This usually requires re-login. */
+				401: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+				/** @description This is for client application errors. */
+				403: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+				/**
+				 * @description This is for when the user requests something that doesn't exist. Probably cache invalidaton
+				 *     issue.
+				 */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+				/** @description Shit went down and the team is scrambling to fix it. */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
 					};
 				};
 			};
@@ -400,6 +297,140 @@ export interface paths {
 						'text/plain; charset=utf-8': string;
 					};
 				};
+				/** @description This is for user input errors. */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+				/** @description This is for auth errors. This usually requires re-login. */
+				401: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+				/** @description This is for client application errors. */
+				403: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+				/**
+				 * @description This is for when the user requests something that doesn't exist. Probably cache invalidaton
+				 *     issue.
+				 */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+				/** @description Shit went down and the team is scrambling to fix it. */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+			};
+		};
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api-key-get-access-token': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			requestBody: {
+				content: {
+					'application/json; charset=utf-8': components['schemas']['ApiKeyRequest'];
+				};
+			};
+			responses: {
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['ApiKeyResponse'];
+					};
+				};
+				/** @description This is for user input errors. */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+				/** @description This is for auth errors. This usually requires re-login. */
+				401: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+				/** @description This is for client application errors. */
+				403: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+				/**
+				 * @description This is for when the user requests something that doesn't exist. Probably cache invalidaton
+				 *     issue.
+				 */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+				/** @description Shit went down and the team is scrambling to fix it. */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
 			};
 		};
 		delete?: never;
@@ -412,39 +443,52 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
 	schemas: {
-		/** CallbackUrl */
-		CallbackUrl: {
-			v1: string;
+		/** ApiKeyRequest */
+		ApiKeyRequest: {
+			/** Format: uuid */
+			key: string;
 		};
-		/** ConfirmRequest */
-		ConfirmRequest: {
-			accepted: boolean;
-			id: string;
+		/** ApiKeyResponse */
+		ApiKeyResponse: {
+			access_token: string;
+			/** Format: uint64 */
+			expires_in: number;
 		};
 		/** EmailApproveResponse */
 		EmailApproveResponse: {
+			/** Format: uuid */
 			token: string;
 		};
+		/** @enum {string} */
+		EmailLanguage: 'en' | 'sv';
 		/** EmailLoginRequest */
 		EmailLoginRequest: {
 			email: string;
+			code: string;
+			language: components['schemas']['EmailLanguage'];
+		};
+		/** InfoCompletion */
+		InfoCompletion: {
+			code: string;
 			name: string;
-			id: string;
+			/** @description MUST be provided if the sub starts with `lund-university:`. */
+			personal_number?: string;
 		};
-		/** ProviderRequest */
-		ProviderRequest: {
-			continue_url: string;
-			callback?: components['schemas']['CallbackUrl'];
-		};
-		/** RefreshResponse */
-		RefreshResponse: {
-			access_token: string;
+		/**
+		 * MinilithError
+		 * @description An error object a message, and optionally a field to signify where in e.g. a form the error
+		 *     came from in validation.
+		 *
+		 *     This struct is most often created by calling static methods on [`MinilithEndpointError`].
+		 */
+		MinilithError: {
+			message: string;
+			field?: string;
 		};
 		/** TestLoginRequest */
 		TestLoginRequest: {
 			stil_id: string;
-			name: string;
-			id: string;
+			code: string;
 		};
 	};
 	responses: never;

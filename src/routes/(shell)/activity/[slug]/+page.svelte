@@ -16,6 +16,8 @@
 	import Routes from '$lib/navigation/routes';
 	import { fly } from 'svelte/transition';
 	import { quadOut } from 'svelte/easing';
+	import ActivityMap from '$lib/components/ActivityMap.svelte';
+	import MarkdownContent from '$lib/components/MarkdownContent.svelte';
 
 	let { data }: PageProps = $props();
 	const activity = $derived(data.activity);
@@ -26,8 +28,8 @@
 
 	useAppBars(() => ({
 		topBar: detailTopBar({
-			title: activity.title,
-			onShare: () => alert(`Share ${activity.title}`)
+			title: activity.title
+			// onShare: () => alert(`Share ${activity.title}`)
 		}),
 		// Buy CTA only when the full record confirms sellable tickets
 		// (krav §5). While `!full` (list-seeded placeholder), no CTA —
@@ -68,7 +70,7 @@
 			class="flex w-full flex-col gap-3.75"
 			in:fly={{ y: 28, duration: 140, delay: 120, easing: quadOut }}>
 			<h2 class="text-[24px] font-semibold">{m.activity_about()}</h2>
-			<p class="text-[16px] font-normal">{activity.description}</p>
+			<MarkdownContent markdown={activity.description} />
 		</div>
 
 		{#if activity.contact}
@@ -104,16 +106,17 @@
 			</div>
 		</div>
 
-		{#if activity.location || activity.locationDetails.directions || activity.locationDetails.url}
+		{#if activity.location || activity.locationDetails.directions || activity.locationDetails.url || activity.locationDetails.coordinates}
 			<div
 				class="flex w-full flex-col gap-3.75"
 				in:fly={{ y: 28, duration: 140, delay: 120, easing: quadOut }}>
 				<div class="flex items-center justify-between">
 					<h2 class="text-[24px] font-semibold">{m.activity_location()}</h2>
-					{#if activity.locationDetails.url}
+					{#if activity.locationDetails.url || activity.locationDetails.coordinates}
 						<!-- eslint-disable svelte/no-navigation-without-resolve -- external API-provided venue/map URL -->
 						<a
-							href={activity.locationDetails.url}
+							href={activity.locationDetails.url ??
+								`https://www.openstreetmap.org/?mlat=${activity.locationDetails.coordinates?.north}&mlon=${activity.locationDetails.coordinates?.east}#map=17/${activity.locationDetails.coordinates?.north}/${activity.locationDetails.coordinates?.east}`}
 							target="_blank"
 							rel="noopener noreferrer"
 							class="text-sm font-semibold text-guild-accent">{m.activity_open_maps()}</a>
@@ -127,6 +130,12 @@
 						</p>
 					{/if}
 				</div>
+				{#if activity.locationDetails.coordinates}
+					<ActivityMap
+						north={activity.locationDetails.coordinates.north}
+						east={activity.locationDetails.coordinates.east}
+						label={activity.location || activity.title} />
+				{/if}
 			</div>
 		{/if}
 	</div>

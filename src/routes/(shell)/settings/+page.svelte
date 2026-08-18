@@ -21,6 +21,7 @@
 	import { formatCardDate } from '$lib/format/datetime';
 	import type { PageProps } from './$types';
 	import { network } from '$lib/state/network.svelte';
+	import { clearCache } from '$lib/api/cache';
 
 	let { data }: PageProps = $props();
 	const networkUnavailable = $derived(!network.online || data.networkUnavailable);
@@ -38,6 +39,7 @@
 		languageBusy = true;
 		try {
 			await setLanguage(next);
+			clearCache();
 			await setLocale(next);
 		} finally {
 			languageBusy = false;
