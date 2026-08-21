@@ -126,6 +126,8 @@
 	"auth_error_retry": "Försök igen",
 	"auth_error_back": "Tillbaka",
 	"auth_error_details": "Tekniska detaljer",
+	"auth_refresh_error_title": "Kunde inte återställa din inloggning",
+	"auth_refresh_error_description": "Vi kunde inte nå inloggningstjänsten. Kontrollera anslutningen och försök igen.",
 
 	"settings_about": "Om appen",
 	"verifier_title": "Verifiera biljetter",

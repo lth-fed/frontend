@@ -41,15 +41,23 @@
 	});
 
 	let bootstrapped = $state(false);
+	let bootstrapFailed = $state(false);
+
+	async function runAuthBootstrap(): Promise<void> {
+		bootstrapped = false;
+		bootstrapFailed = false;
+		bootstrapFailed = !(await bootstrapAuth());
+		bootstrapped = true;
+		// a queue spot / reservation may have survived the reload
+		if (session.accessToken) void restorePurchase();
+	}
+
 	afterNavigate(async () => {
 		if (bootstrapped) return;
 		// The callback page owns the in-progress code exchange. Treating its `authenticating`
 		// state as an abandoned login here would delete the PKCE state before it can finish.
 		if (page.route.id === '/auth/callback') return;
-		await bootstrapAuth();
-		bootstrapped = true;
-		// a queue spot / reservation may have survived the reload
-		if (session.accessToken) void restorePurchase();
+		await runAuthBootstrap();
 	});
 
 	$effect(() => {
@@ -95,6 +103,19 @@
 	{#if session.isProcessing || !bootstrapped}
 		<div class="grid min-h-screen place-items-center text-sm text-gray-500">
 			{m.auth_signing_in()}
+		</div>
+	{:else if bootstrapFailed}
+		<div class="grid min-h-screen place-items-center px-6 text-center">
+			<div class="flex w-full max-w-sm flex-col items-center gap-4">
+				<h1 class="text-xl font-semibold text-gray-900">{m.auth_refresh_error_title()}</h1>
+				<p class="text-sm text-gray-600">{m.auth_refresh_error_description()}</p>
+				<button
+					type="button"
+					onclick={() => void runAuthBootstrap()}
+					class="w-full rounded-full bg-black px-5 py-3.5 text-base font-semibold text-white">
+					{m.auth_error_retry()}
+				</button>
+			</div>
 		</div>
 	{:else}
 		<Landing />

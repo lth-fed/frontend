@@ -138,6 +138,8 @@
 	"auth_error_retry": "Try again",
 	"auth_error_back": "Back",
 	"auth_error_details": "Technical details",
+	"auth_refresh_error_title": "Could not restore your session",
+	"auth_refresh_error_description": "We could not reach the login service. Check your connection and try again.",
 
 	"settings_about": "About the app",
 	"verifier_title": "Verify tickets",
