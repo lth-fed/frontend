@@ -4,6 +4,9 @@ const config: CapacitorConfig = {
 	appId: 'se.teknologappen.tappen',
 	appName: 'Tappen',
 	webDir: 'build',
+	server: {
+		errorPath: 'error.html'
+	},
 	ios: {
 		scrollEnabled: true
 	},

@@ -193,7 +193,9 @@ export async function finishWebLogin(): Promise<boolean> {
 		// eslint-disable-next-line no-restricted-syntax -- auth-lib needs the complete external callback URL
 		const token = await finishLogin(window.location.href);
 		if (token) {
-			await activateSession(token);
+			// The token has already been persisted. Do not keep the callback route waiting for the
+			// secondary profile/theme request; it can finish while the authenticated app mounts.
+			void activateSession(token);
 			return true;
 		}
 		session.loginError = 'failed';

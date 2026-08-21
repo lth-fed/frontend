@@ -11,10 +11,15 @@
 	let { data }: PageProps = $props();
 	let video: HTMLVideoElement;
 	let stream: MediaStream | undefined;
+	let detector: BarcodeDetector | undefined;
+	let timer: ReturnType<typeof setInterval> | undefined;
 	let active = true;
 	let scanning = $state(false);
 	let result = $state<ValidationResult | undefined>();
 	let error = $state('');
+	let cameras = $state<MediaDeviceInfo[]>([]);
+	let selectedCameraIndex = $state(0);
+	let changingCamera = $state(false);
 
 	prepareZXingModule({
 		overrides: {
@@ -25,8 +30,9 @@
 
 	useAppBars(() => ({ topBar: detailTopBar({ title: m.verifier_title() }), bottom: emptyBottom }));
 
-	async function scan(detector: BarcodeDetector) {
-		if (!active || !video || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) return;
+	async function scan() {
+		if (!detector || !active || !video || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA)
+			return;
 		try {
 			const [barcode] = await detector.detect(video);
 			if (!barcode || scanning || result) return;
@@ -52,25 +58,54 @@
 		error = '';
 	}
 
-	onMount(() => {
-		const detector = new BarcodeDetector({ formats: ['qr_code'] });
-		let timer: ReturnType<typeof setInterval> | undefined;
-		void navigator.mediaDevices
-			.getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false })
-			.then((camera) => {
-				stream = camera;
-				video.srcObject = camera;
-				return video.play();
-			})
-			.then(() => (timer = setInterval(() => void scan(detector), 300)))
-			.catch((cause) => {
-				console.error('Camera failed', cause);
-				error = m.verifier_camera_error();
+	function stopCamera(): void {
+		stream?.getTracks().forEach((track) => track.stop());
+		stream = undefined;
+	}
+
+	async function startCamera(deviceId?: string): Promise<void> {
+		stopCamera();
+		try {
+			const camera = await navigator.mediaDevices.getUserMedia({
+				video: deviceId
+					? { deviceId: { exact: deviceId } }
+					: { facingMode: { ideal: 'environment' } },
+				audio: false
 			});
+			stream = camera;
+			video.srcObject = camera;
+			await video.play();
+			cameras = (await navigator.mediaDevices.enumerateDevices()).filter(
+				(device) => device.kind === 'videoinput'
+			);
+			const activeDeviceId = camera.getVideoTracks()[0]?.getSettings().deviceId;
+			const index = cameras.findIndex((camera) => camera.deviceId === activeDeviceId);
+			selectedCameraIndex = index >= 0 ? index : 0;
+			error = '';
+		} catch (cause) {
+			console.error('Camera failed', cause);
+			error = m.verifier_camera_error();
+		}
+	}
+
+	async function cycleCamera(): Promise<void> {
+		if (cameras.length < 2 || changingCamera) return;
+		changingCamera = true;
+		try {
+			const next = (selectedCameraIndex + 1) % cameras.length;
+			await startCamera(cameras[next].deviceId);
+		} finally {
+			changingCamera = false;
+		}
+	}
+
+	onMount(() => {
+		detector = new BarcodeDetector({ formats: ['qr_code'] });
+		void startCamera().then(() => (timer = setInterval(() => void scan(), 300)));
 		return () => {
 			active = false;
 			if (timer) clearInterval(timer);
-			stream?.getTracks().forEach((track) => track.stop());
+			stopCamera();
 		};
 	});
 </script>
@@ -85,6 +120,14 @@
 		<video bind:this={video} muted playsinline class="size-full object-cover"></video>
 		<div class="pointer-events-none absolute inset-[15%] rounded-3xl border-4 border-white/80">
 		</div>
+		{#if cameras.length > 1}
+			<button
+				type="button"
+				onclick={() => void cycleCamera()}
+				disabled={changingCamera}
+				class="absolute top-3 right-3 rounded-full bg-black/70 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+				>{m.verifier_switch_camera()}</button>
+		{/if}
 	</div>
 
 	{#if scanning}<p class="text-center text-sm">{m.verifier_checking()}</p>{/if}
@@ -117,6 +160,25 @@
 					<dd>
 						{result.hasBeenTransferred ? m.verifier_transferred() : m.verifier_not_transferred()}
 					</dd>
+					{#if result.purchasedAddons.length}
+						<dt class="font-semibold">{m.verifier_addons()}</dt>
+						<dd>
+							<ul class="space-y-1">
+								{#each result.purchasedAddons as addon (addon.name)}
+									<li>
+										<span>{addon.name}</span>
+										{#if addon.selectedOptionNames.length}
+											<ul class="ml-4 list-disc">
+												{#each addon.selectedOptionNames as option (`${addon.name}-${option}`)}
+													<li>{option}</li>
+												{/each}
+											</ul>
+										{/if}
+									</li>
+								{/each}
+							</ul>
+						</dd>
+					{/if}
 				</dl>
 			{/if}
 			{#if result.previousVerifications.length}

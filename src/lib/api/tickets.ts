@@ -1,6 +1,13 @@
 import { api } from './clients';
 import { cached, cachedPersistent, invalidate } from './cache';
-import { attempt, DEMO_MODE, unwrap, type Attempt } from './call';
+import {
+	attempt,
+	attemptForbidden,
+	DEMO_MODE,
+	unwrap,
+	type Attempt,
+	type ForbiddenAttempt
+} from './call';
 import {
 	guildFromPath,
 	locationLabel,
@@ -158,14 +165,14 @@ export function cachedPurchasedTickets(depends?: Depends): Promise<Ticket[]> {
 /**
  * Buy the currently held reservation (all purchases go through a
  * reservation on this backend — free tickets included). 400s come back
- * as `badRequest` for inline rendering (spec §7). On a completed free
- * purchase the tickets and ticket-kind caches are invalidated.
+ * as `badRequest` for inline rendering and 403s as `forbidden` so the
+ * purchase machine can retry purchase-flow lock contention.
  */
 export async function buyReservation(
 	input: BuyReservationInput
-): Promise<Attempt<BuyReservationOutcome>> {
+): Promise<ForbiddenAttempt<BuyReservationOutcome>> {
 	if (DEMO_MODE) return { ok: {} };
-	const result = await attempt<components['schemas']['BuyTicketResponse']>(() =>
+	const result = await attemptForbidden<components['schemas']['BuyTicketResponse']>(() =>
 		api.POST('/tickets/reservation/buy', {
 			body: {
 				ticket_kind: input.ticketKindId,
@@ -179,6 +186,7 @@ export async function buyReservation(
 			}
 		})
 	);
+	if (result.forbidden) return result;
 	if (result.badRequest) return result;
 	return {
 		ok: {

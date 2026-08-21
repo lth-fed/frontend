@@ -34,12 +34,8 @@
 		onclick
 	}: Props = $props();
 
-	// Every kind (free included) goes through the purchase machine:
-	// actionable when open, inside the 10-min entry window, and when sold
-	// out (reservation queue) — spec §4.2.
-	const joinable = $derived(
-		state.state === 'open' || state.state === 'window' || state.state === 'sold-out'
-	);
+	// Every available kind (free included) goes through the purchase machine.
+	const joinable = $derived(state.state === 'open' || state.state === 'window');
 	const enabled = $derived(joinable && !busy && !flowActive);
 
 	const statusLabel = $derived.by(() => {
@@ -51,7 +47,7 @@
 			case 'closed':
 				return m.purchase_closed();
 			case 'sold-out':
-				return m.purchase_join_queue();
+				return m.purchase_sold_out();
 			case 'open':
 				return undefined;
 		}

@@ -8,7 +8,8 @@
 	import { formatCardDate } from '$lib/format/datetime';
 	import Routes from '$lib/navigation/routes';
 	import type { PageProps } from './$types';
-	import { receiptBlob, transferTicket, type Ticket as TicketData } from '$lib/api/tickets';
+	import { transferTicket, type Ticket as TicketData } from '$lib/api/tickets';
+	import { downloadReceipt } from '$lib/receipt';
 	import { pushNavigation } from '$lib/navigation/stackNavigation';
 	import { errorMessage } from '$lib/api/errors';
 	import { network } from '$lib/state/network.svelte';
@@ -30,13 +31,7 @@
 				return;
 			}
 			if (action === 'receipt') {
-				const blob = await receiptBlob(ticket.id);
-				const url = URL.createObjectURL(blob);
-				const anchor = document.createElement('a');
-				anchor.href = url;
-				anchor.download = `receipt-${ticket.id.slice(0, 8)}.pdf`;
-				anchor.click();
-				setTimeout(() => URL.revokeObjectURL(url), 30_000);
+				await downloadReceipt(ticket.id);
 				return;
 			}
 			if (action === 'transfer') {

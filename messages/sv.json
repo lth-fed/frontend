@@ -133,6 +133,8 @@
 	"verifier_checking": "Kontrollerar biljett…",
 	"verifier_invalid_qr": "Det där är inte en biljettkod från Teknologappen.",
 	"verifier_camera_error": "Kameraåtkomst behövs för att skanna biljetter.",
+	"verifier_switch_camera": "Byt kamera",
+	"verifier_addons": "Tillägg",
 	"verifier_valid": "Giltig biljett",
 	"verifier_rejected": "Biljetten är inte giltig",
 	"verifier_owner": "Nuvarande ägare",

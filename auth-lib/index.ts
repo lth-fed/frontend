@@ -1,4 +1,4 @@
-import { CapacitorHttp, type HttpOptions, type HttpResponse } from '@capacitor/core';
+import { Capacitor, CapacitorHttp, type HttpOptions, type HttpResponse } from '@capacitor/core';
 import { Preferences } from '@capacitor/preferences';
 
 export type Provider = 'lu' | 'email' | 'test';
@@ -77,14 +77,21 @@ type TokenResponse = {
 
 async function requestTokens(form: Record<string, string>): Promise<TokenResponse | UnknownError> {
 	let response: HttpResponse;
+	const abort = new AbortController();
+	const abortTimer = window.setTimeout(() => abort.abort(), 30_000);
 	try {
 		response = await CapacitorHttp.post({
 			url: tokenEndpoint(),
 			headers: { 'content-type': 'application/x-www-form-urlencoded' },
-			data: form
+			data: form,
+			connectTimeout: 15_000,
+			readTimeout: 30_000,
+			webFetchExtra: Capacitor.isNativePlatform() ? undefined : { signal: abort.signal }
 		});
 	} catch (_e) {
 		return null;
+	} finally {
+		window.clearTimeout(abortTimer);
 	}
 
 	if (response.status !== 200 || typeof response.data?.access_token !== 'string') {

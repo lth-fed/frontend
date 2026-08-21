@@ -20,14 +20,14 @@ import {
  * `pay()` initiates; it does NOT wait for money to arrive. Swish
  * confirmation comes server-to-server (transactions → minilith
  * callback), so the machine polls the queue endpoint after `submitted`
- * (spec §4.2). Free tickets settle inline and return `completed`.
+ * (spec §4.2). Free tickets are also confirmed through that path.
  */
 
 export type PaymentOutcome =
-	/** Settled immediately (free tickets) — ticket now exists. */
-	| { kind: 'completed'; ticketId?: string }
 	/** Initiated; the machine polls for the server-side confirmation. */
 	| { kind: 'submitted' }
+	/** Another request temporarily owns the backend purchase-flow lock. */
+	| { kind: 'busy' }
 	/**
 	 * Could not complete. `retriable` = transient (5xx/network) → the
 	 * reservation stands, retry within the window (krav §6). Non-retriable
@@ -42,15 +42,16 @@ export interface PaymentGateway {
 	pay(input: ReservationPurchase): Promise<PaymentOutcome>;
 }
 
-/** 0 kr tickets — the backend settles them inline (no real payment). */
+/** 0 kr tickets — the backend settles them inline, then the queue confirms it. */
 export const freeGateway: PaymentGateway = {
 	provider: 'free',
 	async pay(input) {
 		try {
 			const result = await buyReservation({ ...input, provider: 'free' });
+			if (result.forbidden) return { kind: 'busy' };
 			if (result.badRequest)
 				return { kind: 'failed', message: result.badRequest.message, retriable: false };
-			return { kind: 'completed' };
+			return { kind: 'submitted' };
 		} catch (err) {
 			console.error('free settlement failed', err);
 			return {
@@ -83,6 +84,7 @@ export const swishGateway: PaymentGateway = {
 				retriable: true
 			};
 		}
+		if (result.forbidden) return { kind: 'busy' };
 		if (result.badRequest)
 			return { kind: 'failed', message: result.badRequest.message, retriable: false };
 
@@ -123,6 +125,7 @@ export const stripeGateway: PaymentGateway = {
 				retriable: true
 			};
 		}
+		if (result.forbidden) return { kind: 'busy' };
 		if (result.badRequest) {
 			return { kind: 'failed', message: result.badRequest.message, retriable: false };
 		}

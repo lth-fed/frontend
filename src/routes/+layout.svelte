@@ -43,6 +43,9 @@
 	let bootstrapped = $state(false);
 	afterNavigate(async () => {
 		if (bootstrapped) return;
+		// The callback page owns the in-progress code exchange. Treating its `authenticating`
+		// state as an abandoned login here would delete the PKCE state before it can finish.
+		if (page.route.id === '/auth/callback') return;
 		await bootstrapAuth();
 		bootstrapped = true;
 		// a queue spot / reservation may have survived the reload
@@ -86,7 +89,9 @@
 </script>
 
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
-{#if !session.accessToken}
+{#if page.route.id === '/auth/callback'}
+	{@render children()}
+{:else if !session.accessToken}
 	{#if session.isProcessing || !bootstrapped}
 		<div class="grid min-h-screen place-items-center text-sm text-gray-500">
 			{m.auth_signing_in()}
