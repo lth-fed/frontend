@@ -50,22 +50,19 @@ export async function unwrap<T>(call: () => Promise<FetchResult<T>>): Promise<T>
  *  the backend knows it (felhantering decision). */
 export type BadRequest = { message: string; field?: string };
 export type Attempt<T> = { ok: T; badRequest?: never } | { ok?: never; badRequest: BadRequest };
+export type ForbiddenAttempt<T> =
+	(Attempt<T> & { forbidden?: never }) | { ok?: never; badRequest?: never; forbidden: true };
 
-/**
- * Like `unwrap`, but 400s come back as data instead of throwing — for
- * mutation call sites that render the error inline at the offending
- * control (spec §7) rather than unwinding to the error page. Every
- * other failure still throws via `apiError`.
- */
-export async function attempt<T>(call: () => Promise<FetchResult<T>>): Promise<Attempt<T>> {
-	let result: FetchResult<T>;
+async function fetchResult<T>(call: () => Promise<FetchResult<T>>): Promise<FetchResult<T>> {
 	try {
-		result = await call();
+		return await call();
 	} catch (e) {
 		console.error('network error:', e);
 		apiError('network');
 	}
+}
 
+function mapAttempt<T>(result: FetchResult<T>): Attempt<T> {
 	if (result.response.ok) return { ok: result.data as T };
 	if (result.response.status === 400) {
 		const raw = result.error as { message?: string; field?: string | null } | undefined;
@@ -77,6 +74,25 @@ export async function attempt<T>(call: () => Promise<FetchResult<T>>): Promise<A
 		};
 	}
 	throwFor(result);
+}
+
+/**
+ * Like `unwrap`, but 400s come back as data instead of throwing — for
+ * mutation call sites that render the error inline at the offending
+ * control (spec §7) rather than unwinding to the error page. Every
+ * other failure still throws via `apiError`.
+ */
+export async function attempt<T>(call: () => Promise<FetchResult<T>>): Promise<Attempt<T>> {
+	return mapAttempt(await fetchResult(call));
+}
+
+/** Like `attempt`, but lets a caller handle 403 as a typed transient outcome. */
+export async function attemptForbidden<T>(
+	call: () => Promise<FetchResult<T>>
+): Promise<ForbiddenAttempt<T>> {
+	const result = await fetchResult(call);
+	if (result.response.status === 403) return { forbidden: true };
+	return mapAttempt(result);
 }
 
 function throwFor(result: FetchResult<unknown>): never {

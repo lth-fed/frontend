@@ -5901,6 +5901,7 @@ export interface components {
 			multiple_alternatives: boolean;
 			has_text_field: boolean;
 			required: boolean;
+			options: components['schemas']['AddonOption'][];
 			selected_options: number[];
 			selected_text: string;
 		};
@@ -6112,6 +6113,7 @@ export interface components {
 			has_been_transfered: boolean;
 			purchaser_name?: string;
 			previous_verifications: components['schemas']['Validation'][];
+			purchased_addons: components['schemas']['PurchasedAddon'][];
 		};
 		/** Validation */
 		Validation: {

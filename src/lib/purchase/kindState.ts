@@ -15,7 +15,7 @@ export type KindState =
 	| { state: 'not-yet'; releaseAt: Date }
 	/** Within 10 min of release — queue entry allowed (step 4 CTA). */
 	| { state: 'window'; releaseAt: Date }
-	/** Released but no stock — reservation queue only (step 4 CTA). */
+	/** Released with no remaining capacity. */
 	| { state: 'sold-out' }
 	/** Purchasable. `ticketsLeft` is set only when the backend flags
 	 *  scarcity (< 10 left). */

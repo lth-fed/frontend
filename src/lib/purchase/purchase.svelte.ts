@@ -66,6 +66,9 @@ export const purchase = $state<{ flow: PurchaseFlow }>({ flow: { state: 'idle' }
 
 const PERSIST_KEY = 'tappen-purchase-flow';
 const RESOLUTION_POLL_MS = 15_000;
+const FIRST_RELEASE_POLL_MIN_MS = 5_000;
+const FIRST_RELEASE_POLL_JITTER_MS = 10_000;
+const PURCHASE_FLOW_RETRY_MS = 3_000;
 /** Faster cadence while a payment is in flight — the server callback is
  *  our only completion signal (spec §4.2). */
 const PAYING_POLL_MS = 1_000;
@@ -126,7 +129,11 @@ export async function joinQueue(kind: FlowKind, releaseAt: Date): Promise<string
 	if (purchase.flow.state !== 'idle') return m.queue_another_purchase();
 
 	const result = await enterQueue(kind.ticketKindId);
-	if (result.badRequest) return result.badRequest.message;
+	if (result.badRequest) {
+		return result.badRequest.field === 'ticket_kind_id'
+			? m.purchase_sold_out()
+			: result.badRequest.message;
+	}
 
 	persist(kind, releaseAt);
 	switch (result.ok) {
@@ -153,8 +160,8 @@ function scheduleReleaseWake(kind: FlowKind, releaseAt: Date): void {
 	releaseTimer = setTimeout(() => {
 		purchase.flow = { state: 'resolving', kind };
 		resolutionStartedAt = Date.now();
-		// jitter the first poll 0–10 s so a big release doesn't stampede
-		schedulePoll(kind, Math.random() * 10_000);
+		// Wait 5–15 s after release so a big release doesn't stampede the backend.
+		schedulePoll(kind, FIRST_RELEASE_POLL_MIN_MS + Math.random() * FIRST_RELEASE_POLL_JITTER_MS);
 	}, delay);
 }
 
@@ -167,10 +174,7 @@ async function poll(kind: FlowKind): Promise<void> {
 	if (document.hidden) {
 		// backgrounded tab: skip the request, try again next interval —
 		// resume()/attach() fire an immediate resync anyway
-		schedulePoll(
-			kind,
-			purchase.flow.state === 'paying' ? PAYING_POLL_MS : RESOLUTION_POLL_MS
-		);
+		schedulePoll(kind, purchase.flow.state === 'paying' ? PAYING_POLL_MS : RESOLUTION_POLL_MS);
 		return;
 	}
 	await resync(kind);
@@ -220,6 +224,14 @@ export async function resync(kind?: FlowKind): Promise<void> {
 			clearTimers();
 			clearPersisted();
 			purchase.flow = { state: 'purchased', kind: activeKind };
+			return;
+		}
+		if (flow.state === 'reservation-queued') {
+			// A reservation-queue entry cannot turn into a purchase without first
+			// becoming a held reservation. If it disappears, no capacity remains.
+			clearTimers();
+			clearPersisted();
+			purchase.flow = { state: 'failed', kind: activeKind, message: m.purchase_sold_out() };
 			return;
 		}
 		let tickets;
@@ -306,8 +318,8 @@ export async function resync(kind?: FlowKind): Promise<void> {
 /**
  * Collect payment for the held reservation via `gateway` (spec §4.4).
  * `reserved` → `paying`; then `completed`/`submitted`/`failed`:
- * - completed (free): straight to `purchased`.
- * - submitted (Swish): stay `paying` and poll for the server callback.
+ * - submitted: stay `paying` and poll for the server-side confirmation.
+ * - busy (403): retry after a short delay, bounded by `latestTransaction`.
  * - failed: the reservation still stands, so fall back to `reserved`
  *   (countdown intact) and return the message for inline display —
  *   krav §6's "show the error, allow retry within the window".
@@ -319,16 +331,22 @@ export async function pay(gateway: PaymentGateway): Promise<{ error?: string }> 
 	const { kind, timeout, latestTransaction, paymentRequired } = flow;
 	purchase.flow = { state: 'paying', kind, timeout };
 
-	const outcome = await gateway.pay({ ticketKindId: kind.ticketKindId, addons: kind.addons });
-
-	if (outcome.kind === 'completed') {
-		invalidate('tickets', 'purchased-tickets');
-		invalidatePrefix('kinds:');
-		clearTimers();
-		clearPersisted();
-		purchase.flow = { state: 'purchased', kind };
-		return {};
+	let outcome = await gateway.pay({ ticketKindId: kind.ticketKindId, addons: kind.addons });
+	while (outcome.kind === 'busy') {
+		if (purchase.flow.state !== 'paying' || purchase.flow.kind.ticketKindId !== kind.ticketKindId) {
+			return {};
+		}
+		if (serverNow().getTime() + PURCHASE_FLOW_RETRY_MS >= latestTransaction.getTime()) {
+			purchase.flow = { state: 'reserved', kind, timeout, latestTransaction, paymentRequired };
+			return { error: m.queue_pay_too_late() };
+		}
+		await new Promise((resolve) => setTimeout(resolve, PURCHASE_FLOW_RETRY_MS));
+		if (purchase.flow.state !== 'paying' || purchase.flow.kind.ticketKindId !== kind.ticketKindId) {
+			return {};
+		}
+		outcome = await gateway.pay({ ticketKindId: kind.ticketKindId, addons: kind.addons });
 	}
+
 	if (outcome.kind === 'submitted') {
 		// Check once immediately; the normal recovery cadence starts after that.
 		schedulePoll(kind, 0);
@@ -411,9 +429,7 @@ export function setAttached(value: boolean): void {
 	const flow = purchase.flow;
 	if (
 		value &&
-		(flow.state === 'reservation-queued' ||
-			flow.state === 'resolving' ||
-			flow.state === 'reserved')
+		(flow.state === 'reservation-queued' || flow.state === 'resolving' || flow.state === 'reserved')
 	) {
 		void resync();
 	}

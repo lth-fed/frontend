@@ -16,8 +16,9 @@
 	import { setLanguage } from '$lib/api/user';
 	import { onMount } from 'svelte';
 	import { listValidationActivities } from '$lib/api/validation';
-	import { receiptBlob, type Ticket } from '$lib/api/tickets';
+	import type { Ticket } from '$lib/api/tickets';
 	import { errorMessage } from '$lib/api/errors';
+	import { downloadReceipt as downloadTicketReceipt } from '$lib/receipt';
 	import { formatCardDate } from '$lib/format/datetime';
 	import type { PageProps } from './$types';
 	import { network } from '$lib/state/network.svelte';
@@ -48,13 +49,7 @@
 
 	async function downloadReceipt(ticket: Ticket) {
 		try {
-			const blob = await receiptBlob(ticket.id);
-			const url = URL.createObjectURL(blob);
-			const anchor = document.createElement('a');
-			anchor.href = url;
-			anchor.download = `receipt-${ticket.id.slice(0, 8)}.pdf`;
-			anchor.click();
-			setTimeout(() => URL.revokeObjectURL(url), 30_000);
+			await downloadTicketReceipt(ticket.id);
 		} catch (cause) {
 			alert(errorMessage(cause) ?? m.error_status_unknown());
 		}

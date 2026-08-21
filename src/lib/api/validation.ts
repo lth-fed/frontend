@@ -19,6 +19,7 @@ export type ValidationResult = {
 	hasBeenTransferred: boolean;
 	purchaserName?: string;
 	previousVerifications: Date[];
+	purchasedAddons: { name: string; selectedOptionNames: string[] }[];
 };
 
 export type TicketQrPayload = { tid: string; t: number };
@@ -67,7 +68,8 @@ export async function validateTicket(payload: TicketQrPayload): Promise<Attempt<
 				ownerName: 'Demo User',
 				hasBeenTransferred: false,
 				purchaserName: 'Demo User',
-				previousVerifications: []
+				previousVerifications: [],
+				purchasedAddons: []
 			}
 		};
 	}
@@ -87,7 +89,17 @@ export async function validateTicket(payload: TicketQrPayload): Promise<Attempt<
 			ownerName: result.ok.owner_name,
 			hasBeenTransferred: result.ok.has_been_transfered,
 			purchaserName: result.ok.purchaser_name,
-			previousVerifications: result.ok.previous_verifications.map((entry) => parseDate(entry.at))
+			previousVerifications: result.ok.previous_verifications.map((entry) => parseDate(entry.at)),
+			purchasedAddons: result.ok.purchased_addons.map((addon) => ({
+				name: pickI18n(addon.name),
+				selectedOptionNames: [
+					...addon.selected_options.flatMap((selected) => {
+						const option = addon.options.find((option) => option.idx === selected);
+						return option ? [pickI18n(option.name)] : [];
+					}),
+					...(addon.selected_text.trim() ? [addon.selected_text] : [])
+				]
+			}))
 		}
 	};
 }

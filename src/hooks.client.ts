@@ -20,6 +20,9 @@ CapacitorApp.addListener('backButton', () => {
 });
 
 export const init = () => {
+	document.documentElement.dataset.tappenBootstrapped = 'true';
+	document.getElementById('tappen-bootstrap-error')?.remove();
+
 	const locale = getLocale();
 	const root = document.documentElement;
 

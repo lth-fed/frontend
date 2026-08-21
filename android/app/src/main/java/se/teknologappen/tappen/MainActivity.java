@@ -9,6 +9,8 @@ import com.getcapacitor.BridgeActivity;
 public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
+        registerPlugin(NativeCapabilitiesPlugin.class);
+        registerPlugin(ReceiptPlugin.class);
         registerPlugin(TicketWalletPlugin.class);
         super.onCreate(savedInstanceState);
     }
