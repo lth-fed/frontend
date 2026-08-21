@@ -65,7 +65,7 @@ async function activateSession(token: string): Promise<void> {
 	}
 }
 
-export async function bootstrapAuth(): Promise<void> {
+export async function bootstrapAuth(): Promise<boolean> {
 	try {
 		const state = await getAuthState();
 		if (state === 'authenticated') {
@@ -74,8 +74,14 @@ export async function bootstrapAuth(): Promise<void> {
 			// load, so any navigation landing mid-rotation logged the user out.
 			const token = await getAccessToken();
 			if (token) {
-				await activateSession(token);
+				// Authentication is restored as soon as the token is available. User-derived theme and
+				// guild state may finish loading in the background and must not hold the app shell hostage.
+				void activateSession(token);
+				return true;
 			}
+			// A definitively rejected refresh changes auth state to unauthenticated and should show the
+			// normal login screen. A transport failure preserves it and gets the retry error screen.
+			return (await getAuthState()) !== 'authenticated';
 		} else if (state === 'authenticating') {
 			// A previous login never came back (e.g. the SAML flow stranded on
 			// an error page and the user navigated away). The server-side auth
@@ -83,8 +89,10 @@ export async function bootstrapAuth(): Promise<void> {
 			// stale — reset so Landing offers a fresh attempt.
 			await logout();
 		}
+		return true;
 	} catch (err) {
 		console.error('Auth bootstrap failed', err);
+		return false;
 	}
 }
 

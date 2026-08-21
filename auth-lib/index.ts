@@ -77,21 +77,10 @@ type TokenResponse = {
 
 async function requestTokens(form: Record<string, string>): Promise<TokenResponse | UnknownError> {
 	let response: HttpResponse;
-	const abort = new AbortController();
-	const abortTimer = window.setTimeout(() => abort.abort(), 30_000);
 	try {
-		response = await CapacitorHttp.post({
-			url: tokenEndpoint(),
-			headers: { 'content-type': 'application/x-www-form-urlencoded' },
-			data: form,
-			connectTimeout: 15_000,
-			readTimeout: 30_000,
-			webFetchExtra: Capacitor.isNativePlatform() ? undefined : { signal: abort.signal }
-		});
+		response = await postTokenForm(form, 30_000);
 	} catch (_e) {
 		return null;
-	} finally {
-		window.clearTimeout(abortTimer);
 	}
 
 	if (response.status !== 200 || typeof response.data?.access_token !== 'string') {
@@ -101,6 +90,26 @@ async function requestTokens(form: Record<string, string>): Promise<TokenRespons
 	}
 
 	return response.data as TokenResponse;
+}
+
+async function postTokenForm(
+	form: Record<string, string>,
+	timeoutMs: number
+): Promise<HttpResponse> {
+	const abort = new AbortController();
+	const abortTimer = setTimeout(() => abort.abort(), timeoutMs);
+	try {
+		return await CapacitorHttp.post({
+			url: tokenEndpoint(),
+			headers: { 'content-type': 'application/x-www-form-urlencoded' },
+			data: form,
+			connectTimeout: timeoutMs,
+			readTimeout: timeoutMs,
+			webFetchExtra: Capacitor.isNativePlatform() ? undefined : { signal: abort.signal }
+		});
+	} finally {
+		clearTimeout(abortTimer);
+	}
 }
 
 async function storeTokens(tokens: TokenResponse): Promise<void> {
@@ -303,17 +312,21 @@ async function attemptRefresh(
 	refreshToken: string,
 	mayRetry: boolean
 ): Promise<string | UnknownError> {
-	let response: HttpResponse;
-	try {
-		response = await CapacitorHttp.post({
-			url: tokenEndpoint(),
-			headers: { 'content-type': 'application/x-www-form-urlencoded' },
-			data: { grant_type: 'refresh_token', refresh_token: refreshToken }
-		});
-	} catch (_e) {
-		// network error — keep local state, a later attempt may succeed
-		return null;
+	let response: HttpResponse | null = null;
+	for (let attempt = 0; attempt < 2; attempt++) {
+		try {
+			response = await postTokenForm(
+				{ grant_type: 'refresh_token', refresh_token: refreshToken },
+				5_000
+			);
+			break;
+		} catch (error) {
+			console.warn(`refresh transport attempt ${attempt + 1} failed`, error);
+		}
 	}
+	// Preserve the refresh token after two transport failures so a user-triggered retry can try
+	// again. `postTokenForm` aborts the timed-out request before this returns.
+	if (response === null) return null;
 
 	if (response.status !== 200 || typeof response.data?.access_token !== 'string') {
 		// A refresh token has no time-based expiry. Transport/server failures and
