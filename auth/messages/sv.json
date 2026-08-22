@@ -16,13 +16,13 @@
 	"providers_email": "E-post",
 	"providers_test": "Testinlogg (bara för utveckling)",
 	"mail_description": "Mailinlogg. Du kommer få ett mail med en länk som validerar din identitet.",
-	"mail_close_page": "Titta i din mailinkorg, du borde har fått ett inloggningsmail. Du kan nu säkert stänga denna sida.",
+	"mail_close_page": "Titta i din mailinkorg, du borde har fått ett inloggningsmail. Du kan stänga denna sida. Öppna länken i mailet i samma webbläsare som denna tabben (alltså inte i en popup-webbläsare som finns på telefoner).",
 	"mail_mail": "E-post adress",
 	"mail_name": "För- och efternamn",
 	"login": "Logga in",
 	"whoops": "Något gick väldigt snett. Prova logga in från början igen.",
 	"personal_information_description": "Detta är första gången du loggar in och vi behöver därför veta lite mer om dig.",
-	"personal_number": "Personnummer (i formatet 0211284473)",
+	"personal_number": "Personnummer (YYMMDDXXXX)",
 	"personal_number_none": "Jag har inget personnummer",
 	"personal_number_none_result": "Du kommer behöva fråga någon i styrelsen att lägga till dig i sektionsgruppen i appen. Ladda om sidan om detta var ett misstag."
 }
