@@ -1,4 +1,4 @@
-# Tappen Frontend — MVP Tech Spec
+# Teknologappen Frontend — MVP Tech Spec
 
 Status: draft for review · 2026-07-23 (rev 3: 10-min entry window, no keep-alives/re-PUTs, verified
 against #62 source) Grounded in: `docs/krav.typ` (MVP items), `docs/beslut/*` (settled decisions),
@@ -364,9 +364,9 @@ The existing token system (`guild-theme.css`, 9 semantic `--guild-*` tokens, `da
 Tailwind `guild-*` utilities) is the mechanism. MVP deltas only:
 
 1. Add missing `--guild-accent` to the `w` and `e` blocks (currently fall through to root navy).
-2. Add a neutral default logo asset (`static/guild-logos/default.avif`, the Tappen mark) and make
-   `guilds.ts` expose a `defaultGuildMeta` for `session.guild === null` — covers krav §8's "0 or
-   several sections → standard theme". The `:root` default color theme already exists.
+2. Add a neutral default logo asset (`static/guild-logos/default.avif`, the Teknologappen mark) and
+   make `guilds.ts` expose a `defaultGuildMeta` for `session.guild === null` — covers krav §8's "0
+   or several sections → standard theme". The `:root` default color theme already exists.
 3. Rule for all new MVP components: only `guild-*` semantic utilities, no raw palette; cross-guild
    content (activity cards, organiser rows, purchase screen) scopes with `data-guild={creatorGuild}`
    — pattern already established in `ActivityCard`.
