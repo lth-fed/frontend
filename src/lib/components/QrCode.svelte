@@ -20,16 +20,26 @@
 	});
 </script>
 
+<!-- colours instead of tailwind classes to make browser force dark mode work with it -->
 <div
 	role="img"
 	aria-label={m.qr_code_alt()}
 	data-qr={data}
-	class="grid overflow-hidden rounded-lg border-[10px] border-white bg-white"
+	class="qr-code grid overflow-hidden border-10"
 	style:grid-template-columns={`repeat(${modules.length}, 1fr)`}
-	style="width: {size}px; height: {size}px;">
+	style="width: {size}px; height: {size}px; background-color: #ffffff; border-color: #ffffff;">
 	{#each modules as row, rowIndex (rowIndex)}
 		{#each row as dark, columnIndex (`${rowIndex}-${columnIndex}`)}
-			<span class:bg-black={dark} class:bg-white={!dark}></span>
+			<span style:background-color={dark ? '#000000' : '#ffffff'}></span>
 		{/each}
 	{/each}
 </div>
+
+<style>
+	.qr-code,
+	.qr-code * {
+		color-scheme: only light;
+		forced-color-adjust: none;
+		print-color-adjust: exact;
+	}
+</style>

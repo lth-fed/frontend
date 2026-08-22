@@ -19,6 +19,7 @@
 		restore as restorePurchase
 	} from '$lib/purchase/purchase.svelte';
 	import { monitorNetwork } from '$lib/state/network.svelte';
+	import { Capacitor } from '@capacitor/core';
 
 	let { children } = $props();
 
@@ -68,6 +69,9 @@
 	});
 
 	onNavigate((navigation) => {
+		// WKWebView supplies the native interactive back gesture. Avoid keeping a
+		// WebKit view-transition snapshot above the live page on iOS.
+		if (Capacitor.getPlatform() === 'ios') return;
 		if (!document.startViewTransition) return;
 		if (!navigation.from || !navigation.to) return;
 

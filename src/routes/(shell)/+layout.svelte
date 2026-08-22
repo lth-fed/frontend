@@ -109,7 +109,9 @@
 <main
 	bind:this={mainEl}
 	class="h-dvh overflow-y-auto overscroll-y-contain {isIos26Native
-		? 'pt-17 pb-20'
+		? bottom.kind === 'none'
+			? 'pt-17 pb-8'
+			: 'pt-17 pb-32'
 		: 'pt-[calc(env(safe-area-inset-top)+6rem)] pb-24'}">
 	{#if !network.online}
 		<p
@@ -125,13 +127,13 @@
 
 {#if bottom.kind === 'tabs'}
 	<div
-		class="shell-bottom-nav pointer-events-none fixed right-5 bottom-[max(env(safe-area-inset-bottom),1.5rem)] left-5 z-20">
+		class="shell-bottom-nav pointer-events-none fixed right-5 bottom-[max(env(safe-area-inset-bottom),1.5rem)] left-5 z-1000">
 		<div class="pointer-events-auto w-full">
 			<NavBar items={bottom.items} selected={bottom.selected} onSelect={bottom.onSelect} />
 		</div>
 	</div>
 {:else if bottom.kind === 'action'}
-	<div class="fixed inset-x-0 bottom-[max(env(safe-area-inset-bottom),1.5rem)] z-20 px-6">
+	<div class="fixed inset-x-0 bottom-[max(env(safe-area-inset-bottom),1.5rem)] z-1000 px-6">
 		<BottomActionButton
 			id={bottom.id}
 			label={bottom.label}

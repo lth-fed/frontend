@@ -198,6 +198,7 @@ public class NavigationBarPlugin: CAPPlugin {
             overlay.view.topAnchor.constraint(
                 equalTo: hostVC.view.safeAreaLayoutGuide.topAnchor
             ),
+            overlay.view.heightAnchor.constraint(equalToConstant: 44),
         ])
 
         overlay.didMove(toParent: hostVC)

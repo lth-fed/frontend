@@ -18,11 +18,11 @@
 	<header class="flex w-full items-start justify-between gap-3 px-7.5 pt-3.75 pb-7.5">
 		<div class="flex min-w-0 flex-1 flex-col gap-px">
 			<p class="text-xs text-gray-600">{m.ticket_detail_label_name()}</p>
-			<p class="text-sm font-medium break-words text-black">{name}</p>
+			<p class="text-sm font-medium wrap-break-words text-black">{name}</p>
 		</div>
 		<div class="flex min-w-0 flex-1 flex-col gap-px text-right">
 			<p class="text-xs text-gray-600">{m.ticket_detail_label_activity()}</p>
-			<p class="text-sm font-medium break-words text-black">{activity}</p>
+			<p class="text-sm font-medium wrap-break-words text-black">{activity}</p>
 		</div>
 	</header>
 
