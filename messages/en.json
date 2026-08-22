@@ -166,6 +166,7 @@
 	"about_maintainer_role": "On behalf of the {guild}-guild",
 	"about_source_title": "Open source",
 	"about_source_description": "The app is developed openly. Code, decisions and documentation live on GitHub.",
+	"about_version": "Version",
 	"about_source_link": "github.com/lth-fed",
 	"about_legal_title": "Legal and merchant information",
 	"about_withdrawal_title": "No statutory right of withdrawal",

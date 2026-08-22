@@ -59,6 +59,9 @@
 		<p class="text-[15px] leading-relaxed text-guild-on-surface/80">
 			{m.about_source_description()}
 		</p>
+		<p class="text-sm text-guild-on-surface/60">
+			{m.about_version()}: <code>{__GIT_REVISION__}</code>
+		</p>
 		<a
 			href="https://github.com/lth-fed"
 			target="_blank"
