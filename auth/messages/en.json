@@ -16,13 +16,13 @@
 	"providers_email": "Email",
 	"providers_test": "Test provider (only for development purposes)",
 	"mail_description": "Email login. You will receive an email with a link to validate your identity.",
-	"mail_close_page": "Check your email inbox. You may now safely close this tab.",
+	"mail_close_page": "Check your email inbox. You may now safely close this tab. Open the link in the email in the same browser as this tab (i.e. not in a popup-browser on mobile).",
 	"mail_mail": "Email address",
 	"mail_name": "Full name",
 	"login": "Log in",
 	"whoops": "Something went very wrong. Please retry the whole login process.",
 	"personal_information_description": "Since this is the first time you log in we need to ask you a few more questions.",
-	"personal_number": "Swedish personal number (e.g. 0211284473)",
+	"personal_number": "Swedish personal number (YYMMDDXXXX)",
 	"personal_number_none": "I don't have a Swedish personal number",
 	"personal_number_none_result": "You will need to ask someone in the board to add you to the guild group in the app. Reload the page if pressing this button was a mistake."
 }

@@ -66,7 +66,7 @@
 </p>
 {#if sub?.startsWith('lund-university:') || sub?.startsWith('test:')}
 	{#if noPn}
-		<p>
+		<p class="text-gray-700">
 			{m.personal_number_none_result(...l)}
 		</p>
 	{:else}
