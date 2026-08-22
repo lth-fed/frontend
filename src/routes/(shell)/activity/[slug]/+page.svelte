@@ -122,14 +122,13 @@
 							class="text-sm font-semibold text-guild-accent">{m.activity_open_maps()}</a>
 					{/if}
 				</div>
-				<div class="w-full rounded-3xl border border-gray-100 bg-white p-5">
-					<p class="font-semibold text-guild-on-surface">{activity.location}</p>
-					{#if activity.locationDetails.directions}
+				{#if activity.locationDetails.directions}
+					<div class="w-full rounded-3xl border border-gray-100 bg-white p-5">
 						<p class="mt-2 text-sm whitespace-pre-line text-guild-on-surface/75">
 							{activity.locationDetails.directions}
 						</p>
-					{/if}
-				</div>
+					</div>
+				{/if}
 				{#if activity.locationDetails.coordinates}
 					<ActivityMap
 						north={activity.locationDetails.coordinates.north}

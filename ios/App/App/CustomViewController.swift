@@ -17,6 +17,7 @@ class CustomViewController: CAPBridgeViewController {
     }
 
     override func capacitorDidLoad() {
+        bridge?.webView?.allowsBackForwardNavigationGestures = true
         bridge?.registerPluginInstance(TicketWalletPlugin())
         bridge?.registerPluginInstance(TabsBarPlugin())
         bridge?.registerPluginInstance(ToolBarPlugin())

@@ -1,5 +1,5 @@
 import { Capacitor } from '@capacitor/core';
-import { InAppBrowser } from '@capgo/inappbrowser';
+import { InAppBrowser } from '@capgo/capacitor-inappbrowser';
 import { buyReservation, type PurchaseProvider } from '$lib/api';
 import type { ReservationPurchase } from '$lib/api/tickets';
 import { errorMessage } from '$lib/api/errors';

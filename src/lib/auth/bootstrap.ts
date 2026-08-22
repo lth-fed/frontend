@@ -13,7 +13,7 @@ import { cachedMe, majorityGuild, themeGuild } from '$lib/api/user';
 import { replaceNavigation } from '$lib/navigation/stackNavigation';
 import { invalidateAll } from '$app/navigation';
 import Routes from '$lib/navigation/routes';
-import { InAppBrowser } from '@capgo/inappbrowser';
+import { InAppBrowser } from '@capgo/capacitor-inappbrowser';
 import { Capacitor } from '@capacitor/core';
 import { clearCache } from '$lib/api/cache';
 import { getLocale, locales, setLocale } from '$lib/paraglide/runtime';

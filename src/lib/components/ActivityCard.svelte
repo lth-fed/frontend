@@ -51,7 +51,7 @@
 	<div class="flex flex-col gap-3.5 px-6 pt-3.5 pb-4">
 		<div class="flex flex-col gap-1 pt-1.5">
 			<p class="text-sm leading-none font-semibold text-guild-accent">{date}</p>
-			<h3 class="text-[22px] leading-none font-semibold [overflow-wrap:anywhere]">{title}</h3>
+			<h3 class="text-[22px] leading-none font-semibold">{title}</h3>
 		</div>
 
 		<p

@@ -21,9 +21,11 @@
 			{badge}
 		</div>
 	{/if}
-	<h1 class="text-[26px] font-bold [overflow-wrap:anywhere]">{title}</h1>
+	<h1 class="text-[26px] font-bold">{title}</h1>
 	<div class="flex flex-col gap-3 pt-1">
 		<InfoRow icon={CalendarIcon} label={date} sublabel={time} />
-		<InfoRow icon={MapPinIcon} label={location} />
+		{#if location}
+			<InfoRow icon={MapPinIcon} label={location} />
+		{/if}
 	</div>
 </div>

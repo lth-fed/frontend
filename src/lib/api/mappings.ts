@@ -77,8 +77,5 @@ export function locationLabel(location: Location): string {
 			return location.url;
 		}
 	}
-	if (location.coordinates) {
-		return `${location.coordinates.north.toFixed(5)}, ${location.coordinates.east.toFixed(5)}`;
-	}
 	return '';
 }
