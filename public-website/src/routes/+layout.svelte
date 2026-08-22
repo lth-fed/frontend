@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { getLocale, setLocale } from '$lib/paraglide/runtime';
 	import { m } from '$lib/paraglide/messages.js';
 	import './layout.css';
@@ -19,10 +20,13 @@
 <a class="skip-link" href="#main">{m.skip_to_content()}</a>
 <header class="site-header">
 	<div class="header-inner">
-		<a class="wordmark" href="#top" aria-label="Teknologappen">Teknologappen</a>
+		<!-- eslint-disable svelte/no-navigation-without-resolve -- same-page sections on the root route -->
+		<a class="wordmark" href={`${resolve('/')}#top`} aria-label="Teknologappen">Teknologappen</a>
 		<nav aria-label="Primary navigation">
-			<a href="#about">{m.nav_about()}</a>
-			<a href="#legal">{m.nav_legal()}</a>
+			<!-- eslint-disable svelte/no-navigation-without-resolve -- same-page sections on the root route -->
+			<a href={`${resolve('/')}#about`}>{m.nav_about()}</a>
+			<!-- eslint-disable svelte/no-navigation-without-resolve -- same-page sections on the root route -->
+			<a href={`${resolve('/')}#legal`}>{m.nav_legal()}</a>
 		</nav>
 		<label class="language-picker">
 			<span>{m.language()}</span>

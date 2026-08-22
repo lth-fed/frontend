@@ -10,6 +10,9 @@
 				<h1>{m.hero_title()}</h1>
 				<p class="lead">{m.hero_description()}</p>
 				<div class="actions">
+					<a class="button primary" href="https://apps.apple.com/se/app/tappen/id6772353068">
+						{m.install_app_store()}
+					</a>
 					<a class="button primary" href="https://app.teknologappen.se">{m.login_app()}</a>
 					<a class="button secondary" href="https://admin.teknologappen.se">
 						{m.login_admin()}
