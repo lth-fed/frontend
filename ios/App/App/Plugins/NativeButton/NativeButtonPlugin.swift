@@ -196,6 +196,8 @@ public class NativeButtonPlugin: CAPPlugin {
         hostVC.view.addSubview(overlay.view)
 
         overlay.view.translatesAutoresizingMaskIntoConstraints = false
+        // Keep hidden until first configure completes without animation
+        overlay.view.isHidden = true
 
         NSLayoutConstraint.activate([
             overlay.view.leadingAnchor.constraint(
