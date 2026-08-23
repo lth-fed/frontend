@@ -9,6 +9,7 @@
 	import { navigationBar } from '$lib/plugins/navigationBar/navigationBar';
 	import { isIos26Plus } from '$lib/platform/isIos26Plus';
 	import { m } from '$lib/paraglide/messages.js';
+	import { locale } from '$lib/state/locale.svelte';
 	import { formatCardDate, formatTimeRange } from '$lib/format/datetime';
 	import type { ToolBarNode } from '$lib/plugins/toolBar/definitions';
 	import { Haptics, ImpactStyle } from '@capacitor/haptics';
@@ -94,6 +95,14 @@
 			label: m.tool_activity()
 		}
 	]);
+
+	// Keep native toolbar in sync with language changes while overlay is open
+	$effect(() => {
+		void locale.current;
+		if (showOverlay && isIos26Native && !offline) {
+			configureNativeToolBar(true);
+		}
+	});
 
 	const W = 300;
 	const H = 440;

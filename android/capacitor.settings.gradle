@@ -23,5 +23,5 @@ project(':capacitor-status-bar').projectDir = new File('../node_modules/.pnpm/@c
 include ':capawesome-capacitor-android-edge-to-edge-support'
 project(':capawesome-capacitor-android-edge-to-edge-support').projectDir = new File('../node_modules/.pnpm/@capawesome+capacitor-android-edge-to-edge-support@8.0.8_@capacitor+core@8.2.0/node_modules/@capawesome/capacitor-android-edge-to-edge-support/android')
 
-include ':capgo-inappbrowser'
-project(':capgo-inappbrowser').projectDir = new File('../node_modules/.pnpm/@capgo+inappbrowser@8.6.14_@capacitor+core@8.2.0/node_modules/@capgo/capacitor-inappbrowser/android')
+include ':capgo-capacitor-inappbrowser'
+project(':capgo-capacitor-inappbrowser').projectDir = new File('../node_modules/.pnpm/@capgo+capacitor-inappbrowser@8.15.3_@capacitor+core@8.2.0/node_modules/@capgo/capacitor-inappbrowser/android')

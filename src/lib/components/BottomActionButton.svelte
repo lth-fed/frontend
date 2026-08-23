@@ -3,6 +3,7 @@
 	import { nativeButton } from '$lib/plugins/nativeButton/nativeButton';
 	import { useNativeOverlay } from '$lib/plugins/useNativeOverlay.svelte';
 	import { readGuildVar } from '$lib/state/guildColors.svelte';
+	import { locale } from '$lib/state/locale.svelte';
 
 	interface Props {
 		id: string;
@@ -28,6 +29,7 @@
 	}: Props = $props();
 
 	function resolveColors() {
+		void locale.current;
 		return {
 			bg: backgroundColor ?? readGuildVar('--guild-primary') ?? '#000000',
 			fg: foregroundColor ?? readGuildVar('--guild-on-primary') ?? '#ffffff'

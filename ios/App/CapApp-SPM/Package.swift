@@ -18,7 +18,7 @@ let package = Package(
         .package(name: "CapacitorPreferences", path: "../../../node_modules/.pnpm/@capacitor+preferences@8.0.1_@capacitor+core@8.2.0/node_modules/@capacitor/preferences"),
         .package(name: "CapacitorPushNotifications", path: "../../../node_modules/.pnpm/@capacitor+push-notifications@8.1.2_@capacitor+core@8.2.0/node_modules/@capacitor/push-notifications"),
         .package(name: "CapacitorStatusBar", path: "../../../node_modules/.pnpm/@capacitor+status-bar@8.0.2_@capacitor+core@8.2.0/node_modules/@capacitor/status-bar"),
-        .package(name: "CapgoInappbrowser", path: "../../../node_modules/.pnpm/@capgo+inappbrowser@8.6.14_@capacitor+core@8.2.0/node_modules/@capgo/capacitor-inappbrowser")
+        .package(name: "CapgoCapacitorInappbrowser", path: "../../../node_modules/.pnpm/@capgo+capacitor-inappbrowser@8.15.3_@capacitor+core@8.2.0/node_modules/@capgo/capacitor-inappbrowser")
     ],
     targets: [
         .target(
@@ -32,7 +32,7 @@ let package = Package(
                 .product(name: "CapacitorPreferences", package: "CapacitorPreferences"),
                 .product(name: "CapacitorPushNotifications", package: "CapacitorPushNotifications"),
                 .product(name: "CapacitorStatusBar", package: "CapacitorStatusBar"),
-                .product(name: "CapgoInappbrowser", package: "CapgoInappbrowser")
+                .product(name: "CapgoCapacitorInappbrowser", package: "CapgoCapacitorInappbrowser")
             ]
         )
     ]

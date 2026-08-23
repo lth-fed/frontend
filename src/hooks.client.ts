@@ -1,4 +1,5 @@
 import { getTextDirection, getLocale } from '$lib/paraglide/runtime';
+import '$lib/state/locale.svelte';
 import { App as CapacitorApp } from '@capacitor/app';
 import { page } from '$app/state';
 import { backNavigation, replaceNavigation } from '$lib/navigation/stackNavigation';

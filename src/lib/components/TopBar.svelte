@@ -2,6 +2,7 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { navigationBar } from '$lib/plugins/navigationBar/navigationBar';
 	import { isIos26Plus } from '$lib/platform/isIos26Plus';
+	import '$lib/state/locale.svelte';
 	import Avatar from './Avatar.svelte';
 	import type { TopBarSlot } from '$lib/state/appBars.svelte';
 

@@ -3,6 +3,7 @@
 	import { tabsBar } from '$lib/plugins/tabsBar/tabsBar';
 	import { useNativeOverlay } from '$lib/plugins/useNativeOverlay.svelte';
 	import { readGuildVar } from '$lib/state/guildColors.svelte';
+	import { locale } from '$lib/state/locale.svelte';
 
 	interface Item {
 		id: K;
@@ -37,6 +38,8 @@
 	let animated = $state(false);
 
 	function resolveColors() {
+		// Track locale so tab titles re-configure on language change
+		void locale.current;
 		return {
 			sel: selectedIconColor ?? readGuildVar('--guild-primary') ?? '#000000',
 			un: unselectedIconColor ?? readGuildVar('--guild-surface') ?? '#ffffff'

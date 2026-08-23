@@ -3,6 +3,7 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { locales, localizeHref } from '$lib/paraglide/runtime';
+	import '$lib/state/locale.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import { session } from '$lib/state/session.svelte';
 	import { bootstrapAuth } from '$lib/auth/bootstrap';
@@ -125,10 +126,11 @@
 		<Landing />
 	{/if}
 {:else}
+	{@const isShell = page.route.id?.includes('(shell)')}
 	<div
-		class="min-h-screen max-w-screen min-w-screen bg-gray-100
-			pt-[env(safe-area-inset-top)] pr-[env(safe-area-inset-right)]
-			pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)]">
+		class="max-w-screen min-w-screen bg-gray-100 {isShell
+			? ''
+			: 'min-h-screen pt-[env(safe-area-inset-top)] pr-[env(safe-area-inset-right)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)]'}">
 		{@render children()}
 	</div>
 {/if}

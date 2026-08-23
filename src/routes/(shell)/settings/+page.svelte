@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { ChevronRight, Download, Globe, Info, ScanLine } from '@lucide/svelte';
-	import { getLocale, setLocale, locales } from '$lib/paraglide/runtime';
+	import { locales } from '$lib/paraglide/runtime';
+	import { locale, setLocale } from '$lib/state/locale.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import { pushNavigation } from '$lib/navigation/stackNavigation';
 	import Routes from '$lib/navigation/routes';
@@ -23,6 +24,7 @@
 	import type { PageProps } from './$types';
 	import { network } from '$lib/state/network.svelte';
 	import { clearCache } from '$lib/api/cache';
+	import { invalidateAll } from '$app/navigation';
 
 	let { data }: PageProps = $props();
 	const networkUnavailable = $derived(!network.online || data.networkUnavailable);
@@ -36,12 +38,13 @@
 	});
 
 	async function toggleLocale() {
-		const next: Locale = getLocale() === 'en' ? 'sv' : 'en';
+		const next: Locale = locale.current === 'en' ? 'sv' : 'en';
 		languageBusy = true;
 		try {
 			await setLanguage(next);
 			clearCache();
-			await setLocale(next);
+			await setLocale(next, { reload: false });
+			await invalidateAll();
 		} finally {
 			languageBusy = false;
 		}
@@ -70,7 +73,7 @@
 			{m.settings_language()}
 		</span>
 		<span class="text-[16px] font-semibold text-guild-on-surface">
-			{nativeName[getLocale()]}
+			{nativeName[locale.current]}
 		</span>
 	</button>
 	{#if canVerify}
