@@ -17,6 +17,7 @@ import { InAppBrowser } from '@capgo/capacitor-inappbrowser';
 import { Capacitor } from '@capacitor/core';
 import { clearCache } from '$lib/api/cache';
 import { getLocale, locales, setLocale } from '$lib/paraglide/runtime';
+import '$lib/state/locale.svelte';
 import { registerPushDevice } from '$lib/api/push';
 
 /** Which fed-auth provider to log in with. LU (SAML behind OIDC) in

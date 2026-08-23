@@ -9,6 +9,7 @@
 	import type { Pathname } from '$app/types';
 	import { SvelteMap } from 'svelte/reactivity';
 	import { m } from '$lib/paraglide/messages.js';
+	import '$lib/state/locale.svelte';
 	import { replaceNavigation } from '$lib/navigation/stackNavigation';
 	import Routes from '$lib/navigation/routes';
 	import {
@@ -110,9 +111,9 @@
 	bind:this={mainEl}
 	class="h-dvh overflow-y-auto overscroll-y-contain {isIos26Native
 		? bottom.kind === 'none'
-			? 'pt-17 pb-8'
-			: 'pt-17 pb-32'
-		: 'pt-[calc(env(safe-area-inset-top)+6rem)] pb-24'}">
+			? 'pt-[calc(env(safe-area-inset-top)+4.25rem)] pb-[calc(env(safe-area-inset-bottom)+2rem)]'
+			: 'pt-[calc(env(safe-area-inset-top)+4.25rem)] pb-[calc(env(safe-area-inset-bottom)+8rem)]'
+		: 'pt-[calc(env(safe-area-inset-top)+6rem)] pb-[calc(env(safe-area-inset-bottom)+6rem)]'}">
 	{#if !network.online}
 		<p
 			class="mx-4 mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
