@@ -29,12 +29,14 @@
 	// Pages re-render from cache instantly and refresh in the background.
 	// On web this fires on tab re-focus.
 	onMount(() => {
+		if (page.route.id !== '/auth/callback') void runAuthBootstrap();
 		const stopMonitoringNetwork = monitorNetwork(() => {
 			invalidateCache('me', 'activities', 'tickets', 'purchased-tickets', 'joinable-groups');
 		});
 		const listener = App.addListener('resume', () => {
 			invalidateCache('activities', 'tickets');
 			onPurchaseResume();
+			if (!session.accessToken && (!bootstrapped || bootstrapFailed)) void runAuthBootstrap();
 		});
 		return () => {
 			stopMonitoringNetwork();
@@ -44,22 +46,61 @@
 
 	let bootstrapped = $state(false);
 	let bootstrapFailed = $state(false);
+	let bootstrapInFlight: Promise<void> | null = null;
 
-	async function runAuthBootstrap(): Promise<void> {
-		bootstrapped = false;
-		bootstrapFailed = false;
-		bootstrapFailed = !(await bootstrapAuth());
-		bootstrapped = true;
-		// a queue spot / reservation may have survived the reload
-		if (session.accessToken) void restorePurchase();
+	function authBootstrapWithTimeout(): Promise<boolean> {
+		return new Promise((resolve, reject) => {
+			const timeout = window.setTimeout(
+				() => reject(new Error('Auth bootstrap timed out')),
+				12_000
+			);
+			void bootstrapAuth().then(
+				(result) => {
+					window.clearTimeout(timeout);
+					resolve(result);
+				},
+				(error) => {
+					window.clearTimeout(timeout);
+					reject(error);
+				}
+			);
+		});
 	}
 
-	afterNavigate(async () => {
+	function runAuthBootstrap(): Promise<void> {
+		if (bootstrapInFlight) return bootstrapInFlight;
+		bootstrapInFlight = (async () => {
+			bootstrapped = false;
+			bootstrapFailed = false;
+			try {
+				let succeeded = await authBootstrapWithTimeout().catch((error) => {
+					console.warn('Auth bootstrap attempt 1 failed', error);
+					return false;
+				});
+				if (!succeeded) {
+					await new Promise((resolve) => window.setTimeout(resolve, 300));
+					succeeded = await authBootstrapWithTimeout();
+				}
+				bootstrapFailed = !succeeded;
+			} catch (error) {
+				console.error('Auth bootstrap failed after retry', error);
+				bootstrapFailed = true;
+			} finally {
+				bootstrapped = true;
+				bootstrapInFlight = null;
+			}
+			// a queue spot / reservation may have survived the reload
+			if (session.accessToken) void restorePurchase();
+		})();
+		return bootstrapInFlight;
+	}
+
+	afterNavigate(() => {
 		if (bootstrapped) return;
 		// The callback page owns the in-progress code exchange. Treating its `authenticating`
 		// state as an abandoned login here would delete the PKCE state before it can finish.
 		if (page.route.id === '/auth/callback') return;
-		await runAuthBootstrap();
+		void runAuthBootstrap();
 	});
 
 	$effect(() => {
