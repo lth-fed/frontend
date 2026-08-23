@@ -73,8 +73,8 @@
 						class="flex w-full items-center gap-3 border-b border-gray-100 p-4 text-left last:border-0 disabled:opacity-55">
 						<img src={group.logoUrl} alt="" class="size-9 object-contain" />
 						<span class="min-w-0 flex-1"
-							><strong class="block truncate">{group.name}</strong><small class="text-gray-500"
-								>{group.path}</small
+							><strong class="block truncate">{group.name}</strong><small
+								class="line-clamp-1 text-gray-500">{group.description}</small
 							></span>
 						<ChevronRight class="size-5 text-gray-400" />
 					</button>

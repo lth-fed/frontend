@@ -106,7 +106,7 @@
 			</div>
 		</div>
 
-		{#if activity.location || activity.locationDetails.directions || activity.locationDetails.url || activity.locationDetails.coordinates}
+		{#if activity.locationDetails.name || activity.locationDetails.directions || activity.locationDetails.url || activity.locationDetails.coordinates}
 			<div
 				class="flex w-full flex-col gap-3.75"
 				in:fly={{ y: 28, duration: 140, delay: 120, easing: quadOut }}>
@@ -122,11 +122,18 @@
 							class="text-sm font-semibold text-guild-accent">{m.activity_open_maps()}</a>
 					{/if}
 				</div>
-				{#if activity.locationDetails.directions}
+				{#if activity.locationDetails.directions || activity.locationDetails.name}
 					<div class="w-full rounded-3xl border border-gray-100 bg-white p-5">
-						<p class="mt-2 text-sm whitespace-pre-line text-guild-on-surface/75">
-							{activity.locationDetails.directions}
-						</p>
+						{#if activity.locationDetails.name}
+							<p class="whitespace-pre-line text-guild-on-surface">
+								{activity.locationDetails.name}
+							</p>
+						{/if}
+						{#if activity.locationDetails.directions}
+							<p class="mt-2 text-sm whitespace-pre-line text-guild-on-surface/75">
+								{activity.locationDetails.directions}
+							</p>
+						{/if}
 					</div>
 				{/if}
 				{#if activity.locationDetails.coordinates}
