@@ -19,10 +19,36 @@ protocol ScrollEdgeElementContainer: UIViewController {
 
 extension ScrollEdgeElementContainer {
     /// Attach a UIScrollEdgeElementContainerInteraction to this view.
+    /// Deduplicated – repeated `configure` calls (e.g. `tick()` reconfigure)
+    /// must not stack interactions or re-animate `edgeEffect`.
     func attachScrollEdgeInteraction(to scrollView: UIScrollView?) {
         guard let scrollView = scrollView else { return }
 
         if #available(iOS 26.0, *) {
+            // Already attached for this edge – just ensure effect stays visible
+            if let existing = scrollEdgeInteraction as? UIScrollEdgeElementContainerInteraction,
+               existing.edge == scrollEdgeEdge,
+               existing.scrollView === scrollView
+            {
+                // Refresh effect without re-adding interaction
+                let edgeEffect: UIScrollEdgeEffect
+                switch scrollEdgeEdge {
+                case .top: edgeEffect = scrollView.topEdgeEffect
+                case .bottom: edgeEffect = scrollView.bottomEdgeEffect
+                case .left: edgeEffect = scrollView.leftEdgeEffect
+                case .right: edgeEffect = scrollView.rightEdgeEffect
+                default: edgeEffect = scrollView.topEdgeEffect
+                }
+                edgeEffect.style = .soft
+                edgeEffect.isHidden = false
+                return
+            }
+
+            // Remove previous interaction if edge/scrollView changed
+            if let old = scrollEdgeInteraction as? UIScrollEdgeElementContainerInteraction {
+                view.removeInteraction(old)
+            }
+
             let interaction = UIScrollEdgeElementContainerInteraction()
             interaction.scrollView = scrollView
             interaction.edge = scrollEdgeEdge
@@ -45,7 +71,14 @@ extension ScrollEdgeElementContainer {
             edgeEffect.style = .soft
             edgeEffect.isHidden = false
 
-            view.addInteraction(interaction)
+            // Suppress implicit animation of the soft blur appearing
+            CATransaction.begin()
+            CATransaction.setDisableActions(true)
+            UIView.performWithoutAnimation {
+                view.addInteraction(interaction)
+            }
+            CATransaction.commit()
+
             scrollEdgeInteraction = interaction
         }
     }
