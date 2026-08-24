@@ -18,6 +18,8 @@
 
 	"top_bar_account_label": "Account",
 	"top_bar_notifications_label": "Notifications",
+	"notifications_title": "Notifications",
+	"notifications_empty": "No notifications from the last six months",
 
 	"tool_transfer": "Transfer",
 	"tool_wallet": "Add to wallet",
