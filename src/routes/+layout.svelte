@@ -31,10 +31,17 @@
 	onMount(() => {
 		if (page.route.id !== '/auth/callback') void runAuthBootstrap();
 		const stopMonitoringNetwork = monitorNetwork(() => {
-			invalidateCache('me', 'activities', 'tickets', 'purchased-tickets', 'joinable-groups');
+			invalidateCache(
+				'me',
+				'activities',
+				'tickets',
+				'purchased-tickets',
+				'joinable-groups',
+				'notification-history'
+			);
 		});
 		const listener = App.addListener('resume', () => {
-			invalidateCache('activities', 'tickets');
+			invalidateCache('activities', 'tickets', 'notification-history');
 			onPurchaseResume();
 			if (!session.accessToken && (!bootstrapped || bootstrapFailed)) void runAuthBootstrap();
 		});

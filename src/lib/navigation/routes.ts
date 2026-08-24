@@ -19,6 +19,7 @@ class Routes {
 	static Links: Pathname = '/links/';
 	static Profile: Pathname = '/profile/';
 	static Settings: Pathname = '/settings/';
+	static Notifications: Pathname = '/notifications/';
 
 	/** Settings sub-pages */
 	static About: Pathname = '/settings/about/';

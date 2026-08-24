@@ -10,7 +10,7 @@
 	import { SvelteMap } from 'svelte/reactivity';
 	import { m } from '$lib/paraglide/messages.js';
 	import '$lib/state/locale.svelte';
-	import { replaceNavigation } from '$lib/navigation/stackNavigation';
+	import { pushNavigation, replaceNavigation } from '$lib/navigation/stackNavigation';
 	import Routes from '$lib/navigation/routes';
 	import {
 		createAppBars,
@@ -69,7 +69,7 @@
 			userId: session.userId,
 			onclick: () => replaceNavigation(Routes.Profile, { resetDepth: true })
 		}),
-		// trailing: slots.bell(() => alert(m.top_bar_notifications_label())),
+		trailing: slots.bell(() => pushNavigation(Routes.Notifications)),
 		title: navItems.find((it) => it.id === selected)?.label ?? ''
 	});
 
