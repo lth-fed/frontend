@@ -13,9 +13,17 @@
 	import { pushNavigation } from '$lib/navigation/stackNavigation';
 	import { errorMessage } from '$lib/api/errors';
 	import { network } from '$lib/state/network.svelte';
+	import { Capacitor } from '@capacitor/core';
+	import { onMount } from 'svelte';
 
 	let { data }: PageProps = $props();
 	const networkUnavailable = $derived(!network.online || data.networkUnavailable);
+	let showAndroidAppCard = $state(false);
+
+	onMount(() => {
+		showAndroidAppCard =
+			!Capacitor.isNativePlatform() && /Android/i.test(window.navigator.userAgent);
+	});
 
 	async function ticketAction(
 		ticket: TicketData,
@@ -46,6 +54,22 @@
 
 <div
 	style="--ticket-scale: clamp(0.8, calc((100dvh - 340px) / 470px), 1); --carousel-item-width: calc(300px * var(--ticket-scale));">
+	{#if showAndroidAppCard}
+		<aside class="mx-6 mb-5 rounded-2xl bg-white p-5 text-guild-on-surface shadow-sm">
+			<h2 class="text-lg font-semibold">{m.android_app_card_title()}</h2>
+			<p class="mt-1.5 text-sm text-guild-on-surface/70">
+				{m.android_app_card_description()}
+			</p>
+			<a
+				href="https://play.google.com/store/apps/details?id=se.teknologappen.tappen"
+				target="_blank"
+				rel="noopener noreferrer"
+				class="mt-4 inline-flex rounded-full bg-black px-5 py-2.5 text-sm font-semibold text-white">
+				{m.android_app_card_cta()}
+			</a>
+		</aside>
+	{/if}
+
 	<header class="flex items-baseline justify-between px-6">
 		<h2 class="text-[20px] font-semibold">{m.home_my_tickets()}</h2>
 		<span class="text-xs font-bold text-guild-accent"
