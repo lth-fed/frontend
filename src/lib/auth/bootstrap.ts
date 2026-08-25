@@ -18,7 +18,7 @@ import { Capacitor } from '@capacitor/core';
 import { clearCache } from '$lib/api/cache';
 import { getLocale, locales, setLocale } from '$lib/paraglide/runtime';
 import '$lib/state/locale.svelte';
-import { registerPushDevice } from '$lib/api/push';
+import { startPushRegistrationRefresh } from '$lib/api/push';
 
 /** Which fed-auth provider to log in with. LU (SAML behind OIDC) in
  *  production per krav §2–3; the passwordless test provider in dev. */
@@ -60,7 +60,7 @@ async function activateSession(token: string): Promise<void> {
 		session.userId = me.id;
 		session.guild = majorityGuild(me.groups) ?? null;
 		session.themeGuild = themeGuild(me.groups) ?? null;
-		void registerPushDevice().catch((error) => console.warn('Push registration failed', error));
+		startPushRegistrationRefresh();
 	} catch (err) {
 		console.error('Failed to derive session state from /user', err);
 	}

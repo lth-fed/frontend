@@ -121,6 +121,8 @@
 	"queue_failed": "Your spot was lost. You can try again.",
 	"queue_another_purchase": "Another ticket purchase is already in progress.",
 	"queue_cancel": "Cancel",
+	"queue_cancelling": "Cancelling…",
+	"queue_cancel_failed": "Couldn't leave the queue. Please try again.",
 	"queue_dismiss": "OK",
 
 	"pill_releases_in": "Releases in {time}",

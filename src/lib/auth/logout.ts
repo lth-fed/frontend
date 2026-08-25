@@ -3,7 +3,7 @@ import { session } from '$lib/state/session.svelte';
 import { clearCache } from '$lib/api/cache';
 import { replaceNavigation } from '$lib/navigation/stackNavigation';
 import Routes from '$lib/navigation/routes';
-import { deregisterPushDevice } from '$lib/api/push';
+import { deregisterPushDevice, stopPushRegistrationRefresh } from '$lib/api/push';
 
 /**
  * Sign the user out: tear down server-side + local auth state and the
@@ -11,6 +11,7 @@ import { deregisterPushDevice } from '$lib/api/push';
  * `bootstrapAuth()` runs again from a clean unauthenticated state.
  */
 export async function logout(): Promise<void> {
+	await stopPushRegistrationRefresh();
 	try {
 		await deregisterPushDevice();
 	} catch (error) {

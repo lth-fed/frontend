@@ -166,6 +166,21 @@
 	let confirmingPay = $state(false);
 	let payError = $state<string | undefined>(undefined);
 	let promptedPaymentKindId = $state<string | undefined>(undefined);
+	let cancelling = $state(false);
+	let cancelError = $state<string | undefined>(undefined);
+
+	async function handleCancel() {
+		if (cancelling) return;
+		cancelling = true;
+		cancelError = undefined;
+		try {
+			await cancel();
+		} catch (cause) {
+			cancelError = errorMessage(cause) ?? m.queue_cancel_failed();
+		} finally {
+			cancelling = false;
+		}
+	}
 
 	async function tryFreePayment() {
 		payError = undefined;
@@ -270,11 +285,15 @@
 					{m.queue_dismiss()}
 				</button>
 			{:else if flow.state !== 'paying'}
+				{#if cancelError}
+					<p class="text-sm text-red-700" role="alert">{cancelError}</p>
+				{/if}
 				<button
 					type="button"
-					onclick={cancel}
+					onclick={handleCancel}
+					disabled={cancelling}
 					class="w-full rounded-full border border-red-200 px-5 py-3 text-sm font-semibold text-red-700">
-					{m.queue_cancel()}
+					{cancelling ? m.queue_cancelling() : m.queue_cancel()}
 				</button>
 			{/if}
 		</div>
