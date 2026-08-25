@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages.js';
 	import { replaceNavigation } from '$lib/navigation/stackNavigation';
 	import Routes from '$lib/navigation/routes';
 	import { session } from '$lib/state/session.svelte';
+	import SigningInFallback from '$lib/components/SigningInFallback.svelte';
 
 	// The root layout owns auth restoration. Do not read the native Preferences
 	// store again from a route load: on iOS that second bridge call could stall
@@ -14,6 +14,4 @@
 	});
 </script>
 
-<div class="grid min-h-screen place-items-center text-sm text-gray-500">
-	{m.auth_signing_in()}
-</div>
+<SigningInFallback />

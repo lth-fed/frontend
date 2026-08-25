@@ -35,6 +35,14 @@ const BACKEND_CALLBACK_V1 = dev
 
 configureAuth({ origin: AUTH_ORIGIN });
 
+let authenticationGeneration = 0;
+
+/** Prevent a delayed bootstrap or code exchange from restoring a session after logout. */
+export function cancelPendingAuthentication(): void {
+	authenticationGeneration += 1;
+	session.isProcessing = false;
+}
+
 /**
  * Set the freshly-minted access token on `session` and resolve the
  * user-derived view of session state — guild context plus the visual
@@ -42,12 +50,14 @@ configureAuth({ origin: AUTH_ORIGIN });
  * so the three sign-in entry points (bootstrap restore, native finish,
  * web callback) stay consistent without copy-pasted logic.
  */
-async function activateSession(token: string): Promise<void> {
+async function activateSession(token: string, generation: number): Promise<void> {
+	if (generation !== authenticationGeneration) return;
 	session.accessToken = token;
 	try {
 		// Through the cache: the identity fetched here is the same one
 		// Home's load reads a moment later.
 		const me = await cachedMe();
+		if (generation !== authenticationGeneration) return;
 		const preferred = me.language.toLowerCase().split('-')[0];
 		if (locales.some((locale) => locale === preferred) && preferred !== getLocale()) {
 			await setLocale(preferred as (typeof locales)[number], { reload: false });
@@ -67,6 +77,7 @@ async function activateSession(token: string): Promise<void> {
 }
 
 export async function bootstrapAuth(): Promise<boolean> {
+	const generation = authenticationGeneration;
 	try {
 		const state = await getAuthState();
 		if (state === 'authenticated') {
@@ -75,9 +86,10 @@ export async function bootstrapAuth(): Promise<boolean> {
 			// load, so any navigation landing mid-rotation logged the user out.
 			const token = await getAccessToken();
 			if (token) {
+				if (generation !== authenticationGeneration) return true;
 				// Authentication is restored as soon as the token is available. User-derived theme and
 				// guild state may finish loading in the background and must not hold the app shell hostage.
-				void activateSession(token);
+				void activateSession(token, generation);
 				return true;
 			}
 			// A definitively rejected refresh changes auth state to unauthenticated and should show the
@@ -118,12 +130,14 @@ export async function startLogin(): Promise<void> {
 
 /** Enter the shared, non-admin account used by external app validators. */
 export async function startExternalValidationLogin(): Promise<void> {
+	const generation = authenticationGeneration;
 	session.loginError = null;
 	session.isProcessing = true;
 	try {
 		clearCache();
 		const token = await useExternalValidationAccount();
-		await activateSession(token);
+		await activateSession(token, generation);
+		if (generation !== authenticationGeneration) return;
 		await replaceNavigation(Routes.Home, { resetDepth: true });
 	} catch (err) {
 		console.error('External validation login failed', err);
@@ -139,6 +153,7 @@ export async function startExternalValidationLogin(): Promise<void> {
 }
 
 async function startNativeLogin(): Promise<void> {
+	const generation = authenticationGeneration;
 	const redirect = await beginLogin(AUTH_PROVIDER, NATIVE_CONTINUE, BACKEND_CALLBACK_V1);
 	if (typeof redirect !== 'string') {
 		session.loginError = 'failed';
@@ -165,7 +180,8 @@ async function startNativeLogin(): Promise<void> {
 		// exchange the code for tokens (PKCE) — no cookies involved anymore.
 		const token = await finishLogin(response.redirectedUri);
 		if (token) {
-			await activateSession(token);
+			await activateSession(token, generation);
+			if (generation !== authenticationGeneration) return;
 			// Token is now in Preferences + session; safe to land on the
 			// authenticated home and let its load fire API calls.
 			await replaceNavigation(Routes.Home, { resetDepth: true });
@@ -197,14 +213,16 @@ async function startWebLogin(): Promise<void> {
  * /auth/callback. Returns whether a session was established.
  */
 export async function finishWebLogin(): Promise<boolean> {
+	const generation = authenticationGeneration;
 	session.isProcessing = true;
 	try {
 		// eslint-disable-next-line no-restricted-syntax -- auth-lib needs the complete external callback URL
 		const token = await finishLogin(window.location.href);
 		if (token) {
+			if (generation !== authenticationGeneration) return false;
 			// The token has already been persisted. Do not keep the callback route waiting for the
 			// secondary profile/theme request; it can finish while the authenticated app mounts.
-			void activateSession(token);
+			void activateSession(token, generation);
 			return true;
 		}
 		session.loginError = 'failed';
