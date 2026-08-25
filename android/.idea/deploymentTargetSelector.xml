@@ -2,7 +2,7 @@
 <project version="4">
   <component name="deploymentTargetSelector">
     <selectionStates>
-      <SelectionState runConfigName="app">
+      <SelectionState runConfigName="Teknologappen">
         <option name="selectionMode" value="DROPDOWN" />
         <DropdownSelection timestamp="2026-08-23T13:04:27.554661Z">
           <Target type="DEFAULT_BOOT">

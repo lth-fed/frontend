@@ -5,6 +5,7 @@
 	import Routes from '$lib/navigation/routes';
 	import type { PageProps } from './$types';
 	import { onMount } from 'svelte';
+	import SigningInFallback from '$lib/components/SigningInFallback.svelte';
 
 	let { data }: PageProps = $props();
 	let runtimeError = $state<string | null>(null);
@@ -54,6 +55,6 @@
 			</button>
 		</div>
 	{:else}
-		<span class="text-sm text-gray-500">{m.auth_signing_in()}</span>
+		<SigningInFallback />
 	{/if}
 </div>

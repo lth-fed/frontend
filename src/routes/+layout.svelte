@@ -9,6 +9,7 @@
 	import { bootstrapAuth } from '$lib/auth/bootstrap';
 	import { readNavigationIntent } from '$lib/navigation/stackNavigation';
 	import Landing from '$lib/components/Landing.svelte';
+	import SigningInFallback from '$lib/components/SigningInFallback.svelte';
 	import './layout.css';
 	import favicon from '$lib/assets/favicon.svg';
 	import { afterNavigate, beforeNavigate, onNavigate } from '$app/navigation';
@@ -154,9 +155,7 @@
 	{@render children()}
 {:else if !session.accessToken}
 	{#if session.isProcessing || !bootstrapped}
-		<div class="grid min-h-screen place-items-center text-sm text-gray-500">
-			{m.auth_signing_in()}
-		</div>
+		<SigningInFallback />
 	{:else if bootstrapFailed}
 		<div class="grid min-h-screen place-items-center px-6 text-center">
 			<div class="flex w-full max-w-sm flex-col items-center gap-4">
