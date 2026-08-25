@@ -109,6 +109,8 @@
 	"queue_failed": "Din plats gick förlorad. Du kan försöka igen.",
 	"queue_another_purchase": "Ett annat biljettköp pågår redan.",
 	"queue_cancel": "Avbryt",
+	"queue_cancelling": "Avbryter…",
+	"queue_cancel_failed": "Det gick inte att lämna kön. Försök igen.",
 	"queue_dismiss": "OK",
 
 	"pill_releases_in": "Släpps om {time}",

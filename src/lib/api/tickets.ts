@@ -8,6 +8,7 @@ import {
 	type Attempt,
 	type ForbiddenAttempt
 } from './call';
+import { apiError, extractErrorMessage } from './errors';
 import {
 	guildFromPath,
 	locationLabel,
@@ -277,10 +278,22 @@ export async function queueStatus(): Promise<QueueStatusResult> {
 	};
 }
 
-/** Leave the release queue (pre-release cancel). 404 = wasn't queued. */
+/** Cancel the active ticket queue or reservation. 404 = already gone. */
 export async function leaveQueue(): Promise<void> {
-	const { response } = await api.DELETE('/tickets/queue', {});
-	if (!response.ok && response.status !== 404) console.error('leave queue failed', response.status);
+	let result;
+	try {
+		result = await api.DELETE('/tickets/queue', {});
+	} catch (error) {
+		console.error('leave queue network error', error);
+		apiError('network');
+	}
+
+	const { error, response } = result;
+	if (response.ok || response.status === 404) return;
+
+	const message = extractErrorMessage(error);
+	if (response.status >= 500) apiError('server', message);
+	apiError('unknown', message);
 }
 
 const _mockTickets: RawTicket[] = [

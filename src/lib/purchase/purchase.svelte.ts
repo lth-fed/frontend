@@ -439,21 +439,19 @@ export function setAttached(value: boolean): void {
 	}
 }
 
-/** Cancel whatever is active. Reservation-queue spots have no leave
- *  endpoint (spec ask B13) — those are abandoned locally. */
+/** Cancel the active queue or reservation on the server before clearing local state. */
 export async function cancel(): Promise<void> {
 	const flow = purchase.flow;
 	switch (flow.state) {
 		case 'release-queued':
 		case 'resolving':
+		case 'reservation-queued':
+		case 'delayed':
 			await leaveQueue();
 			break;
 		case 'reserved':
 			await leaveQueue();
 			invalidatePrefix('kinds:');
-			break;
-		case 'reservation-queued':
-			// no endpoint — local abandon; the server spot lapses on its own
 			break;
 		default:
 			break;
