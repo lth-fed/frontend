@@ -23,15 +23,34 @@
 	import { monitorNetwork } from '$lib/state/network.svelte';
 	import { Capacitor } from '@capacitor/core';
 	import { syncServerClock } from '$lib/api/clients';
+	import { SplashScreen } from '@capacitor/splash-screen';
 
 	let { children } = $props();
+
+	// The native launch screen (see `capacitor.config.ts`, `launchAutoHide: false`) stays up
+	// through auth bootstrap so the branded splash bridges straight into the app instead of a
+	// blank/"Signing in…" flash between it and the web content's first paint. Two rAFs let
+	// whichever branch Svelte just picked (app / Landing / error) actually paint underneath
+	// before it's revealed. Capped so a stalled bootstrap can't hold the splash forever — it
+	// falls back to the in-app fallback screen, which has its own retry/sign-out affordance.
+	let splashHidden = false;
+	function hideSplashScreen() {
+		if (splashHidden || !Capacitor.isNativePlatform()) return;
+		splashHidden = true;
+		requestAnimationFrame(() => requestAnimationFrame(() => void SplashScreen.hide()));
+	}
 
 	// Coming back to a backgrounded app: revalidate the fast-moving
 	// resources (spec §3.3) and resync any active purchase flow (§4.2).
 	// Pages re-render from cache instantly and refresh in the background.
 	// On web this fires on tab re-focus.
 	onMount(() => {
-		if (page.route.id !== '/auth/callback') void runAuthBootstrap();
+		if (page.route.id !== '/auth/callback') {
+			void runAuthBootstrap().finally(hideSplashScreen);
+		} else {
+			hideSplashScreen();
+		}
+		window.setTimeout(hideSplashScreen, 4_000);
 		const stopMonitoringNetwork = monitorNetwork(() => {
 			invalidateCache(
 				'me',

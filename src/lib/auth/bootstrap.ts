@@ -5,6 +5,7 @@ import {
 	getAuthState,
 	logout,
 	getAccessToken,
+	getStoredAccessToken,
 	useExternalValidationAccount
 } from 'auth-lib';
 import { dev } from '$app/environment';
@@ -83,14 +84,24 @@ export async function bootstrapAuth(): Promise<boolean> {
 	try {
 		const state = await getAuthState();
 		if (state === 'authenticated') {
+			const stored = await getStoredAccessToken();
+			if (stored) {
+				// Render the app immediately with the locally stored session — `session.accessToken`
+				// is only ever a gate, every request re-derives its own fresh token via
+				// `authenticatedFetch`. Validate (refreshing if needed) in the background and only
+				// kick back to sign-in if that genuinely fails; see `validateStoredSession`.
+				session.accessToken = stored;
+				void validateStoredSession(generation);
+				return true;
+			}
+			// No token was ever stored despite an "authenticated" record — nothing to show
+			// optimistically, fall back to waiting for a real one.
 			// Reuses the stored access token while it's still fresh. Refreshing
 			// unconditionally here spent a single-use refresh token on every page
 			// load, so any navigation landing mid-rotation logged the user out.
 			const token = await getAccessToken();
 			if (token) {
 				if (generation !== authenticationGeneration) return true;
-				// Authentication is restored as soon as the token is available. User-derived theme and
-				// guild state may finish loading in the background and must not hold the app shell hostage.
 				void activateSession(token, generation);
 				return true;
 			}
@@ -109,6 +120,29 @@ export async function bootstrapAuth(): Promise<boolean> {
 		console.error('Auth bootstrap failed', err);
 		return false;
 	}
+}
+
+/**
+ * Confirms the optimistically-restored session from the background: refreshes the
+ * access token if it's no longer fresh, then activates the session as usual. Only a
+ * definitively rejected refresh (auth state flips to unauthenticated) is a genuine
+ * auth failure and kicks the user back to sign-in; a transport failure leaves the
+ * optimistic session in place for the next request to retry.
+ */
+async function validateStoredSession(generation: number): Promise<void> {
+	const token = await getAccessToken();
+	if (generation !== authenticationGeneration) return;
+	if (token) {
+		void activateSession(token, generation);
+		return;
+	}
+	if ((await getAuthState()) === 'authenticated') return;
+	await logout();
+	session.accessToken = null;
+	session.userId = null;
+	session.guild = null;
+	session.themeGuild = null;
+	clearCache();
 }
 
 /**

@@ -13,6 +13,15 @@ const config: CapacitorConfig = {
 	plugins: {
 		StatusBar: {
 			overlaysWebView: true
+		},
+		SplashScreen: {
+			// Held on screen manually (see `+layout.svelte`) until the auth bootstrap
+			// settles, so the branded splash bridges straight into the app instead of
+			// a blank/"Signing in…" flash between the native launch screen and first paint.
+			launchAutoHide: false,
+			backgroundColor: '#ffffffff',
+			androidSplashResourceName: 'splash',
+			showSpinner: false
 		}
 	}
 };
