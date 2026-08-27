@@ -10,7 +10,7 @@ import {
 import { dev } from '$app/environment';
 import { session } from '$lib/state/session.svelte';
 import { cachedMe, majorityGuild, themeGuild } from '$lib/api/user';
-import { replaceNavigation } from '$lib/navigation/stackNavigation';
+import { navigationSettled, replaceNavigation } from '$lib/navigation/stackNavigation';
 import { invalidateAll } from '$app/navigation';
 import Routes from '$lib/navigation/routes';
 import { InAppBrowser } from '@capgo/capacitor-inappbrowser';
@@ -61,10 +61,12 @@ async function activateSession(token: string, generation: number): Promise<void>
 		const preferred = me.language.toLowerCase().split('-')[0];
 		if (locales.some((locale) => locale === preferred) && preferred !== getLocale()) {
 			await setLocale(preferred as (typeof locales)[number], { reload: false });
-			// API mappings flatten i18n records using the active locale, so stale
-			// values cannot safely survive a language change.
-			clearCache();
 			document.documentElement.lang = preferred;
+			// API mappings flatten i18n records using the active locale, so stale values cannot safely
+			// survive a language change. Let the shell's own navigation (root → Home at cold start)
+			// land first: an `invalidateAll` while it is pending would drop it (see `navigationSettled`).
+			await navigationSettled();
+			clearCache();
 			await invalidateAll();
 		}
 		session.userId = me.id;
