@@ -17,6 +17,10 @@
 
 
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
+        <!-- windowSplashScreenBackground (not android:background) is what the Android 12+
+             SplashScreen API actually reads; without it, dark mode fell back to the
+             androidx compat library's own dark default instead of our white splash art. -->
+        <item name="windowSplashScreenBackground">@android:color/white</item>
         <item name="android:background">@drawable/splash</item>
     </style>
 </resources>
