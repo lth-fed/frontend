@@ -236,6 +236,17 @@ function accessTokenFresh(at: string | null): boolean {
 }
 
 /**
+ * The access token exactly as stored, with no freshness check or refresh —
+ * may be stale or already expired. For optimistically restoring a session
+ * (render immediately, validate in the background); never send this on the
+ * wire, use `getAccessToken` for that.
+ */
+export async function getStoredAccessToken(): Promise<string | null> {
+	const { value } = await Preferences.get({ key: atLocation });
+	return value;
+}
+
+/**
  * The access token to use now: the stored one while it's still fresh,
  * otherwise a refreshed one.
  *
