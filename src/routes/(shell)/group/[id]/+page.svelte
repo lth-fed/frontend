@@ -18,7 +18,8 @@
 	let setting = $state<GroupSetting>(untrack(() => ({ ...data.setting, groupId: data.group.id })));
 	let settingBusy = $state(false);
 	let leaving = $state(false);
-	let isMember = $state(untrack(() => data.isMember));
+	let leftGroupId = $state<string>();
+	let isDirectMember = $derived(data.isDirectMember && leftGroupId !== data.group.id);
 	let actionError = $state('');
 	let adminEmails = $derived(
 		data.group.adminIds
@@ -48,7 +49,7 @@
 		actionError = '';
 		try {
 			await leaveGroup(data.group.id);
-			isMember = false;
+			leftGroupId = data.group.id;
 		} catch (cause) {
 			actionError = errorMessage(cause) ?? m.group_leave_failed();
 		} finally {
@@ -140,7 +141,7 @@
 			<p class="mt-5 rounded-2xl bg-gray-100 p-3 text-sm">{m.group_members_private()}</p>
 		{/if}
 		{#if actionError}<p class="mt-4 text-sm text-red-700" role="alert">{actionError}</p>{/if}
-		{#if isMember}
+		{#if isDirectMember}
 			<button
 				type="button"
 				disabled={leaving}

@@ -20,6 +20,7 @@
 	let cameras = $state<MediaDeviceInfo[]>([]);
 	let selectedCameraIndex = $state(0);
 	let changingCamera = $state(false);
+	const CAMERA_STORAGE_KEY = 'tappen-verifier-camera-device-id';
 
 	prepareZXingModule({
 		overrides: {
@@ -63,7 +64,24 @@
 		stream = undefined;
 	}
 
-	async function startCamera(deviceId?: string): Promise<void> {
+	function savedCameraId(): string | undefined {
+		try {
+			return localStorage.getItem(CAMERA_STORAGE_KEY) ?? undefined;
+		} catch {
+			return undefined;
+		}
+	}
+
+	function saveCameraId(deviceId: string | undefined): void {
+		if (!deviceId) return;
+		try {
+			localStorage.setItem(CAMERA_STORAGE_KEY, deviceId);
+		} catch {
+			// Camera selection still works when storage is unavailable.
+		}
+	}
+
+	async function startCamera(deviceId?: string): Promise<boolean> {
 		stopCamera();
 		try {
 			const camera = await navigator.mediaDevices.getUserMedia({
@@ -81,11 +99,20 @@
 			const activeDeviceId = camera.getVideoTracks()[0]?.getSettings().deviceId;
 			const index = cameras.findIndex((camera) => camera.deviceId === activeDeviceId);
 			selectedCameraIndex = index >= 0 ? index : 0;
+			saveCameraId(activeDeviceId);
 			error = '';
+			return true;
 		} catch (cause) {
 			console.error('Camera failed', cause);
 			error = m.verifier_camera_error();
+			return false;
 		}
+	}
+
+	async function startPreferredCamera(): Promise<void> {
+		const savedDeviceId = savedCameraId();
+		if (savedDeviceId && (await startCamera(savedDeviceId))) return;
+		await startCamera();
 	}
 
 	async function cycleCamera(): Promise<void> {
@@ -101,7 +128,7 @@
 
 	onMount(() => {
 		detector = new BarcodeDetector({ formats: ['qr_code'] });
-		void startCamera().then(() => (timer = setInterval(() => void scan(), 300)));
+		void startPreferredCamera().then(() => (timer = setInterval(() => void scan(), 300)));
 		return () => {
 			active = false;
 			if (timer) clearInterval(timer);
@@ -135,15 +162,19 @@
 	{#if result}
 		<section
 			class="rounded-3xl border p-5"
-			class:border-green-300={result.verified}
-			class:border-red-300={!result.verified}
-			class:bg-green-50={result.verified}
-			class:bg-red-50={!result.verified}>
+			class:border-green-600={result.verified && result.previousVerifications.length === 0}
+			class:bg-green-200={result.verified && result.previousVerifications.length === 0}
+			class:border-yellow-500={result.previousVerifications.length > 0}
+			class:bg-yellow-100={result.previousVerifications.length > 0}
+			class:border-red-300={!result.verified && result.previousVerifications.length === 0}
+			class:bg-red-50={!result.verified && result.previousVerifications.length === 0}>
 			<h2 class="text-xl font-semibold">
 				{result.verified ? m.verifier_valid() : m.verifier_rejected()}
 			</h2>
 			{#if result.verified}
 				<dl class="mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
+					<dt class="font-semibold">{m.verifier_ticket_kind()}</dt>
+					<dd>{result.ticketKindName}</dd>
 					{#if result.ownerName || result.ownerId}
 						<dt class="font-semibold">{m.verifier_owner()}</dt>
 						<dd class="min-w-0">

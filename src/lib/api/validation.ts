@@ -14,6 +14,7 @@ export type ValidationActivity = {
 
 export type ValidationResult = {
 	verified: boolean;
+	ticketKindName: string;
 	ownerId?: string;
 	ownerName?: string;
 	hasBeenTransferred: boolean;
@@ -65,6 +66,7 @@ export async function validateTicket(payload: TicketQrPayload): Promise<Attempt<
 		return {
 			ok: {
 				verified: true,
+				ticketKindName: 'Demo ticket',
 				ownerName: 'Demo User',
 				hasBeenTransferred: false,
 				purchaserName: 'Demo User',
@@ -85,6 +87,7 @@ export async function validateTicket(payload: TicketQrPayload): Promise<Attempt<
 	return {
 		ok: {
 			verified: result.ok.verified,
+			ticketKindName: pickI18n(result.ok.ticket_kind_name),
 			ownerId: result.ok.owner_id,
 			ownerName: result.ok.owner_name,
 			hasBeenTransferred: result.ok.has_been_transfered,

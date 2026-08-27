@@ -2,8 +2,8 @@ import type { TicketKind } from '$lib/api/activities';
 
 /** How close to release queue entry opens (spec §4.2): joining earlier
  *  is pointless (the release is a lottery) and would let the spot purge
- *  before release (20-min backend purge vs ≤10-min wait). */
-export const ENTRY_WINDOW_MS = 10 * 60 * 1000;
+ *  before release (20-min backend purge vs ≤15-min wait). */
+export const ENTRY_WINDOW_MS = 15 * 60 * 1000;
 
 /**
  * Purchasability of a ticket kind at `now` (pass `serverNow()`).
@@ -13,7 +13,7 @@ export type KindState =
 	| { state: 'closed' }
 	/** Before the entry window opens. */
 	| { state: 'not-yet'; releaseAt: Date }
-	/** Within 10 min of release — queue entry allowed (step 4 CTA). */
+	/** Within 15 min of release — queue entry allowed (step 4 CTA). */
 	| { state: 'window'; releaseAt: Date }
 	/** Released with no remaining capacity. */
 	| { state: 'sold-out' }

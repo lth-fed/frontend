@@ -3635,6 +3635,88 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	'/time': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['Now'];
+					};
+				};
+				/** @description This is for user input errors. */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+				/** @description This is for auth errors. This usually requires re-login. */
+				401: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+				/** @description This is for client application errors. */
+				403: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+				/**
+				 * @description This is for when the user requests something that doesn't exist. Probably cache invalidaton
+				 *     issue.
+				 */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+				/** @description Shit went down and the team is scrambling to fix it. */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						'application/json; charset=utf-8': components['schemas']['MinilithError'];
+					};
+				};
+			};
+		};
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	'/groups/tree': {
 		parameters: {
 			query?: never;
@@ -5801,6 +5883,11 @@ export interface components {
 			hosts: components['schemas']['Host'][];
 			/** @description If there are any tickets for this event. */
 			tickets_exist: boolean;
+			/**
+			 * Format: date-time
+			 * @description Some if any tickets are purchasable.
+			 */
+			earliest_purchasable_ticket_release?: string;
 		};
 		/** ActivityHostInvite */
 		ActivityHostInvite: {
@@ -5930,6 +6017,8 @@ export interface components {
 			image_url: string;
 			/** @description If there are any tickets for this event. */
 			is_hidden: boolean;
+			/** Format: date-time */
+			earliest_purchasable_ticket_release?: string;
 		};
 		/** BuyTicketRequest */
 		BuyTicketRequest: {
@@ -6168,6 +6257,11 @@ export interface components {
 		};
 		/** @enum {string} */
 		NotificationLevel: 'none' | 'personalized' | 'all';
+		/** Now */
+		Now: {
+			/** Format: date-time */
+			utc: string;
+		};
 		/** ObjectUploadAllowanceRequest */
 		ObjectUploadAllowanceRequest: {
 			/** @description Must not contain the `.`. I.e. `jpg`, `JPEG`, `png` is ok. */
@@ -6415,6 +6509,9 @@ export interface components {
 		/** ValidateResponse */
 		ValidateResponse: {
 			verified: boolean;
+			ticket_kind_name: {
+				[key: string]: string;
+			};
 			owner_id?: string;
 			owner_name?: string;
 			has_been_transfered: boolean;

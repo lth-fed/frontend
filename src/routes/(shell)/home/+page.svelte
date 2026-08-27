@@ -45,7 +45,7 @@
 </script>
 
 <div
-	style="--ticket-scale: clamp(0.8, calc((100dvh - 340px) / 470px), 1); --carousel-item-width: calc(300px * var(--ticket-scale));">
+	style="--ticket-scale: clamp(0.8, calc((100svh - 340px) / 470px), 1); --carousel-item-width: calc(300px * var(--ticket-scale));">
 	<header class="flex items-baseline justify-between px-6">
 		<h2 class="text-[20px] font-semibold">{m.home_my_tickets()}</h2>
 		<span class="text-xs font-bold text-guild-accent"
@@ -102,6 +102,7 @@
 				{#each data.activities as a (a.id)}
 					<ActivityCard
 						image={a.image}
+						ticketRelease={a.earliestPurchasableTicketRelease}
 						date={formatCardDate(a.startAt)}
 						title={a.title}
 						description={a.description}

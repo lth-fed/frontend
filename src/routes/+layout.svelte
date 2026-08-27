@@ -22,6 +22,7 @@
 	} from '$lib/purchase/purchase.svelte';
 	import { monitorNetwork } from '$lib/state/network.svelte';
 	import { Capacitor } from '@capacitor/core';
+	import { syncServerClock } from '$lib/api/clients';
 
 	let { children } = $props();
 
@@ -43,7 +44,9 @@
 		});
 		const listener = App.addListener('resume', () => {
 			invalidateCache('activities', 'tickets', 'notification-history');
-			onPurchaseResume();
+			void syncServerClock()
+				.catch((error) => console.warn('Could not refresh server clock', error))
+				.finally(onPurchaseResume);
 			if (!session.accessToken && (!bootstrapped || bootstrapFailed)) void runAuthBootstrap();
 		});
 		return () => {
@@ -78,6 +81,9 @@
 	function runAuthBootstrap(): Promise<void> {
 		if (bootstrapInFlight) return bootstrapInFlight;
 		bootstrapInFlight = (async () => {
+			const clockSync = syncServerClock().catch((error) =>
+				console.warn('Could not synchronize server clock', error)
+			);
 			bootstrapped = false;
 			bootstrapFailed = false;
 			try {
@@ -98,6 +104,7 @@
 				bootstrapInFlight = null;
 			}
 			// a queue spot / reservation may have survived the reload
+			await clockSync;
 			if (session.accessToken) void restorePurchase();
 		})();
 		return bootstrapInFlight;

@@ -16,6 +16,7 @@
 	import type { Guild } from '$lib/types/guild';
 	import { ticketQrPayload } from '$lib/api/validation';
 	import { requestMaxBrightness, restoreBrightness } from '$lib/platform/maxBrightness';
+	import { serverNow } from '$lib/api/serverClock';
 
 	type Action = 'transfer' | 'wallet' | 'receipt' | 'activity';
 
@@ -64,7 +65,7 @@
 	const date = $derived(formatCardDate(timeStart));
 	const time = $derived(formatTimeRange(timeStart, timeEnd));
 	const serial = $derived(`#${id.slice(0, 8).toUpperCase()}`);
-	let qrNow = $state(Date.now());
+	let qrNow = $state(serverNow().getTime());
 	const currentQrData = $derived(qrData ?? ticketQrPayload(id, qrNow));
 
 	let showOverlay = $state(false);
@@ -188,7 +189,7 @@
 	}
 
 	onMount(() => {
-		const qrTimer = setInterval(() => (qrNow = Date.now()), 1_000);
+		const qrTimer = setInterval(() => (qrNow = serverNow().getTime()), 1_000);
 		const handleViewportChange = () => {
 			if (showOverlay) updateOverlayTarget();
 		};
@@ -262,17 +263,10 @@
 		const toolbarSpace = showTools
 			? TOOLBAR_GAP + TOOLBAR_HEIGHT + TOOLBAR_BOTTOM_RESERVE
 			: VIEWPORT_MARGIN;
-		const availableHeight = Math.max(
-			H * 0.1,
-			viewportHeight - VIEWPORT_MARGIN - toolbarSpace
-		);
+		const availableHeight = Math.max(H * 0.1, viewportHeight - VIEWPORT_MARGIN - toolbarSpace);
 		targetScale = Math.max(
 			0.1,
-			Math.min(
-				OPEN_SCALE,
-				(viewportWidth - VIEWPORT_MARGIN * 2) / W,
-				availableHeight / H
-			)
+			Math.min(OPEN_SCALE, (viewportWidth - VIEWPORT_MARGIN * 2) / W, availableHeight / H)
 		);
 		targetX = viewportWidth / 2 + (W * targetScale) / 2;
 		targetY = VIEWPORT_MARGIN + (availableHeight - H * targetScale) / 2;

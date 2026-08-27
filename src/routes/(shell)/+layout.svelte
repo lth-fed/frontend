@@ -141,6 +141,7 @@
 			icon={bottom.icon}
 			systemIcon={bottom.systemIcon}
 			onclick={bottom.onclick}
+			disabled={bottom.disabled}
 			backgroundColor={bottom.backgroundColor}
 			foregroundColor={bottom.foregroundColor} />
 	</div>
