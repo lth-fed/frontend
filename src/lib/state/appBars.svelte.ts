@@ -52,6 +52,7 @@ export type BottomConfig =
 			icon: Component;
 			systemIcon: string;
 			onclick: () => void;
+			disabled?: boolean;
 			backgroundColor?: string;
 			foregroundColor?: string;
 	  }
@@ -158,13 +159,18 @@ export function detailTopBar(opts: {
 	};
 }
 
-export function buyTicketsBottom(opts: { id: string; onclick: () => void }): BottomConfig {
+export function buyTicketsBottom(opts: {
+	id: string;
+	onclick: () => void;
+	disabled?: boolean;
+}): BottomConfig {
 	return {
 		kind: 'action',
 		id: opts.id,
-		label: m.activity_buy_tickets(),
+		label: opts.disabled ? m.activity_cannot_buy_tickets() : m.activity_buy_tickets(),
 		icon: TicketIcon,
 		systemIcon: 'ticket',
-		onclick: opts.onclick
+		onclick: opts.onclick,
+		disabled: opts.disabled
 	};
 }

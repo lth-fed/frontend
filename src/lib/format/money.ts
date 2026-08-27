@@ -9,5 +9,10 @@ import * as m from '$lib/paraglide/messages';
  */
 export function formatPrice(öre: number): string {
 	if (öre <= 0) return m.ticket_price_free();
+	return formatSek(öre);
+}
+
+/** Render a numeric SEK amount, including zero, without substituting the free label. */
+export function formatSek(öre: number): string {
 	return m.activity_price({ amount: Math.round(öre / 100) });
 }

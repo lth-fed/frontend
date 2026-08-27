@@ -31,14 +31,13 @@
 			title: activity.title
 			// onShare: () => alert(`Share ${activity.title}`)
 		}),
-		// Buy CTA only when the full record confirms sellable tickets
-		// (krav §5). While `!full` (list-seeded placeholder), no CTA —
-		// the full fetch lands in a moment and re-renders.
+		// Wait for the full record before deciding whether the stable CTA is enabled.
 		bottom:
 			activity.full && activity.ticketsExist
 				? buyTicketsBottom({
 						id: `buy-${activity.id}`,
-						onclick: () => pushNavigation(Routes.ActivityTickets(activity.id))
+						onclick: () => pushNavigation(Routes.ActivityTickets(activity.id)),
+						disabled: activity.earliestPurchasableTicketRelease === undefined
 					})
 				: emptyBottom
 	}));

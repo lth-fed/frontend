@@ -1,6 +1,6 @@
 import createClient, { type Client, type ClientOptions } from 'openapi-fetch';
 import { authenticatedFetch } from 'auth-lib';
-import { noteServerDate } from './serverClock';
+import { noteServerTime } from './serverClock';
 
 import type { paths as AuthPaths } from './generated/auth';
 import type { paths as ApiPaths } from './generated/api';
@@ -42,8 +42,6 @@ async function fetchViaCapacitor(input: Request): Promise<Response> {
 	);
 
 	const contentType = res.headers['Content-Type'] ?? res.headers['content-type'] ?? '';
-	noteServerDate(res.headers['Date'] ?? res.headers['date']);
-
 	return new Response(toResponseBody(res.data, contentType, res.status, responseType), {
 		status: res.status,
 		headers: res.headers as Record<string, string>
@@ -110,3 +108,11 @@ export function makeApi(opts: Omit<ClientOptions, 'baseUrl'> = {}): Client<ApiPa
 /** Default clients. `api` already wraps the transport with auth-lib. */
 export const auth = makeAuth();
 export const api = makeApi();
+
+/** Refresh the persisted server-clock offset with an explicit, millisecond-precision API value. */
+export async function syncServerClock(): Promise<void> {
+	const started = Date.now();
+	const { data, response } = await api.GET('/time', {});
+	const ended = Date.now();
+	if (response.ok && data) noteServerTime(data.utc, started, ended);
+}

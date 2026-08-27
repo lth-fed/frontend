@@ -9,7 +9,7 @@ import {
 	queueStatus,
 	type TicketKindPurchaseContext
 } from '$lib/api/tickets';
-import { freeGateway, type PaymentGateway } from '$lib/payment/gateway';
+import type { PaymentGateway } from '$lib/payment/gateway';
 import { m } from '$lib/paraglide/messages.js';
 
 /**
@@ -20,7 +20,7 @@ import { m } from '$lib/paraglide/messages.js';
  * Network discipline (verified against the backend's semantics):
  * - `PUT /tickets/queue` is issued exactly once per attempt — a repeat
  *   PUT after release re-inserts at the BACK of the reservation queue.
- * - No keep-alives: entry is only allowed inside the 10-min window
+ * - No keep-alives: entry is only allowed inside the 15-min window
  *   (§4.6), so a spot can't purge (20 min) before release.
  * - Polling only where the server can have news: a bounded resolution
  *   loop around the release lottery, a 15 s loop while
@@ -33,7 +33,7 @@ export type FlowKind = {
 	ticketKindId: string;
 	activityId: string;
 	name: string;
-	/** Calculated from the base ticket and selected addon option prices. */
+	/** Calculated from the base ticket and, once configured, selected add-on prices. */
 	requiresPayment: boolean;
 	addons?: { id: string; selectedOptions?: number[]; selectedText?: string }[];
 };
@@ -71,7 +71,8 @@ const FIRST_RELEASE_POLL_JITTER_MS = 10_000;
 const PURCHASE_FLOW_RETRY_MS = 3_000;
 /** Faster cadence while a payment is in flight — the server callback is
  *  our only completion signal (spec §4.2). */
-const PAYING_POLL_MS = 1_000;
+const PAYING_POLL_MS = 5_000;
+const PAYMENT_CONFIRMATION_GRACE_MS = 60_000;
 const RESOLUTION_GIVE_UP_MS = 3 * 60_000;
 const QUEUE_POLL_MS = 15_000;
 
@@ -90,15 +91,33 @@ function clearTimers(): void {
 	resolutionStartedAt = undefined;
 }
 
-function persist(kind: FlowKind, releaseAt?: Date): void {
+function persist(
+	kind: FlowKind,
+	releaseAt?: Date,
+	payment?: { submitted: true; timeout: Date }
+): void {
 	try {
-		localStorage.setItem(PERSIST_KEY, JSON.stringify({ ...kind, releaseAt }));
+		localStorage.setItem(
+			PERSIST_KEY,
+			JSON.stringify({
+				...kind,
+				releaseAt,
+				paymentSubmitted: payment?.submitted,
+				paymentTimeout: payment?.timeout
+			})
+		);
 	} catch {
 		/* storage full/blocked — restore() will degrade gracefully */
 	}
 }
 
-function readPersisted(): (FlowKind & { releaseAt?: string }) | undefined {
+type PersistedFlow = FlowKind & {
+	releaseAt?: string;
+	paymentSubmitted?: boolean;
+	paymentTimeout?: string;
+};
+
+function readPersisted(): PersistedFlow | undefined {
 	try {
 		const raw = localStorage.getItem(PERSIST_KEY);
 		return raw ? JSON.parse(raw) : undefined;
@@ -214,16 +233,31 @@ export async function resync(kind?: FlowKind): Promise<void> {
 	}
 
 	if (status.kind === 'missing') {
-		// Not queued server-side. Purchased, expired, or lost (B8).
-		// Once payment was submitted, the queue contract defines 404 as a
-		// completed purchase. Do not hold the user on this screen while the
-		// tickets listing catches up.
+		// Not queued server-side. Purchased, expired, or lost (B8). A Swish
+		// return may beat the server callback, so confirm against the ticket
+		// list instead of treating the first 404 as completed.
 		if (flow.state === 'paying') {
-			invalidate('tickets', 'purchased-tickets');
-			invalidatePrefix('kinds:');
-			clearTimers();
-			clearPersisted();
-			purchase.flow = { state: 'purchased', kind: activeKind };
+			let tickets;
+			try {
+				tickets = await listMyTickets();
+			} catch (error) {
+				console.warn('Could not confirm completed purchase yet', error);
+				schedulePoll(activeKind, PAYING_POLL_MS);
+				return;
+			}
+			if (tickets.some((ticket) => ticket.ticketKindId === activeKind.ticketKindId)) {
+				invalidate('tickets', 'purchased-tickets');
+				invalidatePrefix('kinds:');
+				clearTimers();
+				clearPersisted();
+				purchase.flow = { state: 'purchased', kind: activeKind };
+			} else if (serverNow().getTime() > flow.timeout.getTime() + PAYMENT_CONFIRMATION_GRACE_MS) {
+				clearTimers();
+				clearPersisted();
+				purchase.flow = { state: 'failed', kind: activeKind, message: undefined };
+			} else {
+				schedulePoll(activeKind, PAYING_POLL_MS);
+			}
 			return;
 		}
 		if (flow.state === 'reservation-queued') {
@@ -279,10 +313,6 @@ export async function resync(kind?: FlowKind): Promise<void> {
 			if (expiryTimer) clearTimeout(expiryTimer);
 			const untilExpiry = current.timeout.getTime() - serverNow().getTime() + 3_000;
 			expiryTimer = setTimeout(() => void resync(activeKind), Math.max(0, untilExpiry));
-
-			// The UI has already calculated the base ticket plus selected addon
-			// prices. Only a truly zero-total purchase uses the free provider.
-			if (!paymentRequired) void pay(freeGateway);
 		}
 		return;
 	}
@@ -330,6 +360,7 @@ export async function pay(gateway: PaymentGateway): Promise<{ error?: string }> 
 	if (flow.state !== 'reserved') return {};
 	const { kind, timeout, latestTransaction, paymentRequired } = flow;
 	purchase.flow = { state: 'paying', kind, timeout };
+	persist(kind, undefined, { submitted: true, timeout });
 
 	let outcome = await gateway.pay({ ticketKindId: kind.ticketKindId, addons: kind.addons });
 	while (outcome.kind === 'busy') {
@@ -337,6 +368,7 @@ export async function pay(gateway: PaymentGateway): Promise<{ error?: string }> 
 			return {};
 		}
 		if (serverNow().getTime() + PURCHASE_FLOW_RETRY_MS >= latestTransaction.getTime()) {
+			persist(kind);
 			purchase.flow = { state: 'reserved', kind, timeout, latestTransaction, paymentRequired };
 			return { error: m.queue_pay_too_late() };
 		}
@@ -356,6 +388,7 @@ export async function pay(gateway: PaymentGateway): Promise<{ error?: string }> 
 	// return to `reserved` with the countdown intact and surface the
 	// message inline for a retry (krav §6).
 	if (outcome.retriable) {
+		persist(kind);
 		purchase.flow = { state: 'reserved', kind, timeout, latestTransaction, paymentRequired };
 		return { error: outcome.message };
 	}
@@ -366,6 +399,18 @@ export async function pay(gateway: PaymentGateway): Promise<{ error?: string }> 
 	return {};
 }
 
+/** Attach add-on choices only after capacity has been reserved, immediately before payment. */
+export function configurePurchase(
+	addons: NonNullable<FlowKind['addons']>,
+	requiresPayment: boolean
+): void {
+	const flow = purchase.flow;
+	if (flow.state !== 'reserved') return;
+	const kind = { ...flow.kind, addons, requiresPayment };
+	persist(kind);
+	purchase.flow = { ...flow, kind, paymentRequired: requiresPayment };
+}
+
 /** Rebuild state after an app reload (called post-auth from the root
  *  layout). No-op when nothing is queued server-side. */
 export async function restore(): Promise<void> {
@@ -374,6 +419,21 @@ export async function restore(): Promise<void> {
 	const status = await queueStatus();
 	if (status.kind === 'retry') return;
 	if (status.kind === 'missing') {
+		if (
+			persisted?.paymentSubmitted &&
+			persisted.activityId &&
+			persisted.name &&
+			typeof persisted.requiresPayment === 'boolean' &&
+			persisted.paymentTimeout
+		) {
+			purchase.flow = {
+				state: 'paying',
+				kind: persisted,
+				timeout: parseDate(persisted.paymentTimeout)
+			};
+			schedulePoll(persisted, 0);
+			return;
+		}
 		clearPersisted();
 		return;
 	}
@@ -395,6 +455,15 @@ export async function restore(): Promise<void> {
 			console.warn('Could not recover reservation details yet', error);
 			return;
 		}
+	}
+	if (persistedForKind?.paymentSubmitted && status.status.timeout) {
+		purchase.flow = {
+			state: 'paying',
+			kind,
+			timeout: status.status.timeout
+		};
+		schedulePoll(kind, PAYING_POLL_MS);
+		return;
 	}
 	await resync(kind);
 }

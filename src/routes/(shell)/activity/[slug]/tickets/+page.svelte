@@ -9,6 +9,7 @@
 	import {
 		acknowledge,
 		cancel,
+		configurePurchase,
 		joinQueue,
 		pay,
 		purchase,
@@ -64,12 +65,22 @@
 	let addonError = $state('');
 
 	function beginBuy(kind: TicketKind) {
-		if (kind.addons.length) {
-			configuringKind = kind;
-			addonError = '';
-			return;
-		}
+		selectedOptions.clear();
+		selectedTexts.clear();
 		void handleBuy(kind);
+	}
+
+	function openAddonConfiguration(kind: TicketKind) {
+		selectedOptions.clear();
+		selectedTexts.clear();
+		if (flow.state === 'reserved') {
+			for (const selection of flow.kind.addons ?? []) {
+				selectedOptions.set(selection.id, selection.selectedOptions ?? []);
+				selectedTexts.set(selection.id, selection.selectedText ?? '');
+			}
+		}
+		configuringKind = kind;
+		addonError = '';
 	}
 
 	function toggleOption(addon: AvailableAddon, index: number, checked: boolean) {
@@ -103,7 +114,7 @@
 		}));
 	}
 
-	async function confirmAddons() {
+	function confirmAddons() {
 		const kind = configuringKind;
 		if (!kind) return;
 		for (const addon of kind.addons) {
@@ -115,36 +126,33 @@
 			}
 		}
 		configuringKind = undefined;
-		await handleBuy(kind, configuredAddons(kind));
+		const addons = configuredAddons(kind);
+		const totalPrice = addons.reduce((total, selection) => {
+			const addon = kind.addons.find((candidate) => candidate.id === selection.id);
+			return (
+				total +
+				(selection.selectedOptions ?? []).reduce(
+					(sum, index) =>
+						sum + (addon?.options.find((option) => option.index === index)?.price ?? 0),
+					0
+				)
+			);
+		}, kind.price);
+		promptedPaymentKindId = undefined;
+		configurePurchase(addons, totalPrice !== 0);
 	}
 
-	async function handleBuy(
-		kind: TicketKind,
-		addons: { id: string; selectedOptions?: number[]; selectedText?: string }[] = []
-	) {
+	async function handleBuy(kind: TicketKind) {
 		if (busyKindId) return;
 		errors.delete(kind.id);
 		busyKindId = kind.id;
 		try {
-			const totalPrice = addons.reduce((total, selection) => {
-				const addon = kind.addons.find((candidate) => candidate.id === selection.id);
-				if (!addon) return total;
-				return (
-					total +
-					(selection.selectedOptions ?? []).reduce(
-						(sum, index) =>
-							sum + (addon.options.find((option) => option.index === index)?.price ?? 0),
-						0
-					)
-				);
-			}, kind.price);
 			const error = await joinQueue(
 				{
 					ticketKindId: kind.id,
 					activityId: activity.id,
 					name: kind.name,
-					requiresPayment: totalPrice !== 0,
-					addons
+					requiresPayment: kind.price !== 0
 				},
 				kind.purchasingAvailableStart
 			);
@@ -166,6 +174,7 @@
 	let confirmingPay = $state(false);
 	let payError = $state<string | undefined>(undefined);
 	let promptedPaymentKindId = $state<string | undefined>(undefined);
+	let promptedAddonKindId = $state<string | undefined>(undefined);
 	let cancelling = $state(false);
 	let cancelError = $state<string | undefined>(undefined);
 
@@ -191,8 +200,21 @@
 
 	function openOrRetryPayment() {
 		if (flow.state !== 'reserved') return;
+		const kind = data.ticketKinds.find((candidate) => candidate.id === flow.kind.ticketKindId);
+		if (kind?.addons.length && flow.kind.addons === undefined) {
+			openAddonConfiguration(kind);
+			return;
+		}
 		if (flow.paymentRequired) confirmingPay = true;
 		else void tryFreePayment();
+	}
+
+	function changeAddons() {
+		if (flow.state !== 'reserved') return;
+		const kind = data.ticketKinds.find((candidate) => candidate.id === flow.kind.ticketKindId);
+		if (!kind?.addons.length) return;
+		confirmingPay = false;
+		openAddonConfiguration(kind);
 	}
 
 	async function confirmPay(provider: 'swish' | 'stripe') {
@@ -206,13 +228,24 @@
 	$effect(() => {
 		if (flow.state === 'idle') {
 			promptedPaymentKindId = undefined;
-		} else if (
-			flow.state === 'reserved' &&
-			flow.paymentRequired &&
-			promptedPaymentKindId !== flow.kind.ticketKindId
-		) {
-			promptedPaymentKindId = flow.kind.ticketKindId;
-			confirmingPay = true;
+			promptedAddonKindId = undefined;
+		} else if (flow.state === 'reserved') {
+			const kind = data.ticketKinds.find((candidate) => candidate.id === flow.kind.ticketKindId);
+			if (
+				kind?.addons.length &&
+				flow.kind.addons === undefined &&
+				promptedAddonKindId !== flow.kind.ticketKindId
+			) {
+				promptedAddonKindId = flow.kind.ticketKindId;
+				openAddonConfiguration(kind);
+			} else if (
+				(!kind?.addons.length || flow.kind.addons !== undefined) &&
+				promptedPaymentKindId !== flow.kind.ticketKindId
+			) {
+				promptedPaymentKindId = flow.kind.ticketKindId;
+				if (flow.paymentRequired) confirmingPay = true;
+				else void tryFreePayment();
+			}
 		}
 	});
 
@@ -335,6 +368,14 @@
 				</p>
 			{/if}
 			<div class="mt-5 flex flex-col gap-2">
+				{#if data.ticketKinds.find((kind) => kind.id === flow.kind.ticketKindId)?.addons.length}
+					<button
+						type="button"
+						onclick={changeAddons}
+						class="w-full rounded-full border border-guild-ring px-5 py-3 text-sm font-semibold text-guild-on-surface">
+						{m.change_addons()}
+					</button>
+				{/if}
 				{#if getLocale() === 'en'}
 					<button
 						type="button"

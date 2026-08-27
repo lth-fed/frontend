@@ -101,6 +101,8 @@ export type Activity = {
 	/** Whether any ticket kind exists — gates the buy CTA (krav §5).
 	 *  Only known when `full`. */
 	ticketsExist?: boolean;
+	/** Earliest release among ticket kinds this user may purchase. */
+	earliestPurchasableTicketRelease?: Date;
 };
 
 function mapTicketKind(t: RawTicketKind): TicketKind {
@@ -159,7 +161,10 @@ function mapBrief(b: RawBrief): Activity {
 		creatorGuild: guildFromPath(b.creator_path),
 		contact: undefined,
 		organisers: [],
-		full: false
+		full: false,
+		earliestPurchasableTicketRelease: b.earliest_purchasable_ticket_release
+			? parseDate(b.earliest_purchasable_ticket_release)
+			: undefined
 	};
 }
 
@@ -183,7 +188,10 @@ function mapActivity(a: RawActivity): Activity {
 		},
 		organisers: a.hosts.map(mapOrganiser),
 		full: true,
-		ticketsExist: a.tickets_exist
+		ticketsExist: a.tickets_exist,
+		earliestPurchasableTicketRelease: a.earliest_purchasable_ticket_release
+			? parseDate(a.earliest_purchasable_ticket_release)
+			: undefined
 	};
 }
 

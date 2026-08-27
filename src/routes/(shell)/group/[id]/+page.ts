@@ -42,6 +42,6 @@ export const load: PageLoad = async ({ params, depends }) => {
 			visible: true,
 			notificationLevel: 'personalized' as const
 		},
-		isMember: me.groups.some((membership) => membership.id === group.id)
+		isDirectMember: me.groups.some((membership) => membership.id === group.id)
 	};
 };
