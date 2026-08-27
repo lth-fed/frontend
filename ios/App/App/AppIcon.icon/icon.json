@@ -1,148 +1,50 @@
 {
-  "fill" : {
-    "solid" : "srgb:0.10196,0.27843,0.51765,1.00000"
-  },
+  "fill-specializations" : [
+    {
+      "value" : {
+        "solid" : "srgb:1.00000,1.00000,1.00000,1.00000"
+      }
+    },
+    {
+      "appearance" : "dark",
+      "value" : {
+        "solid" : "srgb:1.00000,1.00000,1.00000,1.00000"
+      }
+    }
+  ],
   "groups" : [
-    {
-      "layers" : [
-        {
-          "fill-specializations" : [
-            {
-              "value" : {
-                "solid" : "srgb:0.78824,0.80784,0.81961,1.00000"
-              }
-            },
-            {
-              "appearance" : "dark",
-              "value" : {
-                "solid" : "srgb:0.20784,0.38039,0.69412,1.00000"
-              }
-            },
-            {
-              "appearance" : "tinted",
-              "value" : {
-                "solid" : "srgb:0.20784,0.38039,0.69412,1.00000"
-              }
-            }
-          ],
-          "hidden" : false,
-          "image-name" : "GriddyIconsTicketFilled.svg",
-          "name" : "GriddyIconsTicketFilled",
-          "position" : {
-            "scale" : 23.5,
-            "translation-in-points" : [
-              0,
-              0
-            ]
-          }
-        }
-      ],
-      "shadow" : {
-        "kind" : "neutral",
-        "opacity" : 0.5
-      },
-      "translucency" : {
-        "enabled" : true,
-        "value" : 0.3
-      }
-    },
-    {
-      "hidden" : true,
-      "layers" : [
-        {
-          "fill" : {
-            "solid" : "srgb:0.78824,0.80784,0.81961,1.00000"
-          },
-          "image-name" : "GriddyIconsTicketOffFilled.svg",
-          "name" : "GriddyIconsTicketOffFilled",
-          "position" : {
-            "scale" : 26,
-            "translation-in-points" : [
-              0,
-              0
-            ]
-          }
-        }
-      ],
-      "shadow" : {
-        "kind" : "neutral",
-        "opacity" : 0.5
-      },
-      "translucency" : {
-        "enabled" : true,
-        "value" : 0.3
-      }
-    },
-    {
-      "layers" : [
-        {
-          "fill-specializations" : [
-            {
-              "value" : {
-                "solid" : "srgb:0.78824,0.80784,0.81961,1.00000"
-              }
-            },
-            {
-              "appearance" : "dark",
-              "value" : {
-                "solid" : "srgb:0.20784,0.38039,0.69412,1.00000"
-              }
-            },
-            {
-              "appearance" : "tinted",
-              "value" : "automatic"
-            }
-          ],
-          "hidden" : true,
-          "image-name" : "SiTicketAlt1Fill.svg",
-          "name" : "SiTicketAlt1Fill",
-          "position" : {
-            "scale" : 24.5,
-            "translation-in-points" : [
-              0,
-              0
-            ]
-          }
-        }
-      ],
-      "shadow" : {
-        "kind" : "neutral",
-        "opacity" : 0.5
-      },
-      "translucency" : {
-        "enabled" : true,
-        "value" : 0.3
-      }
-    },
     {
       "layers" : [
         {
           "blend-mode-specializations" : [
             {
+              "value" : "screen"
+            },
+            {
               "appearance" : "dark",
+              "value" : "normal"
+            },
+            {
+              "appearance" : "tinted",
               "value" : "normal"
             }
           ],
           "fill-specializations" : [
             {
-              "value" : {
-                "solid" : "srgb:0.78824,0.80784,0.81961,1.00000"
-              }
+              "value" : "none"
             },
             {
-              "appearance" : "dark",
-              "value" : {
-                "solid" : "display-p3:0.20784,0.38039,0.69412,1.00000"
-              }
+              "appearance" : "tinted",
+              "value" : "none"
             }
           ],
           "glass" : true,
-          "hidden" : true,
-          "image-name" : "ticket.svg",
-          "name" : "ticket",
+          "hidden" : false,
+          "image-name" : "blå_logga-02.svg",
+          "name" : "blå_logga-02",
           "opacity-specializations" : [
             {
-              "value" : 1
+              "value" : 0
             },
             {
               "appearance" : "dark",
@@ -150,10 +52,85 @@
             }
           ],
           "position" : {
-            "scale" : 35,
+            "scale" : 3.65,
             "translation-in-points" : [
               0,
-              0
+              -15
+            ]
+          }
+        },
+        {
+          "image-name" : "utan_hål_2-02.svg",
+          "name" : "utan_hål_2-02",
+          "opacity-specializations" : [
+            {
+              "appearance" : "dark",
+              "value" : 0
+            }
+          ],
+          "position" : {
+            "scale" : 3.65,
+            "translation-in-points" : [
+              0,
+              -15
+            ]
+          }
+        }
+      ],
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.3
+      }
+    },
+    {
+      "hidden" : false,
+      "layers" : [
+        {
+          "blend-mode-specializations" : [
+            {
+              "value" : "normal"
+            },
+            {
+              "appearance" : "dark",
+              "value" : "normal"
+            },
+            {
+              "appearance" : "tinted",
+              "value" : "normal"
+            }
+          ],
+          "fill-specializations" : [
+            {
+              "value" : "none"
+            },
+            {
+              "appearance" : "dark",
+              "value" : "none"
+            },
+            {
+              "appearance" : "tinted",
+              "value" : "none"
+            }
+          ],
+          "glass" : true,
+          "hidden" : true,
+          "image-name" : "loggatestgrej-13.svg",
+          "name" : "loggatestgrej-13",
+          "opacity-specializations" : [
+            {
+              "appearance" : "dark",
+              "value" : 0
+            }
+          ],
+          "position" : {
+            "scale" : 3.65,
+            "translation-in-points" : [
+              0,
+              -15
             ]
           }
         }
