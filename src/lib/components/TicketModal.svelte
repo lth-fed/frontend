@@ -3,6 +3,7 @@
 	import ToolBar from './ToolBar.svelte';
 	import { ArrowLeftRight, Wallet, Receipt, PartyPopper } from '@lucide/svelte';
 	import { m } from '$lib/paraglide/messages.js';
+	import { requestMaxBrightness, restoreBrightness } from '$lib/platform/maxBrightness';
 
 	type Action = 'transfer' | 'wallet' | 'receipt' | 'activity';
 
@@ -37,6 +38,13 @@
 		e.preventDefault();
 		onClose();
 	}
+
+	$effect(() => {
+		if (open) {
+			void requestMaxBrightness();
+			return () => void restoreBrightness();
+		}
+	});
 </script>
 
 {#if open}

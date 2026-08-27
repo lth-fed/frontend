@@ -2,15 +2,8 @@
 <project version="4">
   <component name="deploymentTargetSelector">
     <selectionStates>
-      <SelectionState runConfigName="Teknologappen">
+      <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2026-08-23T13:04:27.554661Z">
-          <Target type="DEFAULT_BOOT">
-            <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=/Users/mechl/.android/avd/Medium_Phone.avd" />
-            </handle>
-          </Target>
-        </DropdownSelection>
         <DialogSelection />
       </SelectionState>
     </selectionStates>

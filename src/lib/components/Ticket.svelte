@@ -15,6 +15,7 @@
 	import { Haptics, ImpactStyle } from '@capacitor/haptics';
 	import type { Guild } from '$lib/types/guild';
 	import { ticketQrPayload } from '$lib/api/validation';
+	import { requestMaxBrightness, restoreBrightness } from '$lib/platform/maxBrightness';
 
 	type Action = 'transfer' | 'wallet' | 'receipt' | 'activity';
 
@@ -205,6 +206,7 @@
 
 	onDestroy(() => {
 		setShellNavbarHidden(false);
+		void restoreBrightness();
 		if (isIos26Native) {
 			void toolBar.hide();
 			detachNativeToolBarListener();
@@ -250,6 +252,7 @@
 		});
 
 		void Haptics.impact({ style: ImpactStyle.Medium });
+		void requestMaxBrightness();
 	}
 
 	function updateOverlayTarget() {
@@ -279,6 +282,7 @@
 		showTools = false;
 		overlayReady = false;
 		setShellNavbarHidden(false);
+		void restoreBrightness();
 		if (isIos26Native) {
 			void toolBar.hide();
 			detachNativeToolBarListener();
