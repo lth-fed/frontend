@@ -1,5 +1,6 @@
 import { browser } from '$app/environment';
 import { invalidate as rerunLoads } from '$app/navigation';
+import { navigationSettled } from '$lib/navigation/stackNavigation';
 
 /**
  * Session-scoped stale-while-revalidate cache between `load` functions
@@ -24,6 +25,12 @@ const PERSISTENT_PREFIX = 'tappen-api-cache:';
 
 const dep = (key: string) => `app:cache:${key}` as const;
 
+/** Re-run the mounted loads depending on `key` — once no navigation is pending, since SvelteKit
+ *  drops a navigation that an `invalidate()` overtakes (see `navigationSettled`). */
+function rerunDependentLoads(key: string): void {
+	void navigationSettled().then(() => rerunLoads(dep(key)));
+}
+
 /** Serialized-form change detection; our values are JSON-shaped
  *  (Dates serialize stably to ISO strings). */
 function changed(a: unknown, b: unknown): boolean {
@@ -36,7 +43,7 @@ function revalidate<T>(key: string, entry: CacheEntry, fetcher: () => Promise<T>
 			const wasChanged = changed(entry.value, fresh);
 			entry.value = fresh;
 			entry.fetchedAt = Date.now();
-			if (wasChanged && browser) void rerunLoads(dep(key));
+			if (wasChanged && browser) rerunDependentLoads(key);
 			return fresh;
 		})
 		.catch((err: unknown) => {
@@ -159,7 +166,7 @@ export function invalidate(...keys: string[]): void {
 	for (const key of keys) {
 		const entry = store.get(key);
 		if (entry) entry.fetchedAt = 0;
-		if (browser) void rerunLoads(dep(key));
+		if (browser) rerunDependentLoads(key);
 	}
 }
 
