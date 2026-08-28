@@ -1,4 +1,3 @@
-import { Capacitor } from '@capacitor/core';
 import { receiptBlob } from '$lib/api/tickets';
 import { receipt } from '$lib/plugins/receipt';
 
@@ -14,18 +13,8 @@ function base64Encode(bytes: Uint8Array): string {
 export async function downloadReceipt(ticketId: string): Promise<void> {
 	const blob = await receiptBlob(ticketId);
 	const filename = `receipt-${ticketId.slice(0, 8)}.pdf`;
-	if (Capacitor.getPlatform() === 'android') {
-		await receipt.open({
-			data: base64Encode(new Uint8Array(await blob.arrayBuffer())),
-			filename
-		});
-		return;
-	}
-
-	const url = URL.createObjectURL(blob);
-	const anchor = document.createElement('a');
-	anchor.href = url;
-	anchor.download = filename;
-	anchor.click();
-	setTimeout(() => URL.revokeObjectURL(url), 30_000);
+	await receipt.open({
+		data: base64Encode(new Uint8Array(await blob.arrayBuffer())),
+		filename
+	});
 }
