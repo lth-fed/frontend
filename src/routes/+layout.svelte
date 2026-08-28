@@ -11,7 +11,6 @@
 	import Landing from '$lib/components/Landing.svelte';
 	import SigningInFallback from '$lib/components/SigningInFallback.svelte';
 	import './layout.css';
-	import favicon from '$lib/assets/favicon.svg';
 	import { afterNavigate, beforeNavigate, onNavigate } from '$app/navigation';
 	import { App } from '@capacitor/app';
 	import { onMount } from 'svelte';
@@ -176,7 +175,6 @@
 	});
 </script>
 
-<svelte:head><link rel="icon" href={favicon} /></svelte:head>
 {#if page.route.id === '/auth/callback'}
 	{@render children()}
 {:else if !session.accessToken}

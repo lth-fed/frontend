@@ -82,10 +82,19 @@ a {
 }
 
 .wordmark {
+	display: flex;
+	align-items: center;
+	gap: 11px;
 	font-size: 1.1rem;
 	font-weight: 800;
 	letter-spacing: -0.035em;
 	text-decoration: none;
+}
+
+.wordmark img {
+	width: 46px;
+	height: 46px;
+	object-fit: contain;
 }
 
 .site-header nav {
@@ -623,6 +632,11 @@ h1 {
 	.header-inner {
 		height: 68px;
 		gap: 12px;
+	}
+
+	.wordmark img {
+		width: 40px;
+		height: 40px;
 	}
 
 	.site-header nav {
