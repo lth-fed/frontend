@@ -24,5 +24,5 @@ export CONTAINER_REGISTRY=registry.esek.se/esek
 export CONTAINER_TAG=${version:-production}
 
 podman login registry.esek.se
-podman compose build
-podman compose push fed-frontend fed-auth-frontend fed-public
+podman compose -f ./compose.prod.yaml build
+podman compose -f ./compose.prod.yaml push fed-frontend fed-auth-frontend fed-public
