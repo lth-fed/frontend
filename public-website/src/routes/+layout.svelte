@@ -21,7 +21,10 @@
 <header class="site-header">
 	<div class="header-inner">
 		<!-- eslint-disable svelte/no-navigation-without-resolve -- same-page sections on the root route -->
-		<a class="wordmark" href={`${resolve('/')}#top`} aria-label="Teknologappen">Teknologappen</a>
+		<a class="wordmark" href={`${resolve('/')}#top`} aria-label="Teknologappen">
+			<img src="/favicon.svg" alt="" />
+			<span>Teknologappen</span>
+		</a>
 		<nav aria-label="Primary navigation">
 			<!-- eslint-disable svelte/no-navigation-without-resolve -- same-page sections on the root route -->
 			<a href={`${resolve('/')}#about`}>{m.nav_about()}</a>
