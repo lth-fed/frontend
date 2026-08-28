@@ -26,13 +26,14 @@ import { startPushRegistrationRefresh } from '$lib/api/push';
 const AUTH_PROVIDER = dev ? ('test' as const) : ('lu' as const);
 const AUTH_ORIGIN = dev ? 'http://localhost:8001' : 'https://api.auth.teknologappen.se';
 const NATIVE_CONTINUE = 'tappen://oauth_callback';
-/** URL fed-auth POSTs the signed JWT to so the backend can upsert the
- *  user record during the token exchange. Both dev localhost pairs and
- *  the prod domain are in fed-auth's allowlist. Server-to-server,
- *  never reaches the browser as a navigation. */
-const BACKEND_CALLBACK_V1 = dev
-	? 'http://localhost:8000/v0/user/auth-callback/v1'
-	: 'https://api.teknologappen.se/v0/user/auth-callback/v1';
+/** URL fed-auth POSTs the signed JWT to during the token exchange. fed-auth
+ *  translates the localhost development URL to the Compose service name when
+ *  it starts with DEBUG=1. */
+const BACKEND_CALLBACK_V1 =
+	import.meta.env.VITE_BACKEND_CALLBACK_URL ??
+	(dev
+		? 'http://localhost:8000/v0/user/auth-callback/v1'
+		: 'https://api.teknologappen.se/v0/user/auth-callback/v1');
 
 configureAuth({ origin: AUTH_ORIGIN });
 
