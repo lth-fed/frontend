@@ -110,7 +110,7 @@
 				<article class="legal-card compact-card">
 					<h3>{m.payment_title()}</h3>
 					<p>{m.swish_number()}</p>
-					<strong class="detail-value">1234207205</strong>
+					<strong class="detail-value">1234994018</strong>
 				</article>
 
 				<article class="legal-card compact-card">

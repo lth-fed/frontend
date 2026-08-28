@@ -138,7 +138,7 @@
 					</h3>
 					<p class="text-sm leading-relaxed text-guild-on-surface/70">
 						{m.about_contact_description()}
-						<a class="font-medium text-guild-primary" href="mailto:info@esek.se">info@esek.se</a>.
+						<a class="font-medium text-guild-accent" href="mailto:info@esek.se">info@esek.se</a>.
 					</p>
 				</article>
 			</div>
