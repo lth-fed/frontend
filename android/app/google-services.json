@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "157891143724",
+    "project_id": "teknologappen",
+    "storage_bucket": "teknologappen.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:157891143724:android:eb04422e00b4aefb62c989",
+        "android_client_info": {
+          "package_name": "se.teknologappen.tappen"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCSfyWdwf-35BGtN8cBbilCEKAeOttNLX4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
