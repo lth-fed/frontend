@@ -11,13 +11,15 @@ pnpm dev
 
 Run the auth frontend from its directory with `pnpm --dir auth dev`.
 
+Run the backend using `podman compose up`.
+
 ## Build and push production images
 
 Run `./build-push.sh`.
 
 ## Deploy pushed images
 
-The deployment host only needs `compose.yaml` and an untracked `.env`:
+The deployment host only needs `compose.prod.yaml` and an untracked `.env`:
 
 ```dotenv
 CONTAINER_REGISTRY=registry.esek.se/esek
