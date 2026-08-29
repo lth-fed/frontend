@@ -1,4 +1,4 @@
-import { invalidate, invalidatePrefix } from '$lib/api/cache';
+import { evict, evictPrefix, invalidatePrefix } from '$lib/api/cache';
 import { parseDate } from '$lib/api/mappings';
 import { serverNow } from '$lib/api/serverClock';
 import {
@@ -140,6 +140,17 @@ function toIdle(): void {
 	purchase.flow = { state: 'idle' };
 }
 
+function completePurchase(kind: FlowKind): void {
+	// Home must cold-load the just-purchased ticket. Serving the stale persistent
+	// ticket list here also scheduled a SvelteKit invalidation which could cancel
+	// the simultaneous navigation away from the purchase page.
+	evict('tickets', 'purchased-tickets');
+	evictPrefix('kinds:');
+	clearTimers();
+	clearPersisted();
+	purchase.flow = { state: 'purchased', kind };
+}
+
 /**
  * Enter the queue for a kind (the ONE `PUT` of the attempt). Returns an
  * inline-displayable error message, or `undefined` on success.
@@ -246,11 +257,7 @@ export async function resync(kind?: FlowKind): Promise<void> {
 				return;
 			}
 			if (tickets.some((ticket) => ticket.ticketKindId === activeKind.ticketKindId)) {
-				invalidate('tickets', 'purchased-tickets');
-				invalidatePrefix('kinds:');
-				clearTimers();
-				clearPersisted();
-				purchase.flow = { state: 'purchased', kind: activeKind };
+				completePurchase(activeKind);
 			} else if (serverNow().getTime() > flow.timeout.getTime() + PAYMENT_CONFIRMATION_GRACE_MS) {
 				clearTimers();
 				clearPersisted();
@@ -277,11 +284,7 @@ export async function resync(kind?: FlowKind): Promise<void> {
 			return;
 		}
 		if (tickets.some((t) => t.ticketKindId === activeKind.ticketKindId)) {
-			invalidate('tickets', 'purchased-tickets');
-			invalidatePrefix('kinds:');
-			clearTimers();
-			clearPersisted();
-			purchase.flow = { state: 'purchased', kind: activeKind };
+			completePurchase(activeKind);
 		} else if (flow.state === 'reserved' && serverNow() >= flow.timeout) {
 			clearTimers();
 			clearPersisted();

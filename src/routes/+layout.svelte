@@ -7,14 +7,15 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { session } from '$lib/state/session.svelte';
 	import { bootstrapAuth } from '$lib/auth/bootstrap';
-	import { readNavigationIntent } from '$lib/navigation/stackNavigation';
+	import { readNavigationIntent, replaceNavigation } from '$lib/navigation/stackNavigation';
+	import Routes from '$lib/navigation/routes';
 	import Landing from '$lib/components/Landing.svelte';
 	import SigningInFallback from '$lib/components/SigningInFallback.svelte';
 	import './layout.css';
 	import { afterNavigate, beforeNavigate, onNavigate } from '$app/navigation';
 	import { App } from '@capacitor/app';
 	import { onMount } from 'svelte';
-	import { invalidate as invalidateCache } from '$lib/api/cache';
+	import { evict, invalidate as invalidateCache } from '$lib/api/cache';
 	import {
 		onResume as onPurchaseResume,
 		restore as restorePurchase
@@ -25,6 +26,7 @@
 	import { SplashScreen } from '@capacitor/splash-screen';
 
 	let { children } = $props();
+	let notificationNavigationPending = $state(false);
 
 	// The native launch screen (see `capacitor.config.ts`, `launchAutoHide: false`) stays up
 	// through auth bootstrap so the branded splash bridges straight into the app instead of a
@@ -67,9 +69,17 @@
 				.finally(onPurchaseResume);
 			if (!session.accessToken && (!bootstrapped || bootstrapFailed)) void runAuthBootstrap();
 		});
+		const notificationListener = Capacitor.isNativePlatform()
+			? import('@capacitor/push-notifications').then(({ PushNotifications }) =>
+					PushNotifications.addListener('pushNotificationActionPerformed', () => {
+						notificationNavigationPending = true;
+					})
+				)
+			: undefined;
 		return () => {
 			stopMonitoringNetwork();
 			void listener.then((handle) => handle.remove());
+			void notificationListener?.then((handle) => handle.remove());
 		};
 	});
 
@@ -141,6 +151,13 @@
 		const els = [document.documentElement, document.body];
 		if (g) els.forEach((el) => (el.dataset.guild = g));
 		else els.forEach((el) => delete el.dataset.guild);
+	});
+
+	$effect(() => {
+		if (!notificationNavigationPending || !bootstrapped || !session.accessToken) return;
+		notificationNavigationPending = false;
+		evict('notification-history');
+		void replaceNavigation(Routes.Notifications, { resetDepth: true });
 	});
 
 	onNavigate((navigation) => {
