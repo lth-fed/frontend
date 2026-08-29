@@ -12,6 +12,9 @@
 		{ name: 'Simon Mechler', guild: 'D' },
 		{ name: 'Felix Hellborg', guild: 'F' }
 	];
+	const thanksTo: { name: string; message: string }[] = [
+		{ name: 'Ruth Palm', message: m.about_thanks_ruth() }
+	];
 
 	const initials = (name: string) =>
 		name
@@ -48,6 +51,27 @@
 					</span>
 					<span class="text-sm text-guild-on-surface/60">
 						{m.about_maintainer_role({ guild: maintainer.guild })}
+					</span>
+				</li>
+			{/each}
+		</ul>
+	</section>
+	<section class="flex flex-col gap-3">
+		<h2 class="text-lg font-semibold text-guild-on-surface">{m.about_thanks()}</h2>
+		<ul class="flex flex-col gap-2">
+			{#each thanksTo as person (person.name)}
+				<li
+					class="flex items-center gap-4 rounded-3xl border border-gray-100 bg-white p-4 shadow-[0_4px_10px_color-mix(in_srgb,rgb(0_0_0)_6%,transparent)]">
+					<div
+						class="flex size-8 shrink-0 items-center justify-center rounded-full bg-guild-primary text-xs font-semibold text-guild-on-primary"
+						aria-hidden="true">
+						{initials(person.name)}
+					</div>
+					<span class="flex-1 text-[16px] font-medium text-guild-on-surface">
+						{person.name}
+					</span>
+					<span class="text-sm text-guild-on-surface/60">
+						{person.message}
 					</span>
 				</li>
 			{/each}
