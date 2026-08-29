@@ -161,13 +161,14 @@
 	});
 
 	onNavigate((navigation) => {
-		// WKWebView supplies the native interactive back gesture. Avoid keeping a
-		// WebKit view-transition snapshot above the live page on iOS.
-		if (Capacitor.getPlatform() === 'ios') return;
 		if (!document.startViewTransition) return;
 		if (!navigation.from || !navigation.to) return;
 
 		const direction = navigation.type === 'popstate' ? 'back' : readNavigationIntent();
+		// WKWebView supplies the native interactive back gesture. Avoid layering an
+		// authored back-transition snapshot over it, while retaining forward/root
+		// transitions for navigation initiated inside the app.
+		if (Capacitor.getPlatform() === 'ios' && direction === 'back') return;
 		const { documentElement } = document;
 
 		return new Promise((resolve) => {
