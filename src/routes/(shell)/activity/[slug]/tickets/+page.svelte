@@ -52,9 +52,7 @@
 	$effect(() => {
 		if (flow.state === 'purchased') {
 			acknowledge();
-			// for some reason pushing this navigation away from the moment everything is processed makes it work
-			// otherwise we don't get navigated back to home
-			setTimeout(() => replaceNavigation(Routes.Home, { resetDepth: true }), 0);
+			void replaceNavigation(Routes.Home, { resetDepth: true });
 		}
 	});
 

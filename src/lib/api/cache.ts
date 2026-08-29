@@ -176,6 +176,26 @@ export function invalidatePrefix(prefix: string): void {
 	invalidate(...[...store.keys()].filter((key) => key.startsWith(prefix)));
 }
 
+/** Remove mutation-invalidated values instead of serving them stale. This is
+ * used when the next page must observe the mutation immediately (for example,
+ * navigating home after purchasing a ticket). It deliberately does not rerun
+ * mounted loads, so it cannot race the navigation triggered by that mutation. */
+export function evict(...keys: string[]): void {
+	for (const key of keys) {
+		store.delete(key);
+		if (!browser) continue;
+		try {
+			localStorage.removeItem(`${PERSISTENT_PREFIX}${key}`);
+		} catch {
+			/* Storage is unavailable; the memory cache is still evicted. */
+		}
+	}
+}
+
+export function evictPrefix(prefix: string): void {
+	evict(...[...store.keys()].filter((key) => key.startsWith(prefix)));
+}
+
 /** Drop everything — called on logout so no data crosses sessions. */
 export function clearCache(): void {
 	store.clear();
