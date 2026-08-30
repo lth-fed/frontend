@@ -75,6 +75,11 @@ final class NativeButtonOverlay: UIViewController, ScrollEdgeElementContainer {
         super.viewDidLoad()
 
         view.backgroundColor = .clear
+        // This controller covers the entire WebView so the button can be positioned against the
+        // safe area. A transparent view that remains marked opaque may be composited as black on
+        // some iOS/WebKit versions, hiding the activity page below it.
+        view.isOpaque = false
+        view.layer.isOpaque = false
         // Start hidden so first configure can layout off-screen without a morph.
         view.isHidden = true
 
@@ -216,7 +221,10 @@ final class NativeButtonOverlay: UIViewController, ScrollEdgeElementContainer {
 
     /// Attaches the scroll-edge effect using the host app's view hierarchy.
     func updateScrollEdgeEffect(enabled: Bool, in hostView: UIView?) {
-        guard enabled else { return }
+        guard enabled, !UIAccessibility.isReduceTransparencyEnabled else {
+            detachScrollEdgeInteraction()
+            return
+        }
         guard let hostView else { return }
 
         // Use configured edge for the scroll-edge effect
@@ -327,4 +335,3 @@ final class NativeButtonOverlay: UIViewController, ScrollEdgeElementContainer {
         onTap?(currentButtonId)
     }
 }
-
