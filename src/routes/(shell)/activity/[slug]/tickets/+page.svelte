@@ -9,6 +9,7 @@
 	import {
 		acknowledge,
 		cancel,
+		choosePaymentAgain,
 		configurePurchase,
 		joinQueue,
 		pay,
@@ -34,11 +35,16 @@
 	// Gating states are time-derived; tick so cards flip live when a
 	// release window opens or sales close while the page is visible.
 	let now = $state(serverNow());
+	let pageVisible = $state(false);
 	onMount(() => {
 		const tick = setInterval(() => (now = serverNow()), 1_000);
+		const updateVisibility = () => (pageVisible = !document.hidden);
+		updateVisibility();
+		document.addEventListener('visibilitychange', updateVisibility);
 		setAttached(true);
 		return () => {
 			clearInterval(tick);
+			document.removeEventListener('visibilitychange', updateVisibility);
 			setAttached(false);
 		};
 	});
@@ -177,6 +183,14 @@
 	let promptedAddonKindId = $state<string | undefined>(undefined);
 	let cancelling = $state(false);
 	let cancelError = $state<string | undefined>(undefined);
+	let showPayAgain = $state(false);
+
+	$effect(() => {
+		showPayAgain = false;
+		if (flow.state !== 'paying' || !pageVisible) return;
+		const timer = window.setTimeout(() => (showPayAgain = true), 3_000);
+		return () => window.clearTimeout(timer);
+	});
 
 	async function handleCancel() {
 		if (cancelling) return;
@@ -218,7 +232,6 @@
 	}
 
 	async function confirmPay(provider: 'swish' | 'stripe') {
-		confirmingPay = false;
 		payError = undefined;
 		if (flow.state !== 'reserved') return;
 		const { error } = await pay(paidGatewayFor(provider));
@@ -296,6 +309,12 @@
 				{/if}
 			{:else if flow.state === 'paying'}
 				<p class="text-sm text-guild-on-surface/80">{m.pill_paying()}</p>
+				{#if showPayAgain}<button
+						type="button"
+						onclick={choosePaymentAgain}
+						class="w-full rounded-full border border-guild-ring px-5 py-3 text-sm font-semibold text-guild-on-surface">
+						{m.payment_choose_again()}
+					</button>{/if}
 			{:else if flow.state === 'delayed'}
 				<p class="text-sm text-guild-on-surface/80">{m.queue_delayed()}</p>
 				<button
@@ -310,23 +329,25 @@
 				<p class="text-sm text-red-700">{flow.message ?? m.queue_failed()}</p>
 			{/if}
 
+			{#if cancelError}
+				<p class="text-sm text-red-700" role="alert">{cancelError}</p>
+			{/if}
+
 			{#if flow.state === 'expired' || flow.state === 'failed'}
 				<button
 					type="button"
-					onclick={acknowledge}
+					onclick={handleCancel}
+					disabled={cancelling}
 					class="w-full rounded-full border border-guild-ring px-5 py-3 text-sm font-semibold text-guild-on-surface">
-					{m.queue_dismiss()}
+					{cancelling ? m.queue_cancelling() : m.queue_leave()}
 				</button>
 			{:else if flow.state !== 'paying'}
-				{#if cancelError}
-					<p class="text-sm text-red-700" role="alert">{cancelError}</p>
-				{/if}
 				<button
 					type="button"
 					onclick={handleCancel}
 					disabled={cancelling}
 					class="w-full rounded-full border border-red-200 px-5 py-3 text-sm font-semibold text-red-700">
-					{cancelling ? m.queue_cancelling() : m.queue_cancel()}
+					{cancelling ? m.queue_cancelling() : m.queue_leave()}
 				</button>
 			{/if}
 		</div>
@@ -348,7 +369,7 @@
 </div>
 
 {#if confirmingPay && flow.state === 'reserved' && flow.paymentRequired}
-	<!-- Payment confirmation (krav §6). Backdrop button / Cancel dismisses. -->
+	<!-- The chooser may be dismissed without affecting the underlying reservation. -->
 	<div class="fixed inset-0 z-50 grid place-items-end justify-center sm:place-items-center">
 		<button
 			type="button"
@@ -368,6 +389,9 @@
 				</p>
 			{/if}
 			<div class="mt-5 flex flex-col gap-2">
+				{#if payError}
+					<p class="text-sm text-red-700" role="alert">{payError}</p>
+				{/if}
 				{#if data.ticketKinds.find((kind) => kind.id === flow.kind.ticketKindId)?.addons.length}
 					<button
 						type="button"

@@ -55,8 +55,14 @@ export type PurchaseFlow =
 			paymentRequired?: boolean;
 	  }
 	/** Payment in flight (step 5 — gateway lands here). */
-	| { state: 'paying'; kind: FlowKind; timeout: Date }
-	/** Terminal-ish states; `acknowledge()` returns to idle. */
+	| {
+			state: 'paying';
+			kind: FlowKind;
+			timeout: Date;
+			latestTransaction: Date;
+			paymentRequired?: boolean;
+	  }
+	/** Terminal states remain visible until the backend flow is explicitly cleared. */
 	| { state: 'purchased'; kind: FlowKind }
 	| { state: 'expired'; kind: FlowKind }
 	| { state: 'delayed'; kind: FlowKind }
@@ -94,7 +100,12 @@ function clearTimers(): void {
 function persist(
 	kind: FlowKind,
 	releaseAt?: Date,
-	payment?: { submitted: true; timeout: Date }
+	payment?: {
+		submitted: true;
+		timeout: Date;
+		latestTransaction: Date;
+		paymentRequired?: boolean;
+	}
 ): void {
 	try {
 		localStorage.setItem(
@@ -103,7 +114,9 @@ function persist(
 				...kind,
 				releaseAt,
 				paymentSubmitted: payment?.submitted,
-				paymentTimeout: payment?.timeout
+				paymentTimeout: payment?.timeout,
+				paymentLatestTransaction: payment?.latestTransaction,
+				paymentRequired: payment?.paymentRequired
 			})
 		);
 	} catch {
@@ -115,6 +128,8 @@ type PersistedFlow = FlowKind & {
 	releaseAt?: string;
 	paymentSubmitted?: boolean;
 	paymentTimeout?: string;
+	paymentLatestTransaction?: string;
+	paymentRequired?: boolean;
 };
 
 function readPersisted(): PersistedFlow | undefined {
@@ -362,11 +377,17 @@ export async function pay(gateway: PaymentGateway): Promise<{ error?: string }> 
 	const flow = purchase.flow;
 	if (flow.state !== 'reserved') return {};
 	const { kind, timeout, latestTransaction, paymentRequired } = flow;
-	purchase.flow = { state: 'paying', kind, timeout };
-	persist(kind, undefined, { submitted: true, timeout });
+	purchase.flow = { state: 'paying', kind, timeout, latestTransaction, paymentRequired };
+	persist(kind, undefined, { submitted: true, timeout, latestTransaction, paymentRequired });
 
 	let outcome = await gateway.pay({ ticketKindId: kind.ticketKindId, addons: kind.addons });
 	while (outcome.kind === 'busy') {
+		if (purchase.flow.state !== 'paying' || purchase.flow.kind.ticketKindId !== kind.ticketKindId) {
+			return {};
+		}
+		// A 403 can mean that the previous transaction could not be cancelled because
+		// payment won the race. Re-read server state before attempting another payment.
+		await resync(kind);
 		if (purchase.flow.state !== 'paying' || purchase.flow.kind.ticketKindId !== kind.ticketKindId) {
 			return {};
 		}
@@ -395,11 +416,11 @@ export async function pay(gateway: PaymentGateway): Promise<{ error?: string }> 
 		purchase.flow = { state: 'reserved', kind, timeout, latestTransaction, paymentRequired };
 		return { error: outcome.message };
 	}
-	// Permanent business-rule errors cannot succeed on retry.
-	clearTimers();
-	clearPersisted();
-	purchase.flow = { state: 'failed', kind, message: outcome.message };
-	return {};
+	// Even a business-rule error does not prove that the reservation disappeared.
+	// Keep the flow visible until purchase succeeds or DELETE /queue is attempted.
+	persist(kind);
+	purchase.flow = { state: 'reserved', kind, timeout, latestTransaction, paymentRequired };
+	return { error: outcome.message };
 }
 
 /** Attach add-on choices only after capacity has been reserved, immediately before payment. */
@@ -412,6 +433,23 @@ export function configurePurchase(
 	const kind = { ...flow.kind, addons, requiresPayment };
 	persist(kind);
 	purchase.flow = { ...flow, kind, paymentRequired: requiresPayment };
+}
+
+/** Return from an externally submitted payment to the provider/add-on choice.
+ * The next `POST /reservation/buy` replaces the previous transaction server-side. */
+export function choosePaymentAgain(): void {
+	const flow = purchase.flow;
+	if (flow.state !== 'paying') return;
+	if (pollTimer) clearTimeout(pollTimer);
+	pollTimer = undefined;
+	persist(flow.kind);
+	purchase.flow = {
+		state: 'reserved',
+		kind: flow.kind,
+		timeout: flow.timeout,
+		latestTransaction: flow.latestTransaction,
+		paymentRequired: flow.paymentRequired
+	};
 }
 
 /** Rebuild state after an app reload (called post-auth from the root
@@ -432,7 +470,11 @@ export async function restore(): Promise<void> {
 			purchase.flow = {
 				state: 'paying',
 				kind: persisted,
-				timeout: parseDate(persisted.paymentTimeout)
+				timeout: parseDate(persisted.paymentTimeout),
+				latestTransaction: persisted.paymentLatestTransaction
+					? parseDate(persisted.paymentLatestTransaction)
+					: parseDate(persisted.paymentTimeout),
+				paymentRequired: persisted.paymentRequired ?? persisted.requiresPayment
 			};
 			schedulePoll(persisted, 0);
 			return;
@@ -463,7 +505,9 @@ export async function restore(): Promise<void> {
 		purchase.flow = {
 			state: 'paying',
 			kind,
-			timeout: status.status.timeout
+			timeout: status.status.timeout,
+			latestTransaction: status.status.latestTransaction ?? status.status.timeout,
+			paymentRequired: persistedForKind.paymentRequired ?? kind.requiresPayment
 		};
 		schedulePoll(kind, PAYING_POLL_MS);
 		return;
@@ -511,36 +555,18 @@ export function setAttached(value: boolean): void {
 	}
 }
 
-/** Cancel the active queue or reservation on the server before clearing local state. */
+/** Cancel the active server-side flow before clearing local state. */
 export async function cancel(): Promise<void> {
 	const flow = purchase.flow;
-	switch (flow.state) {
-		case 'release-queued':
-		case 'resolving':
-		case 'reservation-queued':
-		case 'delayed':
-			await leaveQueue();
-			break;
-		case 'reserved':
-			await leaveQueue();
-			invalidatePrefix('kinds:');
-			break;
-		default:
-			break;
-	}
+	if (flow.state === 'idle' || flow.state === 'purchased') return;
+	await leaveQueue();
+	if (flow.state === 'reserved' || flow.state === 'paying') invalidatePrefix('kinds:');
 	toIdle();
 }
 
-/** Leave a terminal state (purchased/expired/delayed/failed) → idle. */
+/** A confirmed purchase is the only state that may be cleared without DELETE /queue. */
 export function acknowledge(): void {
-	if (
-		purchase.flow.state === 'purchased' ||
-		purchase.flow.state === 'expired' ||
-		purchase.flow.state === 'delayed' ||
-		purchase.flow.state === 'failed'
-	) {
-		toIdle();
-	}
+	if (purchase.flow.state === 'purchased') toIdle();
 }
 
 /** App came back to the foreground — one immediate resync (spec §4.2). */
