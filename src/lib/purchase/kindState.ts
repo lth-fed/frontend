@@ -22,7 +22,9 @@ export type KindState =
 	| { state: 'open'; ticketsLeft?: number };
 
 export function deriveKindState(kind: TicketKind, now: Date): KindState {
-	if (now >= kind.purchasingAvailableStop) return { state: 'closed' };
+	if (now >= kind.purchasingAvailableStop) {
+		return kind.ticketsLeft === 0 ? { state: 'sold-out' } : { state: 'closed' };
+	}
 	if (now < kind.purchasingAvailableStart) {
 		const untilRelease = kind.purchasingAvailableStart.getTime() - now.getTime();
 		return untilRelease <= ENTRY_WINDOW_MS

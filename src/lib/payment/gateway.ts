@@ -31,8 +31,8 @@ export type PaymentOutcome =
 	/**
 	 * Could not complete. `retriable` = transient (5xx/network) → the
 	 * reservation stands, retry within the window (krav §6). Non-retriable
-	 * = a business rule (already own a ticket, not allowed) that will never
-	 * succeed → the machine releases the doomed reservation.
+	 * = a business rule (already own a ticket, not allowed); the machine still
+	 * keeps the reservation visible until the user explicitly releases it.
 	 */
 	| { kind: 'failed'; message?: string; retriable: boolean };
 
