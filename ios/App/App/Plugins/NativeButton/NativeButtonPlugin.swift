@@ -81,12 +81,16 @@ public class NativeButtonPlugin: CAPPlugin {
 
         switch value {
         case "prominentglass":
-            if #available(iOS 26.0, *) {
+            if #available(iOS 26.0, *),
+                !UIAccessibility.isReduceTransparencyEnabled
+            {
                 return UIButton.Configuration.prominentGlass()
             }
             return UIButton.Configuration.borderedProminent()
         case "prominentclearglass":
-            if #available(iOS 26.0, *) {
+            if #available(iOS 26.0, *),
+                !UIAccessibility.isReduceTransparencyEnabled
+            {
                 return UIButton.Configuration.prominentClearGlass()
             }
             return UIButton.Configuration.borderedProminent()

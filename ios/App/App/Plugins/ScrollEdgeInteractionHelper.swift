@@ -18,10 +18,27 @@ protocol ScrollEdgeElementContainer: UIViewController {
 }
 
 extension ScrollEdgeElementContainer {
+    /// Removes the interaction when the element no longer uses a scroll-edge effect. In
+    /// particular, Reduce Transparency can turn the material attached to this full-screen
+    /// container into an opaque accessibility fallback.
+    func detachScrollEdgeInteraction() {
+        if #available(iOS 26.0, *),
+            let interaction = scrollEdgeInteraction
+                as? UIScrollEdgeElementContainerInteraction
+        {
+            view.removeInteraction(interaction)
+        }
+        scrollEdgeInteraction = nil
+    }
+
     /// Attach a UIScrollEdgeElementContainerInteraction to this view.
     /// Deduplicated – repeated `configure` calls (e.g. `tick()` reconfigure)
     /// must not stack interactions or re-animate `edgeEffect`.
     func attachScrollEdgeInteraction(to scrollView: UIScrollView?) {
+        guard !UIAccessibility.isReduceTransparencyEnabled else {
+            detachScrollEdgeInteraction()
+            return
+        }
         guard let scrollView = scrollView else { return }
 
         if #available(iOS 26.0, *) {
