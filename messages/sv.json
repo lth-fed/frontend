@@ -95,7 +95,7 @@
 	"queue_resolving": "Lottar platser…",
 	"queue_placement": "I kö — {placement} före dig",
 	"queue_pay_within": "{time} kvar att betala",
-	"queue_pay_cta": "Betala",
+	"queue_pay_cta": "Skaffa",
 	"queue_pay_too_late": "För kort tid kvar för att betala tryggt — låt reservationen gå ut och försök igen.",
 	"pay_confirm_title": "Slutför köp",
 	"pay_confirm_body": "Välj hur du vill betala.",

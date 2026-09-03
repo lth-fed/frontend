@@ -107,7 +107,7 @@
 	"queue_resolving": "Drawing spots…",
 	"queue_placement": "In queue — {placement} ahead of you",
 	"queue_pay_within": "{time} left to pay",
-	"queue_pay_cta": "Pay",
+	"queue_pay_cta": "Proceed",
 	"queue_pay_too_late": "Too little time left to pay safely — let the reservation lapse and try again.",
 	"pay_confirm_title": "Complete purchase",
 	"pay_confirm_body": "Choose how you want to pay.",
