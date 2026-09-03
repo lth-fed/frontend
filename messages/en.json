@@ -65,6 +65,9 @@
 	"modal_close_label": "Close",
 
 	"home_my_tickets": "My Tickets",
+	"android_app_card_title": "Tappen is available for Android",
+	"android_app_card_description": "Download the app from Google Play for the best experience.",
+	"android_app_card_cta": "Download on Google Play",
 	"home_tickets_count": "{count} Tickets",
 	"home_download_receipt": "Download receipt",
 	"settings_purchased_tickets": "Purchased tickets",
