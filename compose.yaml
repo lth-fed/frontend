@@ -26,6 +26,7 @@ services:
 
   fed-auth:
     image: esekmacapar/fed-auth:latest
+    platform: linux/amd64
     restart: unless-stopped
     ports:
       - '8001:8001'
@@ -42,6 +43,7 @@ services:
 
   transactions:
     image: esekmacapar/transactions:latest
+    platform: linux/amd64
     restart: unless-stopped
     ports:
       - '8002:8002'
@@ -76,6 +78,7 @@ services:
 
   minilith:
     image: esekmacapar/minilith:latest
+    platform: linux/amd64
     restart: unless-stopped
     ports:
       - '8000:8000'
@@ -98,6 +101,7 @@ services:
 
   minilith-seed:
     image: esekmacapar/minilith:latest
+    platform: linux/amd64
     restart: 'no'
     environment:
       DEBUG: 1
