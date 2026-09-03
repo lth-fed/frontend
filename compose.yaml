@@ -9,6 +9,10 @@ services:
   fed-postgres:
     restart: unless-stopped
     image: 'postgres:18'
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: fed
     volumes:
       - postgres-storage:/var/lib/postgres
     healthcheck:
