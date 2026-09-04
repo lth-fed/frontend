@@ -6,11 +6,14 @@
 	// The most involved contributors, per docs/agreements/maintainers.md.
 	// Update alongside that document when the maintainer list changes.
 	const maintainers: { name: string; guild: string }[] = [
-		{ name: 'Felix Hellborg', guild: 'F' },
-		{ name: 'Åke Amcoff', guild: 'F' },
 		{ name: 'Erik Davidsson', guild: 'E' },
+		{ name: 'Åke Amcoff', guild: 'F' },
 		{ name: 'Axel Andersson', guild: 'E' },
-		{ name: 'Simon Mechler', guild: 'D' }
+		{ name: 'Simon Mechler', guild: 'D' },
+		{ name: 'Felix Hellborg', guild: 'F' }
+	];
+	const thanksTo: { name: string; message: string }[] = [
+		{ name: 'Ruth Palm', message: m.about_thanks_ruth() }
 	];
 
 	const initials = (name: string) =>
@@ -53,11 +56,35 @@
 			{/each}
 		</ul>
 	</section>
+	<section class="flex flex-col gap-3">
+		<h2 class="text-lg font-semibold text-guild-on-surface">{m.about_thanks()}</h2>
+		<ul class="flex flex-col gap-2">
+			{#each thanksTo as person (person.name)}
+				<li
+					class="flex items-center gap-4 rounded-3xl border border-gray-100 bg-white p-4 shadow-[0_4px_10px_color-mix(in_srgb,rgb(0_0_0)_6%,transparent)]">
+					<div
+						class="flex size-8 shrink-0 items-center justify-center rounded-full bg-guild-primary text-xs font-semibold text-guild-on-primary"
+						aria-hidden="true">
+						{initials(person.name)}
+					</div>
+					<span class="flex-1 text-[16px] font-medium text-guild-on-surface">
+						{person.name}
+					</span>
+					<span class="text-sm text-guild-on-surface/60">
+						{person.message}
+					</span>
+				</li>
+			{/each}
+		</ul>
+	</section>
 
 	<section class="flex flex-col gap-3">
 		<h2 class="text-lg font-semibold text-guild-on-surface">{m.about_source_title()}</h2>
 		<p class="text-[15px] leading-relaxed text-guild-on-surface/80">
 			{m.about_source_description()}
+		</p>
+		<p class="text-sm text-guild-on-surface/60">
+			{m.about_version()}: <code>{__GIT_REVISION__}</code>
 		</p>
 		<a
 			href="https://github.com/lth-fed"
@@ -88,7 +115,7 @@
 				href="https://lagen.nu/2005:59#K2R11"
 				target="_blank"
 				rel="noopener noreferrer"
-				class="flex items-center gap-2 font-medium text-guild-primary">
+				class="flex items-center gap-2 font-semibold text-guild-accent underline decoration-current underline-offset-2">
 				{m.about_withdrawal_law_link()}
 				<ExternalLink class="size-4" aria-hidden="true" />
 			</a>
@@ -121,7 +148,7 @@
 						{m.about_payment_title()}
 					</h3>
 					<p class="text-sm text-guild-on-surface/70">
-						{m.about_swish_number()}: <strong>1234207205</strong>
+						{m.about_swish_number()}: <strong>1234994018</strong>
 					</p>
 					<p class="mt-2 text-sm leading-relaxed text-guild-on-surface/70">
 						{m.about_vat_description()}
@@ -135,7 +162,7 @@
 					</h3>
 					<p class="text-sm leading-relaxed text-guild-on-surface/70">
 						{m.about_contact_description()}
-						<a class="font-medium text-guild-primary" href="mailto:info@esek.se">info@esek.se</a>.
+						<a class="font-medium text-guild-accent" href="mailto:info@esek.se">info@esek.se</a>.
 					</p>
 				</article>
 			</div>

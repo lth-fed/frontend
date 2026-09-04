@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Ticket as TicketIcon, QrCode } from '@lucide/svelte';
-	import { ArrowLeftRight, Wallet, Receipt, PartyPopper } from '@lucide/svelte';
+	import { ArrowLeftRight, Receipt, PartyPopper } from '@lucide/svelte';
 	import { onDestroy, onMount } from 'svelte';
 	import TicketDetail from './TicketDetail.svelte';
 	import ToolBar from './ToolBar.svelte';
@@ -9,10 +9,14 @@
 	import { navigationBar } from '$lib/plugins/navigationBar/navigationBar';
 	import { isIos26Plus } from '$lib/platform/isIos26Plus';
 	import { m } from '$lib/paraglide/messages.js';
+	import { locale } from '$lib/state/locale.svelte';
 	import { formatCardDate, formatTimeRange } from '$lib/format/datetime';
 	import type { ToolBarNode } from '$lib/plugins/toolBar/definitions';
 	import { Haptics, ImpactStyle } from '@capacitor/haptics';
 	import type { Guild } from '$lib/types/guild';
+	import { ticketQrPayload } from '$lib/api/validation';
+	import { requestMaxBrightness, restoreBrightness } from '$lib/platform/maxBrightness';
+	import { serverNow } from '$lib/api/serverClock';
 
 	type Action = 'transfer' | 'wallet' | 'receipt' | 'activity';
 
@@ -37,6 +41,7 @@
 		onAction?: (id: Action) => void;
 		canFlip?: boolean;
 		onRequestCenter?: () => void;
+		offline?: boolean;
 	}
 
 	let {
@@ -53,12 +58,15 @@
 		creatorGuild,
 		onAction,
 		canFlip = true,
-		onRequestCenter
+		onRequestCenter,
+		offline = false
 	}: Props = $props();
 
 	const date = $derived(formatCardDate(timeStart));
 	const time = $derived(formatTimeRange(timeStart, timeEnd));
 	const serial = $derived(`#${id.slice(0, 8).toUpperCase()}`);
+	let qrNow = $state(serverNow().getTime());
+	const currentQrData = $derived(qrData ?? ticketQrPayload(id, qrNow));
 
 	let showOverlay = $state(false);
 	let overlayReady = $state(false);
@@ -67,6 +75,7 @@
 	let originScale = $state(1);
 	let targetX = $state(0);
 	let targetY = $state(0);
+	let targetScale = $state(1.18);
 	let showTools = $state(false);
 	let isIos26Native = $state(false);
 	let triggerEl = $state<HTMLButtonElement>();
@@ -80,7 +89,7 @@
 			systemIcon: 'arrow.left.arrow.right',
 			label: m.tool_transfer()
 		},
-		{ id: 'wallet' as Action, icon: Wallet, systemIcon: 'wallet.bifold', label: m.tool_wallet() },
+		// { id: 'wallet' as Action, icon: Wallet, systemIcon: 'wallet.bifold', label: m.tool_wallet() },
 		{ id: 'receipt' as Action, icon: Receipt, systemIcon: 'receipt', label: m.tool_receipt() },
 		{
 			id: 'activity' as Action,
@@ -90,11 +99,24 @@
 		}
 	]);
 
+	// Keep native toolbar in sync with language changes while overlay is open
+	$effect(() => {
+		void locale.current;
+		if (showOverlay && isIos26Native && !offline) {
+			configureNativeToolBar(true);
+		}
+	});
+
 	const W = 300;
 	const H = 440;
 	const TOP_H = H / 2;
 	const R = 34;
 	const D = 7;
+	const OPEN_SCALE = 1.18;
+	const VIEWPORT_MARGIN = 16;
+	const TOOLBAR_HEIGHT = 48;
+	const TOOLBAR_GAP = 16;
+	const TOOLBAR_BOTTOM_RESERVE = 34;
 
 	const path = `M ${R} 0 H ${W - R} A ${R} ${R} 0 0 1 ${W} ${R} V ${TOP_H - D} A ${D} ${D} 0 0 0 ${W} ${TOP_H + D} V ${H - R} A ${R} ${R} 0 0 1 ${W - R} ${H} H ${R} A ${R} ${R} 0 0 1 0 ${H - R} V ${TOP_H + D} A ${D} ${D} 0 0 0 0 ${TOP_H - D} V ${R} A ${R} ${R} 0 0 1 ${R} 0 Z`;
 
@@ -124,7 +146,7 @@
 	]);
 
 	function configureNativeToolBar(visible: boolean) {
-		if (!isIos26Native) return;
+		if (!isIos26Native || offline) return;
 		void toolBar.configure({
 			nodes: nativeToolBarNodes,
 			visible
@@ -167,13 +189,25 @@
 	}
 
 	onMount(() => {
+		const qrTimer = setInterval(() => (qrNow = serverNow().getTime()), 1_000);
+		const handleViewportChange = () => {
+			if (showOverlay) updateOverlayTarget();
+		};
+		window.addEventListener('resize', handleViewportChange, { passive: true });
+		window.visualViewport?.addEventListener('resize', handleViewportChange, { passive: true });
 		void (async () => {
 			isIos26Native = await isIos26Plus();
 		})();
+		return () => {
+			clearInterval(qrTimer);
+			window.removeEventListener('resize', handleViewportChange);
+			window.visualViewport?.removeEventListener('resize', handleViewportChange);
+		};
 	});
 
 	onDestroy(() => {
 		setShellNavbarHidden(false);
+		void restoreBrightness();
 		if (isIos26Native) {
 			void toolBar.hide();
 			detachNativeToolBarListener();
@@ -193,11 +227,10 @@
 		originX = rect.left;
 		originY = rect.top;
 		originScale = rect.width / W;
-		targetX = window.innerWidth / 2 + (W * 1.18) / 2;
-		targetY = window.innerHeight / 2 - (H * 1.18) / 2;
-		showTools = !isIos26Native;
+		showTools = !isIos26Native && !offline;
+		updateOverlayTarget();
 		setShellNavbarHidden(true);
-		if (isIos26Native) {
+		if (isIos26Native && !offline) {
 			showNativeBars();
 			configureNativeToolBar(true);
 			attachNativeToolBarListener();
@@ -220,12 +253,30 @@
 		});
 
 		void Haptics.impact({ style: ImpactStyle.Medium });
+		void requestMaxBrightness();
+	}
+
+	function updateOverlayTarget() {
+		const viewport = window.visualViewport;
+		const viewportWidth = viewport?.width ?? window.innerWidth;
+		const viewportHeight = viewport?.height ?? window.innerHeight;
+		const toolbarSpace = showTools
+			? TOOLBAR_GAP + TOOLBAR_HEIGHT + TOOLBAR_BOTTOM_RESERVE
+			: VIEWPORT_MARGIN;
+		const availableHeight = Math.max(H * 0.1, viewportHeight - VIEWPORT_MARGIN - toolbarSpace);
+		targetScale = Math.max(
+			0.1,
+			Math.min(OPEN_SCALE, (viewportWidth - VIEWPORT_MARGIN * 2) / W, availableHeight / H)
+		);
+		targetX = viewportWidth / 2 + (W * targetScale) / 2;
+		targetY = VIEWPORT_MARGIN + (availableHeight - H * targetScale) / 2;
 	}
 
 	function closeDetails() {
 		showTools = false;
 		overlayReady = false;
 		setShellNavbarHidden(false);
+		void restoreBrightness();
 		if (isIos26Native) {
 			void toolBar.hide();
 			detachNativeToolBarListener();
@@ -333,7 +384,7 @@
 {/snippet}
 
 {#snippet ticketBack()}
-	<TicketDetail {name} activity={activityTitle} {serial} qrData={qrData ?? serial} />
+	<TicketDetail {name} activity={activityTitle} {serial} qrData={currentQrData} {offline} />
 {/snippet}
 
 <button
@@ -367,10 +418,10 @@
 
 		<div class="pointer-events-none absolute inset-0 perspective-[1800px]">
 			<div
-				class="ticket-flip pointer-events-auto absolute top-0 left-0 h-110 w-75 origin-[center_left] transition-transform duration-560 ease-[cubic-bezier(0.22,0.61,0.36,1)] will-change-transform transform-3d"
+				class="ticket-flip pointer-events-auto absolute top-0 left-0 origin-[center_left] transition-transform duration-560 ease-[cubic-bezier(0.22,0.61,0.36,1)] will-change-transform transform-3d"
 				class:ticket-flip-open={overlayReady}
 				ontransitionend={onFlipTransitionEnd}
-				style={`--origin-x:${originX}px; --origin-y:${originY}px; --origin-scale:${originScale}; --target-x:${targetX}px; --target-y:${targetY}px;`}>
+				style={`width:${W}px; height:${H}px; --origin-x:${originX}px; --origin-y:${originY}px; --origin-scale:${originScale}; --target-x:${targetX}px; --target-y:${targetY}px; --target-scale:${targetScale};`}>
 				<div class="absolute inset-0 backface-hidden" aria-hidden={overlayReady}>
 					{@render ticketFront()}
 				</div>
@@ -382,9 +433,9 @@
 			</div>
 		</div>
 
-		{#if !isIos26Native}
+		{#if !isIos26Native && !offline}
 			<div
-				class="absolute bottom-[max(env(safe-area-inset-bottom),1.5rem)] left-1/2 -translate-x-1/2 translate-y-2 opacity-0 transition-all duration-180 ease-in"
+				class="absolute bottom-[max(env(safe-area-inset-bottom),16px)] left-1/2 -translate-x-1/2 translate-y-[8px] opacity-0 transition-all duration-180 ease-in"
 				class:opacity-100={showTools}
 				class:translate-y-0={showTools}
 				class:pointer-events-none={!showTools}
@@ -401,6 +452,7 @@
 	}
 
 	.ticket-flip.ticket-flip-open {
-		transform: translate(var(--target-x), var(--target-y)) scale(1.18) rotateY(180deg);
+		transform: translate(var(--target-x), var(--target-y)) scale(var(--target-scale))
+			rotateY(180deg);
 	}
 </style>

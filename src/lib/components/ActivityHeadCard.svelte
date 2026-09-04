@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { CalendarIcon, MapPinIcon } from '@lucide/svelte';
+	import { Bell, BellOff, CalendarIcon, MapPinIcon } from '@lucide/svelte';
 	import InfoRow from './InfoRow.svelte';
+	import { m } from '$lib/paraglide/messages.js'
 
 	interface Props {
 		badge?: string;
@@ -8,9 +9,12 @@
 		date: string;
 		time: string;
 		location: string;
+		followed?: boolean;
+		followBusy?: boolean;
+		followToggle?: () => void;
 	}
 
-	let { badge, title, date, time, location }: Props = $props();
+	let { badge, title, date, time, location, followed, followBusy, followToggle }: Props = $props();
 </script>
 
 <div
@@ -22,8 +26,25 @@
 		</div>
 	{/if}
 	<h1 class="text-[26px] font-bold">{title}</h1>
-	<div class="flex flex-col gap-3 pt-1">
+	<div class="grid grid-cols-[1fr_auto] gap-3 pt-1">
 		<InfoRow icon={CalendarIcon} label={date} sublabel={time} />
-		<InfoRow icon={MapPinIcon} label={location} />
+		{#if location}
+			<InfoRow icon={MapPinIcon} label={location} />
+		{/if}
+		{#if followBusy !== undefined && followed !== undefined && followToggle !== undefined}
+			<button
+				type="button"
+				disabled={followBusy}
+				onclick={() => followToggle()}
+				aria-label={followed ? m.activity_unfollow() : m.activity_follow()}
+				title={followed ? m.activity_unfollow() : m.activity_follow()}
+				class="col-start-2 row-start-1 row-span-2 self-end grid m-1 size-11 place-items-center rounded-full bg-guild-surface text-guild-on-surface shadow-sm disabled:opacity-60">
+				{#if followed}
+					<BellOff class="size-5" aria-hidden="true" />
+				{:else}
+					<Bell class="size-5" aria-hidden="true" />
+				{/if}
+			</button>
+		{/if}
 	</div>
 </div>

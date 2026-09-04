@@ -5,7 +5,6 @@
 	import { locales, localizeHref, setLocale } from '$lib/paraglide/runtime';
 	import { m } from '$lib/paraglide/messages.js';
 	import './layout.css';
-	import favicon from '$lib/assets/favicon.svg';
 	import { Button, Link, i18n } from 'common-lib';
 
 	function setLang(lang: 'sv' | 'en') {
@@ -16,7 +15,6 @@
 	let { children } = $props();
 </script>
 
-<svelte:head><link rel="icon" href={favicon} /></svelte:head>
 <Button
 	class="absolute top-4 right-6"
 	onclick={() => setLang(i18n.getLang() === 'sv' ? 'en' : 'sv')}>{m.other_lang(...l)}</Button>

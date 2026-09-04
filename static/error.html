@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="sv">
+	<head>
+		<meta charset="utf-8" />
+		<meta
+			name="viewport"
+			content="viewport-fit=cover, width=device-width, initial-scale=1.0" />
+		<title>Teknologappen kunde inte starta</title>
+		<style>
+			html,
+			body {
+				min-height: 100%;
+				margin: 0;
+			}
+			body {
+				display: grid;
+				place-items: center;
+				box-sizing: border-box;
+				padding: 2rem;
+				background: #f3f4f6;
+				color: #111827;
+				font: 16px/1.5 system-ui, sans-serif;
+				text-align: center;
+			}
+			main {
+				max-width: 28rem;
+			}
+			h1 {
+				margin: 0 0 0.75rem;
+				font-size: 1.25rem;
+			}
+			p {
+				margin: 0 0 1.25rem;
+			}
+			button {
+				border: 0;
+				border-radius: 0.5rem;
+				padding: 0.75rem 1rem;
+				background: #111827;
+				color: white;
+				font: inherit;
+				font-weight: 600;
+			}
+		</style>
+	</head>
+	<body>
+		<main>
+			<h1>Teknologappen kunde inte starta</h1>
+			<p>
+				Appen kunde inte laddas. Försök att starta om den.<br />The app could not load. Please
+				restart it.
+			</p>
+			<button type="button" onclick="location.replace('/index.html')">
+				Försök igen / Try again
+			</button>
+		</main>
+	</body>
+</html>

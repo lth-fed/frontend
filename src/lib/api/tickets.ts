@@ -1,7 +1,22 @@
 import { api } from './clients';
-import { cached, invalidate, invalidatePrefix } from './cache';
-import { attempt, DEMO_MODE, unwrap, type Attempt } from './call';
-import { guildFromPath, parseDate, pickI18n } from './mappings';
+import { cached, cachedPersistent, invalidate } from './cache';
+import {
+	attempt,
+	attemptForbidden,
+	DEMO_MODE,
+	unwrap,
+	type Attempt,
+	type ForbiddenAttempt
+} from './call';
+import { apiError, extractErrorMessage } from './errors';
+import {
+	guildFromPath,
+	locationLabel,
+	mapLocation,
+	parseDate,
+	pickI18n,
+	type Location
+} from './mappings';
 import type { components } from './generated/api';
 import type { Guild } from '$lib/types/guild';
 
@@ -31,25 +46,36 @@ export type Ticket = {
 	activityTitle: string;
 	creatorName: string;
 	creatorGuild?: Guild;
-	/** Activity's location display string; empty if backend ships none. */
 	location: string;
+	locationDetails: Location;
 	timeStart: Date;
 	timeEnd: Date;
 	addons: PurchasedAddon[];
 };
 
 export type PurchaseProvider = 'free' | 'swish' | 'stripe';
-export type BuyReservationInput = {
+export type ReservationPurchase = {
 	ticketKindId: string;
-	provider: PurchaseProvider;
-	/** Selected addons; MVP sends none (backend addons UI is post-MVP). */
+	/** Selected add-ons included in the reservation purchase. */
 	addons?: { id: string; selectedOptions?: number[]; selectedText?: string }[];
 };
+export type BuyReservationInput = ReservationPurchase &
+	(
+		| { provider: 'stripe'; stripeSuccessUrl: string }
+		| { provider: Exclude<PurchaseProvider, 'stripe'>; stripeSuccessUrl?: never }
+	);
 export type BuyReservationOutcome = {
-	/** Set for `free` purchases — the new ticket. */
-	ticketId?: string;
 	/** Set for `swish` — opens the Swish app (step 5 gateway). */
 	paymentRequestToken?: string;
+	/** Set for Stripe — must be opened in a separate browser context. */
+	stripeUrl?: string;
+};
+
+export type TicketKindPurchaseContext = {
+	activityId: string;
+	name: string;
+	basePrice: number;
+	addonOptions: { addonId: string; options: { index: number; price: number }[] }[];
 };
 
 function mapAddon(a: RawAddon): PurchasedAddon {
@@ -65,6 +91,7 @@ function mapAddon(a: RawAddon): PurchasedAddon {
 }
 
 function mapTicket(t: RawTicket): Ticket {
+	const location = mapLocation(t.activity_location);
 	return {
 		id: t.id,
 		ticketKindId: t.ticket_kind_id,
@@ -73,7 +100,8 @@ function mapTicket(t: RawTicket): Ticket {
 		activityTitle: pickI18n(t.activity_title),
 		creatorName: pickI18n(t.creator_name),
 		creatorGuild: guildFromPath(t.creator_path),
-		location: pickI18n(t.activity_location.name),
+		location: locationLabel(location),
+		locationDetails: location,
 		timeStart: parseDate(t.time_start),
 		timeEnd: parseDate(t.time_end),
 		addons: t.purchased_addons.map(mapAddon)
@@ -85,26 +113,67 @@ function mapTicket(t: RawTicket): Ticket {
  *  derives the serial display string, etc. */
 export async function listMyTickets(): Promise<Ticket[]> {
 	const raw = DEMO_MODE ? _mockTickets : await unwrap(() => api.GET('/tickets', {}));
+	return raw.filter((ticket) => ticket.owned_by_me).map(mapTicket);
+}
+
+/** Complete purchase history, including tickets that have since been transferred. */
+export async function listPurchasedTickets(): Promise<Ticket[]> {
+	const raw = DEMO_MODE ? _mockTickets : await unwrap(() => api.GET('/tickets', {}));
 	return raw.map(mapTicket);
+}
+
+/** Recover the metadata needed to resume a reservation when its local
+ * purchase state is missing (for example after reinstalling or when the
+ * reservation was created on another device). */
+export async function getTicketKindPurchaseContext(
+	ticketKindId: string
+): Promise<TicketKindPurchaseContext> {
+	const kind = await unwrap(() =>
+		api.GET('/tickets/ticket-kind/{id}', { params: { path: { id: ticketKindId } } })
+	);
+	return {
+		activityId: kind.activity_id,
+		name: pickI18n(kind.ticket_kind_name),
+		basePrice: kind.price,
+		addonOptions: kind.available_addons.map((addon) => ({
+			addonId: addon.id,
+			options: addon.options.map((option) => ({ index: option.idx, price: option.price }))
+		}))
+	};
 }
 
 /** Cached tickets list (spec §3.3: 60 s stale-while-revalidate;
  *  invalidated by purchases and app resume). */
 export function cachedMyTickets(depends?: Depends): Promise<Ticket[]> {
-	return cached('tickets', 60_000, listMyTickets, depends);
+	return cachedPersistent(
+		'tickets',
+		60_000,
+		listMyTickets,
+		(value) =>
+			(value as Ticket[]).map((ticket) => ({
+				...ticket,
+				timeStart: new Date(ticket.timeStart),
+				timeEnd: new Date(ticket.timeEnd)
+			})),
+		depends
+	);
+}
+
+export function cachedPurchasedTickets(depends?: Depends): Promise<Ticket[]> {
+	return cached('purchased-tickets', 60_000, listPurchasedTickets, depends);
 }
 
 /**
  * Buy the currently held reservation (all purchases go through a
  * reservation on this backend — free tickets included). 400s come back
- * as `badRequest` for inline rendering (spec §7). On a completed free
- * purchase the tickets and ticket-kind caches are invalidated.
+ * as `badRequest` for inline rendering and 403s as `forbidden` so the
+ * purchase machine can retry purchase-flow lock contention.
  */
 export async function buyReservation(
 	input: BuyReservationInput
-): Promise<Attempt<BuyReservationOutcome>> {
-	if (DEMO_MODE) return { ok: { ticketId: crypto.randomUUID() } };
-	const result = await attempt<components['schemas']['BuyTicketResponse']>(() =>
+): Promise<ForbiddenAttempt<BuyReservationOutcome>> {
+	if (DEMO_MODE) return { ok: {} };
+	const result = await attemptForbidden<components['schemas']['BuyTicketResponse']>(() =>
 		api.POST('/tickets/reservation/buy', {
 			body: {
 				ticket_kind: input.ticketKindId,
@@ -113,21 +182,40 @@ export async function buyReservation(
 					id: a.id,
 					selected_options: a.selectedOptions,
 					selected_text: a.selectedText
-				}))
+				})),
+				stripe_success_url: input.stripeSuccessUrl
 			}
 		})
 	);
+	if (result.forbidden) return result;
 	if (result.badRequest) return result;
-	if (result.ok.ticket_id) {
-		invalidate('tickets');
-		invalidatePrefix('kinds:');
-	}
 	return {
 		ok: {
-			ticketId: result.ok.ticket_id ?? undefined,
-			paymentRequestToken: result.ok.payment_request_token ?? undefined
+			paymentRequestToken: result.ok.payment_request_token ?? undefined,
+			stripeUrl: result.ok.stripe_url ?? undefined
 		}
 	};
+}
+
+/** Download the PDF receipt using the authenticated API transport. */
+export async function receiptBlob(ticketId: string): Promise<Blob> {
+	const data = await unwrap(() =>
+		api.GET('/tickets/{id}/receipt', {
+			params: { path: { id: ticketId } },
+			headers: { accept: 'application/octet-stream' },
+			parseAs: 'blob'
+		})
+	);
+	return new Blob([data], { type: 'application/pdf' });
+}
+
+export async function transferTicket(ticketId: string, toUser: string): Promise<void> {
+	await unwrap(() =>
+		api.POST('/tickets/transfer', {
+			body: { purchased_ticket_id: ticketId, to_user: toUser }
+		})
+	);
+	invalidate('tickets', 'purchased-tickets');
 }
 
 // ---------------------------------------------------------------------------
@@ -160,36 +248,52 @@ export async function enterQueue(ticketKindId: string): Promise<Attempt<Purchase
 
 /** Poll queue/reservation state. `null` = not queued at all (a 404 by
  *  contract — also the post-purchase/post-expiry signal, spec §4.2). */
-export async function queueStatus(): Promise<QueueStatus | null> {
-	const { data, error, response } = await api.GET('/tickets/queue', {});
-	if (response.status === 404) return null;
+export type QueueStatusResult =
+	{ kind: 'status'; status: QueueStatus } | { kind: 'missing' } | { kind: 'retry' };
+
+export async function queueStatus(): Promise<QueueStatusResult> {
+	let result;
+	try {
+		result = await api.GET('/tickets/queue', {});
+	} catch (error) {
+		console.warn('queue status temporarily unavailable', error);
+		return { kind: 'retry' };
+	}
+	const { data, error, response } = result;
+	if (response.status === 404) return { kind: 'missing' };
 	if (!response.ok || !data) {
-		console.error('queue status failed', response.status, error);
-		return null;
+		console.warn('queue status temporarily unavailable', response.status, error);
+		return { kind: 'retry' };
 	}
 	return {
-		ticketKindId: data.ticket_kind,
-		placement: data.placement ?? undefined,
-		timeout: data.timeout ? parseDate(data.timeout) : undefined,
-		latestTransaction: data.start_transaction_before
-			? parseDate(data.start_transaction_before)
-			: undefined
+		kind: 'status',
+		status: {
+			ticketKindId: data.ticket_kind,
+			placement: data.placement ?? undefined,
+			timeout: data.timeout ? parseDate(data.timeout) : undefined,
+			latestTransaction: data.start_transaction_before
+				? parseDate(data.start_transaction_before)
+				: undefined
+		}
 	};
 }
 
-/** Leave the release queue (pre-release cancel). 404 = wasn't queued. */
+/** Cancel the active ticket queue or reservation. 404 = already gone. */
 export async function leaveQueue(): Promise<void> {
-	const { response } = await api.DELETE('/tickets/queue', {});
-	if (!response.ok && response.status !== 404) console.error('leave queue failed', response.status);
-}
+	let result;
+	try {
+		result = await api.DELETE('/tickets/queue', {});
+	} catch (error) {
+		console.error('leave queue network error', error);
+		apiError('network');
+	}
 
-/** Drop a held reservation. `TransactionCancelling` = a payment was in
- *  flight and is being unwound — keep polling. */
-export async function dropReservation(): Promise<'Dropped' | 'TransactionCancelling' | null> {
-	const { data, response } = await api.DELETE('/tickets/reservation', {});
-	if (response.status === 404) return null;
-	if (!response.ok || !data) return null;
-	return data.status;
+	const { error, response } = result;
+	if (response.ok || response.status === 404) return;
+
+	const message = extractErrorMessage(error);
+	if (response.status >= 500) apiError('server', message);
+	apiError('unknown', message);
 }
 
 const _mockTickets: RawTicket[] = [
@@ -205,6 +309,7 @@ const _mockTickets: RawTicket[] = [
 		creator_name: { en: 'D-sektionen', sv: 'D-sektionen' },
 		time_start: '2026-05-01T21:00:00Z',
 		time_end: '2026-05-02T02:00:00Z',
-		purchased_addons: []
+		purchased_addons: [],
+		owned_by_me: true
 	}
 ];

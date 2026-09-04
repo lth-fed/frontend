@@ -1,70 +1,140 @@
-name: fed-frontend
+name: fed-production
 
-networks:
-  traefik:
-    external: true
-    name: ${TRAEFIK_NETWORK:-traefik}
+volumes:
+  postgres-storage:
+  rustfs-storage:
 
 services:
-  fed-frontend:
-    build:
-      context: .
-      target: fed-frontend
-    image: ${CONTAINER_REGISTRY:-localhost}/fed-frontend:${CONTAINER_TAG:-production}
+  # TODO: eventually replace with host-hosted Postgres, it's suboptimal to have it in a container.
+  fed-postgres:
     restart: unless-stopped
-    expose:
-      - '80'
-    ports:
-      - '8100:80'
-    networks:
-      - traefik
-    labels:
-      traefik.enable: 'true'
-      traefik.docker.network: ${TRAEFIK_NETWORK:-traefik}
-      traefik.http.routers.fed-frontend.rule: Host(`${FRONTEND_DOMAIN:-app.teknologappen.se}`)
-      traefik.http.routers.fed-frontend.entrypoints: ${TRAEFIK_ENTRYPOINT:-websecure}
-      traefik.http.routers.fed-frontend.tls: 'true'
-      traefik.http.routers.fed-frontend.tls.certresolver: ${TRAEFIK_CERT_RESOLVER:-letsencrypt}
-      traefik.http.services.fed-frontend.loadbalancer.server.port: '80'
+    image: 'postgres:18'
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: fed
+    volumes:
+      - postgres-storage:/var/lib/postgres
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB']
+      interval: 5s
+      timeout: 5s
+      retries: 12
 
-  fed-auth-frontend:
-    build:
-      context: .
-      target: fed-auth-frontend
-    image: ${CONTAINER_REGISTRY:-localhost}/fed-auth-frontend:${CONTAINER_TAG:-production}
-    restart: unless-stopped
-    expose:
-      - '80'
-    ports:
-      - '8101:80'
-    networks:
-      - traefik
-    labels:
-      traefik.enable: 'true'
-      traefik.docker.network: ${TRAEFIK_NETWORK:-traefik}
-      traefik.http.routers.fed-auth-frontend.rule: Host(`${AUTH_DOMAIN:-auth.teknologappen.se}`)
-      traefik.http.routers.fed-auth-frontend.entrypoints: ${TRAEFIK_ENTRYPOINT:-websecure}
-      traefik.http.routers.fed-auth-frontend.tls: 'true'
-      traefik.http.routers.fed-auth-frontend.tls.certresolver: ${TRAEFIK_CERT_RESOLVER:-letsencrypt}
-      traefik.http.services.fed-auth-frontend.loadbalancer.server.port: '80'
+  # fed-collector:
+  # image: "otel/opentelemetry-collector:0.154.0"
+  # command: "--config=/etc/otel-collector.yaml"
+  # volumes:
+  #   - ./otel-collector.yaml:/etc/otel-collector.yaml:ro
+  # restart: unless-stopped
 
-  fed-public:
-    build:
-      context: .
-      target: fed-public
-    image: ${CONTAINER_REGISTRY:-localhost}/fed-public:${CONTAINER_TAG:-production}
+  fed-auth:
+    image: esekmacapar/fed-auth:latest
+    platform: linux/amd64
     restart: unless-stopped
-    expose:
-      - '80'
     ports:
-      - '8104:80'
-    networks:
-      - traefik
-    labels:
-      traefik.enable: 'true'
-      traefik.docker.network: ${TRAEFIK_NETWORK:-traefik}
-      traefik.http.routers.fed-public.rule: Host(`${PUBLIC_DOMAIN:-teknologappen.se}`)
-      traefik.http.routers.fed-public.entrypoints: ${TRAEFIK_ENTRYPOINT:-websecure}
-      traefik.http.routers.fed-public.tls: 'true'
-      traefik.http.routers.fed-public.tls.certresolver: ${TRAEFIK_CERT_RESOLVER:-letsencrypt}
-      traefik.http.services.fed-public.loadbalancer.server.port: '80'
+      - '8001:8001'
+    environment:
+      DEBUG: 1
+      PRIVATE_KEY: MC4CAQAwBQYDK2VwBCIEIFK6AFAC88i7Db6SycvPJk68l+H+GVcj1MRso/aq2Uw4
+      DATABASE_URL: postgres://postgres:postgres@fed-postgres:5432/auth
+      SAML_PRIVATE_KEY: LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUpRd0lCQURBTkJna3Foa2lHOXcwQkFRRUZBQVNDQ1Mwd2dna3BBZ0VBQW9JQ0FRQyt6RE1vYzB0K3pFVHgKeElhaVphelJidnh6Y01aWDcxVG9JS3NYWnFPRVZLb2xWM2xnQndQUytOV1RVYno0SlJzUGR1Z1pBTzN2dGpPWQpUM1l0UzUyeG5oWEhsZ3RIVEcxU09YZXRMYy95M2ZxUE8ydWRKRlRMVllORy9iUUJFOUxmY1c5YktxeGtoSm5zCm8vSFAyTDVwUExjVEM4a1NPZi9mS1dxQnRJWDVMZDhRRTBvTVF0aUN5dE41UER1STdMc2FIb3R0Sk05NWkrSTAKUGcwOW1kMjVKOFhwNmJlSzFDM1hKdThjazNSN1FCZVJYTEh4bUlMVG43dmxiYU4zdU4yZlVLRWpMblBpUWdTLwoxOFh1QXRkOTljb1JlSDUwWFluanAxY2tvZllzSytnQlphdnlHd3M3bTZleXNYYk0zRmgyaFpnNzkrV09wcWZPCm1VcGRCREM0ZDlVSjY1d1kvK3hrODNtcFlrZU9tbEtNNTJCMDF6cjBsZTFPSTVyZTVOdzN3MnZWVHJOdDh6M3kKeEQ0NlN0VEw4UXlkdDRvR0ZnMk1aYmlRWDZXTWxjbVpwVWFWWDJPYk5SSVBvSnVmK2Z4R1B6ZWN3ZXZmZVJveAovVnVpbzRQWmE3TzRUMzhkQVhNeXE0VjNFSG9uTGtrMHJjRUZ5SE5EcWJCRm4vNEJ6Y2VLTWlXWkVBc05vT2c2CitwamRHcGt0Z09iM0RDV2FVNzJQK1ZTNGtHL2pPazl2T1JGYzYwQm4rQTFGd0U3VHJqLzRBZEVPSWM5NjJjYzMKWjlWU3lzeWViZHM4QngvaTJqcm05YXU3Y1dNRGRvOWJCdVdvdk92c09wL3VzSDVvd1cxV2h3Sk5XMjJEeEZhRwp5czdSMGxIS3poVUdDUEFwbVJVOWxBbElmUi9QUlFJREFRQUJBb0lDQUNQUlU3MUJQNmZ6RXZKTUVYWkZIaGRHCi9ZOXlXVm5DclM3U2l5dmVjYzN5MHVvbHJMeHhOSytUVlF6TjZHcXhGSTVucFJTa2p3WlVMd1ZseldxZGFtSWcKcWpnSW05OXJvbzR3Q1o1eUhqcWFuMkhxSnI2ZVJtalJpYzUyN0NiVG9OK2ZmT2NoY0xHQ0R4OVVlNTJvTTc2dgp6akorSU9ZU0MwM0tpWnNGMTZ5NmhzaU94blRjeTZacUN4OFVScHppekJFUU1ONXhiWjJFdkJkUW1zMjRwOTROCmNHTUVKQmVrMDJJemhlbllhS0tHbXFZSVA4TjUvUDFiWER1cXhHaENSU0NXVTFtMmE3eks1ZmRadTJkK0V4UXIKWXg2NmZ3cTdVSnB6SExIYzBjampDUy9SOVdDQzRTMzBmNXZWSXRjOGVrTHR1M0Z1alNLbGVKVVpROU9JYU5pMQpDWnFPdkprTWVhTTVFRnJlSHJ5bFpwd1laUkpvZk41VGV2NldMbTkvL0xVL1NoMWg1a1g2NmtFcFY1TmlEcUoyClJFblcycDc1ZThwTDBGZ2x1aXhIUHhaWDgwWGRiZGcxZnd3cnBPcVNYaWF4dVhGQnlQWGdxYThLTDlUSXQxQWwKK0tMYU4reW1rWHBZdDhFVWFxclNaUjNFSUphMnFDK1RCbGRFMnBJMjNlM3ZIT0NITzBQN0pKTUtqMEk4RzgwOApLVDBhZVBzN0ZNdDM5SjM4Z240RUNQRmg5S2VEMHhobXN6VllLTVhSQzFpd1lYSm1nL2ZTT28zYVJocDQxYlU2CmI0cklCQ1RTck50Wm9VWVVKQW03TWxHOGRpNkh6VFRzQlUwSnRrcE9FVkFZd3Z5aTM1UjJTOU51RmVTSVhaOUgKdkpTcFVnRFZmd1d0YVVzNDBTMTFBb0lCQVFEME9TQjBMY1VVQ1RuY0ZEelNWLys5WURNTyswS3YvNEZvaFQ0RQpkZVdmUS8zUjBNSUlTU01CdWFsM0phajJNM1E4bWg3a2ZhRDVJUWE4am9qUm1wQTBXVWFIOWcrUUZLbWFaenlBCmtSdDBKSHdvTEpRK2dXdnQ2V09XSG85Tmc0MkExNlJqWElhYlJSellhZjBCeWdWRURReHBSY05FM25PUXhBeXEKS1BzL0xNUndhS25lREN0V3FJN2xMY21lbStwaXFlN09vVVZPQThzbVk4MEE5Zk9TUzZUOFZoT3E1Zm02aE1lUwpFaXp1L1I3bFVCU09NeHhvUCtlU0pNY0t3YngyQU41QkU5NFlWRWtORGgxelBZNlpBUDJVS2FpRWZUeHJRTUVPCk9mRUZVR0xkYnFtYkh5YVEzeVhCTmNFQ1IreDRtWURoTWpNbEZyVnh1ejlmd1dudkFvSUJBUURILzR4OVZsSG0KeThRRDNjZFJDcWVrZC9nY1B4bkdpREdGWllYa0VmdVNud3ZsVjZURGlsdzdIQWw0aHhCRVFRaGR4RDlneUZDaQp3L09EblFQVUtMTVF4NVN6U1FraWhuellBUFNuTlNZTWhJUElXRHNudGZNVlYva1ZRZ3lhaFFoK2FjaVVkSUxVClZhU1ZjNHBJdEs4NGFXUHdpTzhYQWZJWDE2M1FSdktYMXg2Z2FGdUtPYjdETEVFcmNwZVF3VDYxSmdOYlArdjcKak0vd3pIZERKSkl5YU1NZmZ1UklCTWZOVGFXcW1uN2lCeDB6V1J5STR4YU1SNTM0MngvTXhmSFhkYmE4bWdrOApJaUNDaWpCSTRzKzFRQVpKem8vTHAybzVQT2dIOHZFZThCdDNhRFNKSThpMzNIZzlmSFowT3hEWkhjcjlIUktUCk5ZdFpwNDhZUGQ0TEFvSUJBUUNCaEpwVmdzQjFzNzdmbkV2MU1YNExMSzFuVUpFNVRVT1A3cm5KRzgwKy9ZdnEKYmMrNUhUQlhoZUw5c1JjK0dtT1drQlc2RDNZREtTU3RjdG5VYnlmeTJ6V3dmU29idXhtSExTREUvaStWRkpSVApxZkNraFhaN29iNlNxbnBOSFdzNTNTTHRIdkN6LzU4Z2xuVDdNZXhBL3JxS1Nka1krUEJJNGUvbGZmNWdycGt2CkZCS2lFOG9ZRnlSUkhrdEN0bVZERmVQejZVc2I2SjhnS09WYmtSUXZqYlpkckRpWjlZVFBDZ1BjejQ3TTM2ZzIKN0pVNkpKajRJSXZxMFY1TnNoa0VhOGx5c2RxakJIQUpZR2IxNnJ0cElVRmFCZzI4MWIzcEUxcE85U09CTWZSOApnbWVvUUlqdlk2aGVJdWZORWQreXhaVzMyQ3VQaTgrR0ZVdXl1Snc1QW9JQkFGSmxQZ1FGSkFqcHVmKzl4dmZrClk5eW1jRmx5eGJPOU9HbTB3Y3lNZkJDVDVkcSttT3JXZmRqOFhBcUQybmZFTXlZdVM4NGJ1TnpWemVWVE10aWQKUytpRjBRVnIrWTkzeU1kVTNYWmx0eDlCR09uWkw4WFVlQ2s2N1N1TTRwUm1hbkZxTTNDMTc1QjdHQ3RhUm9aZApxaktiZU1rSUlUaGhYTlBsejM0WFBLckJ2YVJvV2c1QWJBOE1sR3pKOFJkNkJkT3JyWVpTZDI1VFBQZi94TUtzCnRtNStLcVUzS2VWaDBzOEtSazViQ0JzbXd5ajhkWDBQMGFKSmZ4T2ZjeUp5Q29peHZtOUZKcmpYZG4xUllVTWwKN2x6RjI5RmNnSEZ1cjV5Vk15TFRPL043Q0ZYUllKTi9ZcG9kQW95U1VscmdXcmlZUmFDeDhZMGthaHl0bzQ1aApMckVDZ2dFQkFLSkZDYVBhT20rdm5oaytsNEI5bmliTjVZN2IveC9aU0JvTmdmM1NoNzRYNGVPYlN4K3ZyM3FzCkZKaFR4dDB6VVcyWEtBenlZRHh0ZWYxaWVlcm1NVU5rNXJOVjhGRzBFOVhjN3pmeVhXRTZsODdzWVAwMitrajYKOERGOFpwbFBmbW9ZQktwM2QxWEh3RHZGOFNqRitzaGNtc2padHIxRmFDRnBYeGI3akdNRXZGR2tsczNYb09jYQpkVHhlN1lKaElwT1d6bURPOUpSWlRmbG84YXNzajRGVDZ6NHBSN2p3OVBnRmNMcWxKU3h1SnAxTGtsYXk3dGlqCmtOMkFrK0F4aVdKU2JKNGF5OW1yb29oNVVJY0M1dS9pOXo4RW5tYVV0MEQ5U0ZjN25NcElKSXUxWFpkUExoNnkKOVJPaWxOUWUzeWN3SjJ3M3lPWm00cTl5MDBmYmNCND0KLS0tLS1FTkQgUFJJVkFURSBLRVktLS0tLQo=
+      SAML_CERTIFICATE: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUYwekNDQTd1Z0F3SUJBZ0lVVFI1V3F4cW1rYitYZkdUVnRkUFA3alc1aGtRd0RRWUpLb1pJaHZjTkFRRUwKQlFBd2VURUxNQWtHQTFVRUJoTUNVMFV4RURBT0JnTlZCQWdNQjFOMlpYSnBaMlV4RFRBTEJnTlZCQWNNQkV4MQpibVF4SlRBakJnTlZCQW9NSEUxaGFXNTBZV2x1WlhKeklHOW1JRlJsYTI1dmJHOW5ZWEJ3Wlc0eElqQWdCZ05WCkJBTU1HV0Z3YVM1aGRYUm9MblJsYTI1dmJHOW5ZWEJ3Wlc0dWMyVXdIaGNOTWpZd09ESTNNakExT0RRd1doY04KTkRZd09ESXlNakExT0RRd1dqQjVNUXN3Q1FZRFZRUUdFd0pUUlRFUU1BNEdBMVVFQ0F3SFUzWmxjbWxuWlRFTgpNQXNHQTFVRUJ3d0VUSFZ1WkRFbE1DTUdBMVVFQ2d3Y1RXRnBiblJoYVc1bGNuTWdiMllnVkdWcmJtOXNiMmRoCmNIQmxiakVpTUNBR0ExVUVBd3daWVhCcExtRjFkR2d1ZEdWcmJtOXNiMmRoY0hCbGJpNXpaVENDQWlJd0RRWUoKS29aSWh2Y05BUUVCQlFBRGdnSVBBRENDQWdvQ2dnSUJBTDdNTXloelMzN01SUEhFaHFKbHJORnUvSE53eGxmdgpWT2dncXhkbW80UlVxaVZYZVdBSEE5TDQxWk5SdlBnbEd3OTI2QmtBN2UrMk01aFBkaTFMbmJHZUZjZVdDMGRNCmJWSTVkNjB0ei9MZCtvODdhNTBrVk10VmcwYjl0QUVUMHQ5eGIxc3FyR1NFbWV5ajhjL1l2bWs4dHhNTHlSSTUKLzk4cGFvRzBoZmt0M3hBVFNneEMySUxLMDNrOE80anN1eG9laTIwa3ozbUw0alErRFQyWjNia254ZW5wdDRyVQpMZGNtN3h5VGRIdEFGNUZjc2ZHWWd0T2Z1K1Z0bzNlNDNaOVFvU011YytKQ0JML1h4ZTRDMTMzMXloRjRmblJkCmllT25WeVNoOWl3cjZBRmxxL0liQ3p1YnA3S3hkc3pjV0hhRm1EdjM1WTZtcDg2WlNsMEVNTGgzMVFucm5Cai8KN0dUemVhbGlSNDZhVW96bllIVFhPdlNWN1U0am10N2szRGZEYTlWT3MyM3pQZkxFUGpwSzFNdnhESjIzaWdZVwpEWXhsdUpCZnBZeVZ5Wm1sUnBWZlk1czFFZytnbTUvNS9FWS9ONXpCNjk5NUdqSDlXNktqZzlscnM3aFBmeDBCCmN6S3JoWGNRZWljdVNUU3R3UVhJYzBPcHNFV2YvZ0hOeDRveUpaa1FDdzJnNkRyNm1OMGFtUzJBNXZjTUpacFQKdlkvNVZMaVFiK002VDI4NUVWenJRR2Y0RFVYQVR0T3VQL2dCMFE0aHozclp4emRuMVZMS3pKNXQyendISCtMYQpPdWIxcTd0eFl3TjJqMXNHNWFpODYrdzZuKzZ3Zm1qQmJWYUhBazFiYllQRVZvYkt6dEhTVWNyT0ZRWUk4Q21aCkZUMlVDVWg5SDg5RkFnTUJBQUdqVXpCUk1CMEdBMVVkRGdRV0JCU1ZXQklOMHlYQkJhK0Q1aUNjcVI1cmdaTEMKSlRBZkJnTlZIU01FR0RBV2dCU1ZXQklOMHlYQkJhK0Q1aUNjcVI1cmdaTENKVEFQQmdOVkhSTUJBZjhFQlRBRApBUUgvTUEwR0NTcUdTSWIzRFFFQkN3VUFBNElDQVFBbjdoUFVrenE5S0xCYjFWcGhST3dtMkdpYjhGUlQxNDZvCnhoQWNUbzNmT2VLQ3c4ODV4SUpMY25OcWZ2M3MxOWJIRGRBZGV1MU1XeVVEaWdmamVVYytjQTY5VGxlcjNpRm0Kc0g1S1BTSEZsQVhRUG9sUU14RDY4d0Rwek5WUUo2QWlNTjFZdUgxckFvM1RhaHVSenRQUlowL0JzakhYenBSUwp0YUNXYmIxSWZvUnRsaDdxazJXUDhydTJyOGpJL3pXc0Y2MXYxdHBtbzgzeE1peUE0dHBCVlVnZFFWRGRDbWVpCnBKRnkwSSt5SmovdTBzSnVnaDZmeG40ZGw5WTZ6L29pNVc2Y0szZXB6S1FYRHQ2VkJnNG5ZMGo1dnhCRHI4Z08KSExDVWhSR09KVWRCbjNRNktod1NhNG9vYmVwT1AxVTJqdmJqYkpnRUYrQ0pBTy9DREh2bXhjQlFkY2FKSFFzeAorS25oNU5BOURJMTJUd2VDRnozOHlNUW1RM1JYdzFSSXdIcDEwelRrL0x2TDNNdU82c0duK0tXTUt0dW5sYWIyCnFTeGVSNEYyQmlDZUU0cnZQSVZZT2dLcTJqQmVrUjVnOTZOVFR2Zk14MDVQYTMyVlJ1THZYMmw3bFYvemVwbmIKVFRyek1pK1B0MVZKbTJDQStKaFY1VlBrakE5N3BDS082Z0hxa3ZJMjdjamgyclR6Nm9KR2tnWUllOC84bzVtMAovZWxkZHN6YkYzZW05UGFzWm9PbXN4TmhidXZrOFF4bFF3VlNVT3BpTG5vMUh1ajR3QVJoRlNwR0k0U0s5UVpICnNHWnp0djNLcWhueEpkcGJGMVZ2U1htNDZHWHcwNnZLVGJHbG9aMFA4R2dyVnZGVnZJWG52Z28yNVJKVEhtU2MKbFl5YW1KMVhNQT09Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
+
+    depends_on:
+      fed-postgres:
+        condition: service_healthy
+
+  transactions:
+    image: esekmacapar/transactions:latest
+    platform: linux/amd64
+    restart: unless-stopped
+    ports:
+      - '8002:8002'
+    environment:
+      DEBUG: 1
+      DATABASE_URL: postgres://postgres:postgres@fed-postgres:5432/transactions
+      PRIVATE_KEY: MC4CAQAwBQYDK2VwBCIEIHY7RY00swTFcP0EjsP+vdFLlELLnN4EsStBYBKGnQZF
+    depends_on:
+      fed-postgres:
+        condition: service_healthy
+
+  transactions-seed:
+    image: postgres:18
+    restart: 'no'
+    volumes:
+      - ./auth-seed.sql:/auth.sql:ro
+    environment:
+      DEBUG: 1
+      PGPASSWORD: postgres
+    depends_on:
+      fed-postgres:
+        condition: service_healthy
+      transactions:
+        condition: service_started
+    entrypoint: ['sh', '-ec']
+    command:
+      - >-
+        until psql -h fed-postgres -U postgres -d transactions -c 'select 1 from client_ids limit 1'
+        >/dev/null 2>&1; do sleep 2; done; if ! psql -h fed-postgres -U postgres -d transactions
+        -Atqc "select 1 from client_ids where client_id = 'esek'" | grep -q 1; then psql -h
+        fed-postgres -U postgres -d transactions -f /auth.sql; fi
+
+  minilith:
+    image: esekmacapar/minilith:latest
+    platform: linux/amd64
+    restart: unless-stopped
+    ports:
+      - '8000:8000'
+    environment:
+      DEBUG: 1
+      DATABASE_URL: 'postgres://postgres:postgres@fed-postgres:5432/fed'
+      ENCRYPTION_KEY: 'EJuu3Odzba5dSzL/huWKwM9ifVjfpsSmy32vxltpQKU='
+      TRANSACTIONS_TOKEN: 'hehe-super-secure'
+
+      S3_ACCESS_KEY: 'rustfs'
+      S3_SECRET_KEY: 'rustfs'
+      S3_PUBLIC_URL: 'http://localhost:9000/image'
+    depends_on:
+      fed-postgres:
+        condition: service_healthy
+      fed-s3:
+        condition: service_started
+      transactions:
+        condition: service_started
+
+  minilith-seed:
+    image: esekmacapar/minilith:latest
+    platform: linux/amd64
+    restart: 'no'
+    environment:
+      DEBUG: 1
+      DATABASE_URL: 'postgres://postgres:postgres@fed-postgres:5432/fed'
+      ENCRYPTION_KEY: 'EJuu3Odzba5dSzL/huWKwM9ifVjfpsSmy32vxltpQKU='
+      TRANSACTIONS_TOKEN: 'hehe-super-secure'
+      S3_ACCESS_KEY: 'rustfs'
+      S3_SECRET_KEY: 'rustfs'
+      S3_PUBLIC_URL: 'http://localhost:9000/image'
+    depends_on:
+      fed-postgres:
+        condition: service_healthy
+      fed-s3:
+        condition: service_started
+      minilith:
+        condition: service_started
+    entrypoint: ['sh', '-ec']
+    command:
+      - >-
+        until /app/seed-dev --override-production; do sleep 2; done
+
+  fed-s3:
+    image: rustfs/rustfs:latest
+    restart: unless-stopped
+    environment:
+      RUSTFS_ACCESS_KEY: rustfs
+      RUSTFS_SECRET_KEY: rustfs
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    volumes:
+      - rustfs-storage:/data

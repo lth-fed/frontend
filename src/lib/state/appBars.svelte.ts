@@ -2,6 +2,7 @@ import { getContext, onDestroy, setContext } from 'svelte';
 import type { Component } from 'svelte';
 import { Bell, ChevronLeft, ShareIcon, TicketIcon } from '@lucide/svelte';
 import { m } from '$lib/paraglide/messages.js';
+import '$lib/state/locale.svelte';
 import { goBackOrHome } from '$lib/navigation/stackNavigation';
 
 export type TopBarSlot =
@@ -51,6 +52,7 @@ export type BottomConfig =
 			icon: Component;
 			systemIcon: string;
 			onclick: () => void;
+			disabled?: boolean;
 			backgroundColor?: string;
 			foregroundColor?: string;
 	  }
@@ -148,22 +150,27 @@ export const slots = {
 export function detailTopBar(opts: {
 	title: string;
 	onBack?: () => void;
-	onShare?: () => void;
+	// onShare?: () => void;
 }): TopBarConfig {
 	return {
 		leading: slots.back(opts.onBack),
-		trailing: opts.onShare ? slots.share(opts.onShare) : null,
+		// trailing: opts.onShare ? slots.share(opts.onShare) : null,
 		title: opts.title
 	};
 }
 
-export function buyTicketsBottom(opts: { id: string; onclick: () => void }): BottomConfig {
+export function buyTicketsBottom(opts: {
+	id: string;
+	onclick: () => void;
+	disabled?: boolean;
+}): BottomConfig {
 	return {
 		kind: 'action',
 		id: opts.id,
-		label: m.activity_buy_tickets(),
+		label: opts.disabled ? m.activity_cannot_buy_tickets() : m.activity_buy_tickets(),
 		icon: TicketIcon,
 		systemIcon: 'ticket',
-		onclick: opts.onclick
+		onclick: opts.onclick,
+		disabled: opts.disabled
 	};
 }

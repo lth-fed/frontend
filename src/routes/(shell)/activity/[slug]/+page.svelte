@@ -11,32 +11,54 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import type { PageProps } from './$types';
 	import { isIos26Plus } from '$lib/platform/isIos26Plus';
-	import { onMount } from 'svelte';
+	import { onMount, untrack } from 'svelte';
 	import { pushNavigation } from '$lib/navigation/stackNavigation';
 	import Routes from '$lib/navigation/routes';
 	import { fly } from 'svelte/transition';
 	import { quadOut } from 'svelte/easing';
+	import ActivityMap from '$lib/components/ActivityMap.svelte';
+	import MarkdownContent from '$lib/components/MarkdownContent.svelte';
+	import { setActivityFollow } from '$lib/api/notifications';
+	import { errorMessage } from '$lib/api/errors';
 
 	let { data }: PageProps = $props();
 	const activity = $derived(data.activity);
+	let followed = $state(untrack(() => data.followed));
+	let followBusy = $state(false);
+	let followError = $state('');
 
 	let isIos26Native = $state(false);
 
 	onMount(async () => (isIos26Native = await isIos26Plus()));
 
+	async function toggleFollow(): Promise<void> {
+		if (followBusy) return;
+		const previous = followed;
+		followed = !followed;
+		followBusy = true;
+		followError = '';
+		try {
+			await setActivityFollow(activity.id, followed);
+		} catch (cause) {
+			followed = previous;
+			followError = errorMessage(cause) ?? m.error_status_unknown();
+		} finally {
+			followBusy = false;
+		}
+	}
+
 	useAppBars(() => ({
 		topBar: detailTopBar({
-			title: activity.title,
-			onShare: () => alert(`Share ${activity.title}`)
+			title: activity.title
+			// onShare: () => alert(`Share ${activity.title}`)
 		}),
-		// Buy CTA only when the full record confirms sellable tickets
-		// (krav §5). While `!full` (list-seeded placeholder), no CTA —
-		// the full fetch lands in a moment and re-renders.
+		// Wait for the full record before deciding whether the stable CTA is enabled.
 		bottom:
 			activity.full && activity.ticketsExist
 				? buyTicketsBottom({
 						id: `buy-${activity.id}`,
-						onclick: () => pushNavigation(Routes.ActivityTickets(activity.id))
+						onclick: () => pushNavigation(Routes.ActivityTickets(activity.id)),
+						disabled: activity.earliestPurchasableTicketRelease === undefined
 					})
 				: emptyBottom
 	}));
@@ -61,15 +83,37 @@
 				title={activity.title}
 				date={formatDetailDate(activity.startAt)}
 				time={formatTimeRange(activity.startAt, activity.endAt)}
-				location={activity.location} />
+				location={activity.location}
+				{followBusy}
+				{followed}
+				followToggle={toggleFollow}>
+			</ActivityHeadCard>
 		</div>
+		{#if followError}<p class="text-sm text-red-700" role="alert">{followError}</p>{/if}
 
 		<div
 			class="flex w-full flex-col gap-3.75"
 			in:fly={{ y: 28, duration: 140, delay: 120, easing: quadOut }}>
 			<h2 class="text-[24px] font-semibold">{m.activity_about()}</h2>
-			<p class="text-[16px] font-normal">{activity.description}</p>
+			<MarkdownContent markdown={activity.description} />
 		</div>
+
+		{#if activity.contact}
+			<div
+				class="flex w-full flex-col gap-3.75"
+				in:fly={{ y: 28, duration: 140, delay: 120, easing: quadOut }}>
+				<h2 class="text-[24px] font-semibold">{m.activity_contact()}</h2>
+				<div class="rounded-3xl border border-gray-100 bg-white p-5">
+					<p class="font-semibold text-guild-on-surface">{activity.contact.name}</p>
+					<!-- eslint-disable svelte/no-navigation-without-resolve -- API-validated mailto/tel contact URI -->
+					<a
+						href={activity.contact.uri}
+						class="mt-1 block text-sm font-semibold break-all text-guild-accent">
+						{activity.contact.display}
+					</a>
+				</div>
+			</div>
+		{/if}
 
 		<div
 			class="flex w-full flex-col gap-3.75"
@@ -78,7 +122,7 @@
 			<div class="flex w-full flex-col gap-2">
 				{#if activity.full}
 					{#each activity.organisers as organiser (organiser.id)}
-						<OrganiserCard {organiser} onFollow={() => alert(`Follow ${organiser.name}`)} />
+						<OrganiserCard {organiser} returnTo={Routes.Activity(activity.id)} />
 					{/each}
 				{:else}
 					<!-- List-seeded placeholder: hosts arrive with the full fetch. -->
@@ -87,19 +131,43 @@
 			</div>
 		</div>
 
-		<div
-			class="flex w-full flex-col gap-3.75"
-			in:fly={{ y: 28, duration: 140, delay: 120, easing: quadOut }}>
-			<div class="flex items-center justify-between">
-				<h2 class="text-[24px] font-semibold">{m.activity_location()}</h2>
-				<span class="text-sm font-semibold text-guild-on-surface">{m.activity_open_maps()}</span>
+		{#if activity.locationDetails.name || activity.locationDetails.directions || activity.locationDetails.url || activity.locationDetails.coordinates}
+			<div
+				class="flex w-full flex-col gap-3.75"
+				in:fly={{ y: 28, duration: 140, delay: 120, easing: quadOut }}>
+				<div class="flex items-center justify-between">
+					<h2 class="text-[24px] font-semibold">{m.activity_location()}</h2>
+					{#if activity.locationDetails.url || activity.locationDetails.coordinates}
+						<!-- eslint-disable svelte/no-navigation-without-resolve -- external API-provided venue/map URL -->
+						<a
+							href={activity.locationDetails.url ??
+								`https://www.openstreetmap.org/?mlat=${activity.locationDetails.coordinates?.north}&mlon=${activity.locationDetails.coordinates?.east}#map=17/${activity.locationDetails.coordinates?.north}/${activity.locationDetails.coordinates?.east}`}
+							target="_blank"
+							rel="noopener noreferrer"
+							class="text-sm font-semibold text-guild-accent">{m.activity_open_maps()}</a>
+					{/if}
+				</div>
+				{#if activity.locationDetails.directions || activity.locationDetails.name}
+					<div class="w-full rounded-3xl border border-gray-100 bg-white p-5">
+						{#if activity.locationDetails.name}
+							<p class="whitespace-pre-line text-guild-on-surface">
+								{activity.locationDetails.name}
+							</p>
+						{/if}
+						{#if activity.locationDetails.directions}
+							<p class="mt-2 text-sm whitespace-pre-line text-guild-on-surface/75">
+								{activity.locationDetails.directions}
+							</p>
+						{/if}
+					</div>
+				{/if}
+				{#if activity.locationDetails.coordinates}
+					<ActivityMap
+						north={activity.locationDetails.coordinates.north}
+						east={activity.locationDetails.coordinates.east}
+						label={activity.location || activity.title} />
+				{/if}
 			</div>
-			<div class="w-full rounded-3xl border border-gray-100">
-				<img
-					class="aspect-video w-full rounded-3xl object-cover"
-					src="https://picsum.photos/600/400"
-					alt="Location" />
-			</div>
-		</div>
+		{/if}
 	</div>
 </div>

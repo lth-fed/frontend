@@ -9,7 +9,8 @@
 	import type { Pathname } from '$app/types';
 	import { SvelteMap } from 'svelte/reactivity';
 	import { m } from '$lib/paraglide/messages.js';
-	import { replaceNavigation } from '$lib/navigation/stackNavigation';
+	import '$lib/state/locale.svelte';
+	import { pushNavigation, replaceNavigation } from '$lib/navigation/stackNavigation';
 	import Routes from '$lib/navigation/routes';
 	import {
 		createAppBars,
@@ -20,6 +21,7 @@
 	import { session } from '$lib/state/session.svelte';
 	import { onMount } from 'svelte';
 	import { isIos26Plus } from '$lib/platform/isIos26Plus';
+	import { network } from '$lib/state/network.svelte';
 
 	let { children } = $props();
 
@@ -67,7 +69,7 @@
 			userId: session.userId,
 			onclick: () => replaceNavigation(Routes.Profile, { resetDepth: true })
 		}),
-		trailing: slots.bell(() => alert(m.top_bar_notifications_label())),
+		trailing: slots.bell(() => pushNavigation(Routes.Notifications)),
 		title: navItems.find((it) => it.id === selected)?.label ?? ''
 	});
 
@@ -107,7 +109,18 @@
 
 <main
 	bind:this={mainEl}
-	class="h-full {isIos26Native ? 'mt-17 mb-20' : 'mb-24 pt-[calc(env(safe-area-inset-top)+6rem)]'}">
+	class="h-dvh overflow-y-auto overscroll-y-contain {isIos26Native
+		? bottom.kind === 'none'
+			? 'pt-[calc(env(safe-area-inset-top)+4.25rem)] pb-[calc(env(safe-area-inset-bottom)+2rem)]'
+			: 'pt-[calc(env(safe-area-inset-top)+4.25rem)] pb-[calc(env(safe-area-inset-bottom)+8rem)]'
+		: 'pt-[calc(env(safe-area-inset-top)+6rem)] pb-[calc(env(safe-area-inset-bottom)+6rem)]'}">
+	{#if !network.online}
+		<p
+			class="mx-4 mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
+			role="status">
+			{m.offline_banner()}
+		</p>
+	{/if}
 	{@render children()}
 </main>
 
@@ -115,19 +128,20 @@
 
 {#if bottom.kind === 'tabs'}
 	<div
-		class="shell-bottom-nav pointer-events-none fixed right-5 bottom-[max(env(safe-area-inset-bottom),1.5rem)] left-5 z-20">
+		class="shell-bottom-nav pointer-events-none fixed right-5 bottom-[max(env(safe-area-inset-bottom),1.5rem)] left-5 z-1000">
 		<div class="pointer-events-auto w-full">
 			<NavBar items={bottom.items} selected={bottom.selected} onSelect={bottom.onSelect} />
 		</div>
 	</div>
 {:else if bottom.kind === 'action'}
-	<div class="fixed inset-x-0 bottom-[max(env(safe-area-inset-bottom),1.5rem)] z-20 px-6">
+	<div class="fixed inset-x-0 bottom-[max(env(safe-area-inset-bottom),1.5rem)] z-1000 px-6">
 		<BottomActionButton
 			id={bottom.id}
 			label={bottom.label}
 			icon={bottom.icon}
 			systemIcon={bottom.systemIcon}
 			onclick={bottom.onclick}
+			disabled={bottom.disabled}
 			backgroundColor={bottom.backgroundColor}
 			foregroundColor={bottom.foregroundColor} />
 	</div>

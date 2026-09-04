@@ -19,9 +19,14 @@ class Routes {
 	static Links: Pathname = '/links/';
 	static Profile: Pathname = '/profile/';
 	static Settings: Pathname = '/settings/';
+	static Notifications: Pathname = '/notifications/';
 
 	/** Settings sub-pages */
 	static About: Pathname = '/settings/about/';
+	static Filters: Pathname = '/settings/filters/';
+	static NotificationSettings: Pathname = '/settings/notifications/';
+	static Verify: Pathname = '/verify/';
+	static Group = (id: string): Pathname => `/group/${id}/`;
 
 	/** Activity sub-pages */
 	static Activity = (slug: string): Pathname => `/activity/${slug}/`;

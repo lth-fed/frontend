@@ -1,5 +1,6 @@
 import { browser } from '$app/environment';
 import { invalidate as rerunLoads } from '$app/navigation';
+import { navigationSettled } from '$lib/navigation/stackNavigation';
 
 /**
  * Session-scoped stale-while-revalidate cache between `load` functions
@@ -20,8 +21,15 @@ type CacheEntry = {
 };
 
 const store = new Map<string, CacheEntry>();
+const PERSISTENT_PREFIX = 'tappen-api-cache:';
 
 const dep = (key: string) => `app:cache:${key}` as const;
+
+/** Re-run the mounted loads depending on `key` — once no navigation is pending, since SvelteKit
+ *  drops a navigation that an `invalidate()` overtakes (see `navigationSettled`). */
+function rerunDependentLoads(key: string): void {
+	void navigationSettled().then(() => rerunLoads(dep(key)));
+}
 
 /** Serialized-form change detection; our values are JSON-shaped
  *  (Dates serialize stably to ISO strings). */
@@ -35,7 +43,7 @@ function revalidate<T>(key: string, entry: CacheEntry, fetcher: () => Promise<T>
 			const wasChanged = changed(entry.value, fresh);
 			entry.value = fresh;
 			entry.fetchedAt = Date.now();
-			if (wasChanged && browser) void rerunLoads(dep(key));
+			if (wasChanged && browser) rerunDependentLoads(key);
 			return fresh;
 		})
 		.catch((err: unknown) => {
@@ -86,6 +94,58 @@ export async function cached<T>(
 	}
 }
 
+/**
+ * Opt-in persistent variant for the small amount of user data that must
+ * remain available offline. Persisted values are served immediately and
+ * revalidated through the normal stale-while-revalidate path.
+ */
+export function cachedPersistent<T>(
+	key: string,
+	ttlMs: number,
+	fetcher: () => Promise<T>,
+	revive: (value: unknown) => T,
+	depends?: (dep: `app:cache:${string}`) => void
+): Promise<T> {
+	const storageKey = `${PERSISTENT_PREFIX}${key}`;
+	if (browser && !store.has(key)) {
+		try {
+			const raw = localStorage.getItem(storageKey);
+			if (raw) {
+				const saved = JSON.parse(raw) as { value: unknown; fetchedAt: number };
+				store.set(key, {
+					value: revive(saved.value),
+					fetchedAt: saved.fetchedAt,
+					inflight: null
+				});
+			}
+		} catch {
+			try {
+				localStorage.removeItem(storageKey);
+			} catch {
+				// Storage is unavailable; continue with the memory cache.
+			}
+		}
+	}
+
+	const effectiveTtl = browser && !navigator.onLine ? Number.POSITIVE_INFINITY : ttlMs;
+	return cached(
+		key,
+		effectiveTtl,
+		async () => {
+			const fresh = await fetcher();
+			if (browser) {
+				try {
+					localStorage.setItem(storageKey, JSON.stringify({ value: fresh, fetchedAt: Date.now() }));
+				} catch {
+					// Storage can be unavailable or full; the memory cache still works.
+				}
+			}
+			return fresh;
+		},
+		depends
+	);
+}
+
 /** Cached value regardless of freshness (or `undefined`). */
 export function peek<T>(key: string): T | undefined {
 	return store.get(key)?.value as T | undefined;
@@ -106,7 +166,7 @@ export function invalidate(...keys: string[]): void {
 	for (const key of keys) {
 		const entry = store.get(key);
 		if (entry) entry.fetchedAt = 0;
-		if (browser) void rerunLoads(dep(key));
+		if (browser) rerunDependentLoads(key);
 	}
 }
 
@@ -116,7 +176,37 @@ export function invalidatePrefix(prefix: string): void {
 	invalidate(...[...store.keys()].filter((key) => key.startsWith(prefix)));
 }
 
+/** Remove mutation-invalidated values instead of serving them stale. This is
+ * used when the next page must observe the mutation immediately (for example,
+ * navigating home after purchasing a ticket). It deliberately does not rerun
+ * mounted loads, so it cannot race the navigation triggered by that mutation. */
+export function evict(...keys: string[]): void {
+	for (const key of keys) {
+		store.delete(key);
+		if (!browser) continue;
+		try {
+			localStorage.removeItem(`${PERSISTENT_PREFIX}${key}`);
+		} catch {
+			/* Storage is unavailable; the memory cache is still evicted. */
+		}
+	}
+}
+
+export function evictPrefix(prefix: string): void {
+	evict(...[...store.keys()].filter((key) => key.startsWith(prefix)));
+}
+
 /** Drop everything — called on logout so no data crosses sessions. */
 export function clearCache(): void {
 	store.clear();
+	if (browser) {
+		try {
+			for (let index = localStorage.length - 1; index >= 0; index -= 1) {
+				const key = localStorage.key(index);
+				if (key?.startsWith(PERSISTENT_PREFIX)) localStorage.removeItem(key);
+			}
+		} catch {
+			// Storage is unavailable; the in-memory session data is still cleared.
+		}
+	}
 }

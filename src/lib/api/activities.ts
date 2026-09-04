@@ -2,7 +2,14 @@ import { api } from './clients';
 import { cached, peek, seed } from './cache';
 import { DEMO_MODE, unwrap } from './call';
 import { apiError } from './errors';
-import { guildFromPath, parseDate, pickI18n } from './mappings';
+import {
+	guildFromPath,
+	locationLabel,
+	mapLocation,
+	parseDate,
+	pickI18n,
+	type Location
+} from './mappings';
 import type { components } from './generated/api';
 import type { Guild } from '$lib/types/guild';
 
@@ -14,7 +21,23 @@ type RawActivity = components['schemas']['Activity'];
 // detail schema (addons, no window/stock), which this mapper does not read.
 type RawTicketKind = components['schemas']['ActivityTicketKind'];
 type RawHost = components['schemas']['Host'];
-type RawLocation = components['schemas']['Location'];
+type RawKind = components['schemas']['Kind'];
+
+export type AddonOption = {
+	id: string;
+	index: number;
+	name: string;
+	price: number;
+};
+
+export type AvailableAddon = {
+	id: string;
+	name: string;
+	multipleAlternatives: boolean;
+	hasTextField: boolean;
+	required: boolean;
+	options: AddonOption[];
+};
 
 /** A ticket kind for a given activity. `price` is in öre — components
  *  format via `$lib/format/money.ts`. `ticketsLeft` is `undefined` when
@@ -27,8 +50,7 @@ export type TicketKind = {
 	purchasingAvailableStart: Date;
 	purchasingAvailableStop: Date;
 	ticketsLeft?: number;
-	/** Whether the signed-in user's group memberships allow purchase. */
-	membershipPassing: boolean;
+	addons: AvailableAddon[];
 };
 
 export type ActivityOrganiser = {
@@ -38,6 +60,12 @@ export type ActivityOrganiser = {
 	logoUrl: string;
 	/** Known guild theme, when the organiser path maps to one. */
 	guild?: Guild;
+};
+
+export type ActivityContact = {
+	name: string;
+	uri: string;
+	display: string;
 };
 
 /**
@@ -56,11 +84,13 @@ export type Activity = {
 	image: string;
 	title: string;
 	description: string;
-	/** Display string for the location; empty if backend ships none. */
 	location: string;
+	locationDetails: Location;
 	startAt: Date;
 	endAt: Date;
 	creatorGuild?: Guild;
+	/** Responsible contact, available on the full activity response. */
+	contact?: ActivityContact;
 	/** Creator and co-hosts as returned by the backend. Empty on list
 	 *  view (BriefActivity has no hosts), populated by `getActivity`. */
 	organisers: ActivityOrganiser[];
@@ -71,6 +101,8 @@ export type Activity = {
 	/** Whether any ticket kind exists — gates the buy CTA (krav §5).
 	 *  Only known when `full`. */
 	ticketsExist?: boolean;
+	/** Earliest release among ticket kinds this user may purchase. */
+	earliestPurchasableTicketRelease?: Date;
 };
 
 function mapTicketKind(t: RawTicketKind): TicketKind {
@@ -80,15 +112,29 @@ function mapTicketKind(t: RawTicketKind): TicketKind {
 		price: t.price,
 		purchasingAvailableStart: parseDate(t.purchasing_available_start),
 		purchasingAvailableStop: parseDate(t.purchasing_available_stop),
-		// The wire value is JSON null when there's no shortage to surface;
-		// normalize so `!== undefined` checks behave.
 		ticketsLeft: t.tickets_left ?? undefined,
-		membershipPassing: t.membership_passing
+		addons: []
 	};
 }
 
-function locationString(loc: RawLocation): string {
-	return pickI18n(loc.name);
+function mapAddon(addon: components['schemas']['AvailableAddon']): AvailableAddon {
+	return {
+		id: addon.id,
+		name: pickI18n(addon.name),
+		multipleAlternatives: addon.multiple_alternatives,
+		hasTextField: addon.has_text_field,
+		required: addon.required,
+		options: addon.options.map((option) => ({
+			id: option.id,
+			index: option.idx,
+			name: pickI18n(option.name),
+			price: option.price
+		}))
+	};
+}
+
+function withKindDetails(ticketKind: TicketKind, detail: RawKind): TicketKind {
+	return { ...ticketKind, addons: detail.available_addons.map(mapAddon) };
 }
 
 function mapOrganiser(host: RawHost): ActivityOrganiser {
@@ -102,34 +148,50 @@ function mapOrganiser(host: RawHost): ActivityOrganiser {
 }
 
 function mapBrief(b: RawBrief): Activity {
+	const location = mapLocation(b.location);
 	return {
 		id: b.id,
 		image: b.image_url,
 		title: pickI18n(b.title),
 		description: pickI18n(b.description),
-		location: locationString(b.location),
+		location: locationLabel(location),
+		locationDetails: location,
 		startAt: parseDate(b.time_start),
 		endAt: parseDate(b.time_end),
 		creatorGuild: guildFromPath(b.creator_path),
+		contact: undefined,
 		organisers: [],
-		full: false
+		full: false,
+		earliestPurchasableTicketRelease: b.earliest_purchasable_ticket_release
+			? parseDate(b.earliest_purchasable_ticket_release)
+			: undefined
 	};
 }
 
 function mapActivity(a: RawActivity): Activity {
 	const creator = a.hosts.find((host) => host.id === a.creator_id) ?? a.hosts[0];
+	const location = mapLocation(a.location);
 	return {
 		id: a.id,
 		image: a.image_url,
 		title: pickI18n(a.title),
 		description: pickI18n(a.description),
-		location: locationString(a.location),
+		location: locationLabel(location),
+		locationDetails: location,
 		startAt: parseDate(a.time_start),
 		endAt: parseDate(a.time_end),
 		creatorGuild: creator ? guildFromPath(creator.path) : undefined,
+		contact: {
+			name: a.responsible.name,
+			uri: a.responsible.contact,
+			display: a.responsible.contact.replace(/^(mailto:|tel:)/, '')
+		},
 		organisers: a.hosts.map(mapOrganiser),
 		full: true,
-		ticketsExist: a.tickets_exist
+		ticketsExist: a.tickets_exist,
+		earliestPurchasableTicketRelease: a.earliest_purchasable_ticket_release
+			? parseDate(a.earliest_purchasable_ticket_release)
+			: undefined
 	};
 }
 
@@ -160,7 +222,16 @@ export async function getActivityTicketKinds(id: string): Promise<TicketKind[]> 
 					params: { path: { id } }
 				})
 			);
-	return raw.map(mapTicketKind);
+	const kinds = raw.map(mapTicketKind);
+	if (DEMO_MODE) return kinds;
+	return Promise.all(
+		kinds.map(async (kind) => {
+			const detail = await unwrap(() =>
+				api.GET('/tickets/ticket-kind/{id}', { params: { path: { id: kind.id } } })
+			);
+			return withKindDetails(kind, detail);
+		})
+	);
 }
 
 /** Cached activity list (spec §3.3: 60 s stale-while-revalidate). */
@@ -334,8 +405,7 @@ const _mockTicketKinds: Record<string, RawTicketKind[]> = {
 			name: { en: 'Standard', sv: 'Standard' },
 			price: 12000,
 			purchasing_available_start: '2026-04-01T00:00:00Z',
-			purchasing_available_stop: '2026-04-27T12:00:00Z',
-			membership_passing: true
+			purchasing_available_stop: '2026-04-27T12:00:00Z'
 		},
 		{
 			id: '00000000-0000-0000-0000-00000000a002',
@@ -343,16 +413,14 @@ const _mockTicketKinds: Record<string, RawTicketKind[]> = {
 			price: 22000,
 			purchasing_available_start: '2026-04-01T00:00:00Z',
 			purchasing_available_stop: '2026-04-27T12:00:00Z',
-			tickets_left: 5,
-			membership_passing: true
+			tickets_left: 5
 		},
 		{
 			id: '00000000-0000-0000-0000-00000000a003',
 			name: { en: 'Sponsor', sv: 'Sponsor' },
 			price: 0,
 			purchasing_available_start: '2026-04-01T00:00:00Z',
-			purchasing_available_stop: '2026-04-27T12:00:00Z',
-			membership_passing: true
+			purchasing_available_stop: '2026-04-27T12:00:00Z'
 		}
 	],
 	b: [
@@ -361,24 +429,21 @@ const _mockTicketKinds: Record<string, RawTicketKind[]> = {
 			name: { en: 'Early bird', sv: 'Early bird' },
 			price: 8000,
 			purchasing_available_start: '2026-04-01T00:00:00Z',
-			purchasing_available_stop: '2026-04-15T00:00:00Z',
-			membership_passing: true
+			purchasing_available_stop: '2026-04-15T00:00:00Z'
 		},
 		{
 			id: '00000000-0000-0000-0000-00000000b002',
 			name: { en: 'Standard', sv: 'Standard' },
 			price: 11000,
 			purchasing_available_start: '2026-04-15T00:00:00Z',
-			purchasing_available_stop: '2026-05-01T12:00:00Z',
-			membership_passing: true
+			purchasing_available_stop: '2026-05-01T12:00:00Z'
 		},
 		{
 			id: '00000000-0000-0000-0000-00000000b003',
 			name: { en: 'After party', sv: 'After party' },
 			price: 5000,
 			purchasing_available_start: '2026-05-01T00:00:00Z',
-			purchasing_available_stop: '2026-05-02T01:00:00Z',
-			membership_passing: true
+			purchasing_available_stop: '2026-05-02T01:00:00Z'
 		}
 	],
 	c: [
@@ -387,16 +452,14 @@ const _mockTicketKinds: Record<string, RawTicketKind[]> = {
 			name: { en: 'Entry', sv: 'Entré' },
 			price: 4000,
 			purchasing_available_start: '2026-05-01T00:00:00Z',
-			purchasing_available_stop: '2026-05-05T17:00:00Z',
-			membership_passing: true
+			purchasing_available_stop: '2026-05-05T17:00:00Z'
 		},
 		{
 			id: '00000000-0000-0000-0000-00000000c002',
 			name: { en: 'Member', sv: 'Medlem' },
 			price: 0,
 			purchasing_available_start: '2026-05-01T00:00:00Z',
-			purchasing_available_stop: '2026-05-05T17:00:00Z',
-			membership_passing: true
+			purchasing_available_stop: '2026-05-05T17:00:00Z'
 		}
 	]
 };

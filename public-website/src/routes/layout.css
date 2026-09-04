@@ -82,10 +82,19 @@ a {
 }
 
 .wordmark {
+	display: flex;
+	align-items: center;
+	gap: 11px;
 	font-size: 1.1rem;
 	font-weight: 800;
 	letter-spacing: -0.035em;
 	text-decoration: none;
+}
+
+.wordmark img {
+	width: 46px;
+	height: 46px;
+	object-fit: contain;
 }
 
 .site-header nav {
@@ -239,6 +248,42 @@ h1 {
 .button.secondary {
 	border: 1px solid rgb(24 51 42 / 0.18);
 	background: rgb(255 253 248 / 0.72);
+}
+
+.install-page {
+	min-height: calc(100vh - 180px);
+	display: grid;
+	place-items: center;
+	padding: 132px 20px 72px;
+}
+
+.install-card {
+	width: min(620px, 100%);
+	padding: clamp(32px, 7vw, 64px);
+	border: 1px solid rgb(24 51 42 / 0.12);
+	border-radius: 36px;
+	background: rgb(255 253 248 / 0.8);
+	box-shadow: 0 24px 70px rgb(23 63 49 / 0.12);
+	text-align: center;
+}
+
+.install-card h1 {
+	margin: 8px 0 16px;
+	font-size: clamp(2.25rem, 8vw, 4rem);
+	line-height: 1;
+	letter-spacing: -0.055em;
+}
+
+.install-lead {
+	margin: 0 auto 30px;
+	color: #53685f;
+	font-size: 1.08rem;
+	line-height: 1.6;
+}
+
+.install-actions {
+	display: grid;
+	gap: 12px;
 }
 
 .app-preview {
@@ -564,6 +609,11 @@ h1 {
 	.header-inner {
 		height: 68px;
 		gap: 12px;
+	}
+
+	.wordmark img {
+		width: 40px;
+		height: 40px;
 	}
 
 	.site-header nav {

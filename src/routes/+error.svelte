@@ -17,7 +17,7 @@
 	// service is down" apart from "your connection is down" (spec §7).
 	let serviceState = $state<'unknown' | 'ok' | 'down'>('unknown');
 	$effect(() => {
-		if (kind === 'network' || kind === 'server') {
+		if ((kind === 'network' || kind === 'server') && navigator.onLine) {
 			void healthcheck().then((state) => {
 				serviceState = state;
 			});

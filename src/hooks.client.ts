@@ -1,4 +1,5 @@
 import { getTextDirection, getLocale } from '$lib/paraglide/runtime';
+import '$lib/state/locale.svelte';
 import { App as CapacitorApp } from '@capacitor/app';
 import { page } from '$app/state';
 import { backNavigation, replaceNavigation } from '$lib/navigation/stackNavigation';
@@ -20,6 +21,9 @@ CapacitorApp.addListener('backButton', () => {
 });
 
 export const init = () => {
+	document.documentElement.dataset.tappenBootstrapped = 'true';
+	document.getElementById('tappen-bootstrap-error')?.remove();
+
 	const locale = getLocale();
 	const root = document.documentElement;
 

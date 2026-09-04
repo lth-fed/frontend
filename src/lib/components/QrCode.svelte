@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { QrCode as QrIcon } from '@lucide/svelte';
+	import qrcode from 'qrcode-generator';
 	import { m } from '$lib/paraglide/messages.js';
 
 	interface Props {
@@ -8,13 +8,38 @@
 	}
 
 	let { data, size = 200 }: Props = $props();
+
+	const modules = $derived.by(() => {
+		const code = qrcode(0, 'M');
+		code.addData(data, 'Byte');
+		code.make();
+		const count = code.getModuleCount();
+		return Array.from({ length: count }, (_, row) =>
+			Array.from({ length: count }, (_, column) => code.isDark(row, column))
+		);
+	});
 </script>
 
+<!-- colours instead of tailwind classes to make browser force dark mode work with it -->
 <div
 	role="img"
 	aria-label={m.qr_code_alt()}
 	data-qr={data}
-	class="flex items-center justify-center rounded-lg bg-gray-100"
-	style="width: {size}px; height: {size}px;">
-	<QrIcon class="size-1/2 text-gray-400" aria-hidden="true" />
+	class="qr-code grid overflow-hidden border-10"
+	style:grid-template-columns={`repeat(${modules.length}, 1fr)`}
+	style="width: {size}px; height: {size}px; background-color: #ffffff; border-color: #ffffff;">
+	{#each modules as row, rowIndex (rowIndex)}
+		{#each row as dark, columnIndex (`${rowIndex}-${columnIndex}`)}
+			<span style:background-color={dark ? '#000000' : '#ffffff'}></span>
+		{/each}
+	{/each}
 </div>
+
+<style>
+	.qr-code,
+	.qr-code * {
+		color-scheme: only light;
+		forced-color-adjust: none;
+		print-color-adjust: exact;
+	}
+</style>

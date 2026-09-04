@@ -81,12 +81,16 @@ public class NativeButtonPlugin: CAPPlugin {
 
         switch value {
         case "prominentglass":
-            if #available(iOS 26.0, *) {
+            if #available(iOS 26.0, *),
+                !UIAccessibility.isReduceTransparencyEnabled
+            {
                 return UIButton.Configuration.prominentGlass()
             }
             return UIButton.Configuration.borderedProminent()
         case "prominentclearglass":
-            if #available(iOS 26.0, *) {
+            if #available(iOS 26.0, *),
+                !UIAccessibility.isReduceTransparencyEnabled
+            {
                 return UIButton.Configuration.prominentClearGlass()
             }
             return UIButton.Configuration.borderedProminent()
@@ -196,6 +200,8 @@ public class NativeButtonPlugin: CAPPlugin {
         hostVC.view.addSubview(overlay.view)
 
         overlay.view.translatesAutoresizingMaskIntoConstraints = false
+        // Keep hidden until first configure completes without animation
+        overlay.view.isHidden = true
 
         NSLayoutConstraint.activate([
             overlay.view.leadingAnchor.constraint(

@@ -75,6 +75,13 @@ final class NativeButtonOverlay: UIViewController, ScrollEdgeElementContainer {
         super.viewDidLoad()
 
         view.backgroundColor = .clear
+        // This controller covers the entire WebView so the button can be positioned against the
+        // safe area. A transparent view that remains marked opaque may be composited as black on
+        // some iOS/WebKit versions, hiding the activity page below it.
+        view.isOpaque = false
+        view.layer.isOpaque = false
+        // Start hidden so first configure can layout off-screen without a morph.
+        view.isHidden = true
 
         setupButton()
     }
@@ -125,6 +132,10 @@ final class NativeButtonOverlay: UIViewController, ScrollEdgeElementContainer {
     }
 
     /// Applies a new configuration to the button.
+    /// All constraint & configuration changes are performed without implicit
+    /// animation so the first appearance does not morph from centered to
+    /// full-width / from plain to liquid-glass. Visibility is toggled last,
+    /// also without animation, so the button is fully configured before reveal.
     func update(config: NativeButtonConfig?) {
         currentButtonId = config?.id
 
@@ -165,29 +176,55 @@ final class NativeButtonOverlay: UIViewController, ScrollEdgeElementContainer {
             buttonConfiguration?.baseForegroundColor = foregroundColor
         }
 
-        if let edge = config?.edge {
-            apply(
-                edge: edge,
-                fullWidth: config?.fullWidth ?? false,
-                alignment: config?.alignment
-            )
-            // Keep the scroll-edge edge in sync with the configured placement
-            self.scrollEdgeEdge = edge
-        }
-
-        if let enabled = config?.enabled {
-            button.isEnabled = enabled
-        }
+        // Capture visibility to apply after layout (prevents morph while visible)
+        var shouldBeHidden: Bool? = nil
         if let visible = config?.visible {
-            view.isHidden = !visible
+            shouldBeHidden = !visible
         }
 
-        button.configuration = buttonConfiguration
+        // Perform constraint + configuration changes without implicit animation
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        UIView.performWithoutAnimation {
+            if let edge = config?.edge {
+                apply(
+                    edge: edge,
+                    fullWidth: config?.fullWidth ?? false,
+                    alignment: config?.alignment
+                )
+                self.scrollEdgeEdge = edge
+            }
+            if let enabled = config?.enabled {
+                self.button.isEnabled = enabled
+            }
+            self.button.configuration = buttonConfiguration
+            // Force layout off-screen so first reveal has final frame
+            self.view.layoutIfNeeded()
+            self.button.layoutIfNeeded()
+        }
+        CATransaction.commit()
+
+        // Unhide without animation after fully configured
+        if let hidden = shouldBeHidden {
+            // Ensure the reveal itself is not animated
+            CATransaction.begin()
+            CATransaction.setDisableActions(true)
+            UIView.performWithoutAnimation {
+                self.view.isHidden = hidden
+                // Also clear any pending implicit show animation
+                self.view.layer.removeAllAnimations()
+                self.button.layer.removeAllAnimations()
+            }
+            CATransaction.commit()
+        }
     }
 
     /// Attaches the scroll-edge effect using the host app's view hierarchy.
     func updateScrollEdgeEffect(enabled: Bool, in hostView: UIView?) {
-        guard enabled else { return }
+        guard enabled, !UIAccessibility.isReduceTransparencyEnabled else {
+            detachScrollEdgeInteraction()
+            return
+        }
         guard let hostView else { return }
 
         // Use configured edge for the scroll-edge effect

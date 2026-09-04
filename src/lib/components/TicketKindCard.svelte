@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { TicketIcon } from '@lucide/svelte';
-	import { formatPrice } from '$lib/format/money';
+	import { formatSek } from '$lib/format/money';
 	import { formatShortDateTime } from '$lib/format/datetime';
 	import { m } from '$lib/paraglide/messages.js';
 	import type { KindState } from '$lib/purchase/kindState';
 
 	interface Props {
 		name: string;
-		/** Price in öre. Rendered via `formatPrice` (0 → "Gratis"/"Free"). */
+		/** Price in öre. */
 		price: number;
 		/** Purchasability, derived via `deriveKindState` (spec §4.6). */
 		state: KindState;
@@ -34,12 +34,8 @@
 		onclick
 	}: Props = $props();
 
-	// Every kind (free included) goes through the purchase machine:
-	// actionable when open, inside the 10-min entry window, and when sold
-	// out (reservation queue) — spec §4.2.
-	const joinable = $derived(
-		state.state === 'open' || state.state === 'window' || state.state === 'sold-out'
-	);
+	// Every available kind (free included) goes through the purchase machine.
+	const joinable = $derived(state.state === 'open' || state.state === 'window');
 	const enabled = $derived(joinable && !busy && !flowActive);
 
 	const statusLabel = $derived.by(() => {
@@ -50,10 +46,8 @@
 				return m.purchase_releases_at({ datetime: formatShortDateTime(state.releaseAt) });
 			case 'closed':
 				return m.purchase_closed();
-			case 'members-only':
-				return m.purchase_members_only();
 			case 'sold-out':
-				return m.purchase_join_queue();
+				return m.purchase_sold_out();
 			case 'open':
 				return undefined;
 		}
@@ -87,11 +81,14 @@
 				class="size-5 animate-spin rounded-full border-2 border-guild-primary border-t-transparent"
 				role="status"
 				aria-label={m.purchase_in_progress()}></span>
-		{:else if statusLabel}
-			<span class="text-sm font-semibold text-guild-on-surface/70">{statusLabel}</span>
 		{:else}
-			<span class="text-[16px] font-semibold text-guild-on-surface">
-				{formatPrice(price)}
+			<span class="flex flex-col items-end gap-0.5 text-right">
+				<span class="text-[16px] font-semibold text-guild-on-surface">
+					{m.ticket_price_from({ price: formatSek(price) })}
+				</span>
+				{#if statusLabel}
+					<span class="text-xs font-semibold text-guild-on-surface/70">{statusLabel}</span>
+				{/if}
 			</span>
 		{/if}
 	</span>

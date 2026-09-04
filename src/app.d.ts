@@ -3,6 +3,8 @@
 import type { ApiErrorKind } from '$lib/api/errors';
 
 declare global {
+	const __GIT_REVISION__: string;
+
 	namespace App {
 		interface Error {
 			message: string;
@@ -15,6 +17,7 @@ declare global {
 		interface PageState {
 			navDepth?: number;
 			navTransition?: 'forward' | 'back' | 'root';
+			returnTo?: string;
 		}
 		// interface Platform {}
 	}
