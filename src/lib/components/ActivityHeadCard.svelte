@@ -15,7 +15,6 @@
 	}
 
 	let { badge, title, date, time, location, followed, followBusy, followToggle }: Props = $props();
-	console.log(followed, followBusy, followToggle)
 </script>
 
 <div
