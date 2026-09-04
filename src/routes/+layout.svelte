@@ -26,7 +26,14 @@
 	import { SplashScreen } from '@capacitor/splash-screen';
 
 	let { children } = $props();
-	let notificationNavigationPending = $state(false);
+	let notificationNavigationTarget = $state<Pathname | null>(null);
+
+	function notificationTarget(data: Record<string, unknown> | undefined): Pathname {
+		const activityId = data?.activity_id;
+		return typeof activityId === 'string' && /^[0-9a-f-]{36}$/iu.test(activityId)
+			? Routes.Activity(activityId)
+			: Routes.Notifications;
+	}
 
 	// The native launch screen (see `capacitor.config.ts`, `launchAutoHide: false`) stays up
 	// through auth bootstrap so the branded splash bridges straight into the app instead of a
@@ -71,8 +78,8 @@
 		});
 		const notificationListener = Capacitor.isNativePlatform()
 			? import('@capacitor/push-notifications').then(({ PushNotifications }) =>
-					PushNotifications.addListener('pushNotificationActionPerformed', () => {
-						notificationNavigationPending = true;
+					PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
+						notificationNavigationTarget = notificationTarget(action.notification.data);
 					})
 				)
 			: undefined;
@@ -154,13 +161,26 @@
 	});
 
 	$effect(() => {
-		if (!notificationNavigationPending || !bootstrapped || !session.accessToken) return;
-		notificationNavigationPending = false;
+		if (!notificationNavigationTarget || !bootstrapped || !session.accessToken) return;
+		const target = notificationNavigationTarget;
+		notificationNavigationTarget = null;
 		evict('notification-history');
-		void replaceNavigation(Routes.Notifications, { resetDepth: true });
+		void replaceNavigation(target, { resetDepth: true });
 	});
 
+	let activeViewTransition: ViewTransition | null = null;
+
+	function finishActiveViewTransition() {
+		activeViewTransition?.skipTransition();
+		activeViewTransition = null;
+		delete document.documentElement.dataset.transitionDirection;
+	}
+
 	onNavigate((navigation) => {
+		// A browser back action (including WKWebView's interactive gesture) can arrive while the
+		// previous page's visual animation is still running. Never let two document snapshots own
+		// the page at once: reveal the already-committed DOM before starting the next transition.
+		finishActiveViewTransition();
 		if (!document.startViewTransition) return;
 		if (!navigation.from || !navigation.to) return;
 
@@ -173,12 +193,16 @@
 
 		return new Promise((resolve) => {
 			documentElement.dataset.transitionDirection = direction;
-			document
-				.startViewTransition(async () => {
-					resolve();
-					await navigation.complete;
-				})
-				.finished.finally(() => {
+			const transition = document.startViewTransition(async () => {
+				resolve();
+				await navigation.complete;
+			});
+			activeViewTransition = transition;
+			void transition.finished
+				.catch(() => undefined)
+				.finally(() => {
+					if (activeViewTransition !== transition) return;
+					activeViewTransition = null;
 					delete documentElement.dataset.transitionDirection;
 				});
 		});
@@ -186,8 +210,9 @@
 
 	beforeNavigate((navigation) => {
 		if (navigation.type !== 'popstate' || !navigation.from) return;
+		finishActiveViewTransition();
 
-		if ((page.state.navDepth ?? 0) === 0) {
+		if (navigation.delta < 0 && (page.state.navDepth ?? 0) === 0) {
 			navigation.cancel();
 		}
 	});

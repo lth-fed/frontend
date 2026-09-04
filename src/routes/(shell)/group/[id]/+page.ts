@@ -39,8 +39,8 @@ export const load: PageLoad = async ({ params, depends }) => {
 		subgroups,
 		setting: inheritedSetting ?? {
 			groupId: group.id,
-			visible: true,
-			notificationLevel: 'personalized' as const
+			visible: false,
+			notificationLevel: 'none' as const
 		},
 		isDirectMember: me.groups.some((membership) => membership.id === group.id)
 	};

@@ -62,10 +62,12 @@ export function formatShortDateTime(d: Date): string {
 }
 
 /** Compact future release label for activity-card image islands. */
-export function formatTicketReleaseDistance(releaseAt: Date): string | undefined {
-	const now = serverNow();
+export function formatTicketReleaseDistance(
+	releaseAt: Date,
+	now: Date = serverNow()
+): string | undefined {
 	const remainingMs = releaseAt.getTime() - now.getTime();
-	if (remainingMs <= 0) return undefined;
+	if (remainingMs <= 0) return m.ticket_release_now();
 
 	if (remainingMs < 24 * 60 * 60 * 1_000) {
 		const relative = new Intl.RelativeTimeFormat(getLocale(), { numeric: 'always' });

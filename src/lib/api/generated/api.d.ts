@@ -1292,7 +1292,8 @@ export interface paths {
         /**
          * Deletes a ticket kind only while it is still safe to withdraw: it must
          *     have no buyers, never have been released, and release must be more than
-         *     twenty minutes away.
+         *     twenty minutes away. Zero-capacity kinds are exempt from those checks,
+         *     allowing synthetic activity-visibility kinds to be removed.
          */
         delete: {
             parameters: {
@@ -1366,7 +1367,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/admin/ticket-kinds/{ticket_kind_id}/notifications/{kind}": {
+    "/admin/activities/{activity_id}/notifications/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -1374,20 +1375,24 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** Creates or replaces a named notification for a ticket kind. */
+        /**
+         * Creates or replaces an unsent notification for a published activity.
+         * @description Hidden activities reject notification creation and editing. Sent
+         *     notifications are immutable.
+         */
         put: {
             parameters: {
                 query?: never;
                 header?: never;
                 path: {
-                    ticket_kind_id: string;
-                    kind: string;
+                    activity_id: string;
+                    id: string;
                 };
                 cookie?: never;
             };
             requestBody: {
                 content: {
-                    "application/json; charset=utf-8": components["schemas"]["PutNotification"];
+                    "application/json; charset=utf-8": components["schemas"]["PutActivityNotification"];
                 };
             };
             responses: {
@@ -1396,7 +1401,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json; charset=utf-8": components["schemas"]["TicketNotification"];
+                        "application/json; charset=utf-8": components["schemas"]["ActivityNotification"];
                     };
                 };
                 /** @description This is for user input errors. */
@@ -1450,14 +1455,14 @@ export interface paths {
             };
         };
         post?: never;
-        /** Deletes a named ticket-kind notification that has not been sent yet. */
+        /** Deletes an activity notification that has not been sent yet. */
         delete: {
             parameters: {
                 query?: never;
                 header?: never;
                 path: {
-                    ticket_kind_id: string;
-                    kind: string;
+                    activity_id: string;
+                    id: string;
                 };
                 cookie?: never;
             };
@@ -1524,20 +1529,20 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/admin/ticket-kinds/{ticket_kind_id}/notifications": {
+    "/admin/activities/{activity_id}/notifications": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Lists notifications that are still scheduled for a ticket kind, ordered by delivery time. */
+        /** Lists every notification for an activity, including sent notification history. */
         get: {
             parameters: {
                 query?: never;
                 header?: never;
                 path: {
-                    ticket_kind_id: string;
+                    activity_id: string;
                 };
                 cookie?: never;
             };
@@ -1548,7 +1553,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json; charset=utf-8": components["schemas"]["TicketNotification"][];
+                        "application/json; charset=utf-8": components["schemas"]["ActivityNotification"][];
                     };
                 };
                 /** @description This is for user input errors. */
@@ -5846,6 +5851,244 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/user/group-settings/{group_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Removes an explicit group settings. Useful for resetting filters. */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    group_id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description This is for user input errors. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json; charset=utf-8": components["schemas"]["MinilithError"];
+                    };
+                };
+                /** @description This is for auth errors. This usually requires re-login. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json; charset=utf-8": components["schemas"]["MinilithError"];
+                    };
+                };
+                /** @description This is for client application errors. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json; charset=utf-8": components["schemas"]["MinilithError"];
+                    };
+                };
+                /**
+                 * @description This is for when the user requests something that doesn't exist. Probably cache invalidaton
+                 *     issue.
+                 */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json; charset=utf-8": components["schemas"]["MinilithError"];
+                    };
+                };
+                /** @description Shit went down and the team is scrambling to fix it. */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json; charset=utf-8": components["schemas"]["MinilithError"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/user/activity-settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lists the user's explicit group filter settings. Groups without a row
+         *     inherit from their nearest configured ancestor.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json; charset=utf-8": components["schemas"]["ActivitySetting"][];
+                    };
+                };
+                /** @description This is for user input errors. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json; charset=utf-8": components["schemas"]["MinilithError"];
+                    };
+                };
+                /** @description This is for auth errors. This usually requires re-login. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json; charset=utf-8": components["schemas"]["MinilithError"];
+                    };
+                };
+                /** @description This is for client application errors. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json; charset=utf-8": components["schemas"]["MinilithError"];
+                    };
+                };
+                /**
+                 * @description This is for when the user requests something that doesn't exist. Probably cache invalidaton
+                 *     issue.
+                 */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json; charset=utf-8": components["schemas"]["MinilithError"];
+                    };
+                };
+                /** @description Shit went down and the team is scrambling to fix it. */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json; charset=utf-8": components["schemas"]["MinilithError"];
+                    };
+                };
+            };
+        };
+        /** Creates or replaces an explicit group filter setting. */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json; charset=utf-8": components["schemas"]["ActivitySetting"];
+                };
+            };
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description This is for user input errors. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json; charset=utf-8": components["schemas"]["MinilithError"];
+                    };
+                };
+                /** @description This is for auth errors. This usually requires re-login. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json; charset=utf-8": components["schemas"]["MinilithError"];
+                    };
+                };
+                /** @description This is for client application errors. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json; charset=utf-8": components["schemas"]["MinilithError"];
+                    };
+                };
+                /**
+                 * @description This is for when the user requests something that doesn't exist. Probably cache invalidaton
+                 *     issue.
+                 */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json; charset=utf-8": components["schemas"]["MinilithError"];
+                    };
+                };
+                /** @description Shit went down and the team is scrambling to fix it. */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json; charset=utf-8": components["schemas"]["MinilithError"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/user/auth-callback/v1": {
         parameters: {
             query?: never;
@@ -5995,6 +6238,32 @@ export interface components {
                 [key: string]: string;
             };
             group_path: string;
+        };
+        /** ActivityNotification */
+        ActivityNotification: {
+            /** Format: uuid */
+            id: string;
+            recipient: components["schemas"]["ActivityNotificationKind"];
+            sender: {
+                [key: string]: string;
+            };
+            sent: boolean;
+            title: {
+                [key: string]: string;
+            };
+            content: {
+                [key: string]: string;
+            };
+            /** Format: date-time */
+            send_at: string;
+        };
+        /** @enum {string} */
+        ActivityNotificationKind: "all" | "buyers" | "ticket_holders";
+        /** ActivitySetting */
+        ActivitySetting: {
+            /** Format: uuid */
+            activity_id: string;
+            follow: boolean;
         };
         /** ActivityTicketKind */
         ActivityTicketKind: {
@@ -6206,6 +6475,10 @@ export interface components {
         GroupNotification: {
             /** Format: uuid */
             id: string;
+            sender: {
+                [key: string]: string;
+            };
+            sent: boolean;
             title: {
                 [key: string]: string;
             };
@@ -6334,6 +6607,11 @@ export interface components {
         Notification: {
             /** Format: uuid */
             id: string;
+            /** Format: uuid */
+            activity_id?: string;
+            sender: {
+                [key: string]: string;
+            };
             title: {
                 [key: string]: string;
             };
@@ -6344,7 +6622,7 @@ export interface components {
             send_at: string;
         };
         /** @enum {string} */
-        NotificationLevel: "none" | "personalized" | "all";
+        NotificationLevel: "none" | "all";
         /** Now */
         Now: {
             /** Format: date-time */
@@ -6452,6 +6730,18 @@ export interface components {
             /** @description Should not include `creator_id`. */
             host_ids: string[];
         };
+        /** PutActivityNotification */
+        PutActivityNotification: {
+            recipient: components["schemas"]["ActivityNotificationKind"];
+            title: {
+                [key: string]: string;
+            };
+            content: {
+                [key: string]: string;
+            };
+            /** Format: date-time */
+            send_at: string;
+        };
         /** PutGroup */
         PutGroup: {
             /** Format: group_path */
@@ -6548,18 +6838,6 @@ export interface components {
             name: string;
             /** @description Should be tel: or mailto: */
             contact: string;
-        };
-        /** TicketNotification */
-        TicketNotification: {
-            kind: string;
-            title: {
-                [key: string]: string;
-            };
-            content: {
-                [key: string]: string;
-            };
-            /** Format: date-time */
-            send_at: string;
         };
         /** TransferRequest */
         TransferRequest: {

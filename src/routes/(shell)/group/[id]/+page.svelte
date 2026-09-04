@@ -131,7 +131,6 @@
 							})}
 						class="mt-2 w-full rounded-xl border border-gray-200 bg-white px-3 py-2">
 						<option value="none">{m.filters_notifications_none()}</option>
-						<option value="personalized">{m.filters_notifications_personalized()}</option>
 						<option value="all">{m.filters_notifications_all()}</option>
 					</select>
 				</label>

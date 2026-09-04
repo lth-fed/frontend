@@ -16,6 +16,7 @@ const API_BASE = dev ? 'http://localhost:8000/v0' : 'https://api.teknologappen.s
 type AllowedMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
 
 async function fetchViaCapacitor(input: Request): Promise<Response> {
+	input.headers.set('x-tappen-app-version', __GIT_REVISION__);
 	const headers: Record<string, string> = {};
 	input.headers.forEach((v, k) => {
 		headers[k] = v;

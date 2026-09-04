@@ -1,7 +1,7 @@
 import { api } from './clients';
 import { cached, invalidate } from './cache';
 import { DEMO_MODE, unwrap } from './call';
-import { pickI18n } from './mappings';
+import { guildFromPath, pickI18n } from './mappings';
 import type { components } from './generated/api';
 
 type RawGroup = components['schemas']['Group'];
@@ -154,6 +154,103 @@ export async function setGroupSetting(setting: GroupSetting): Promise<void> {
 				}
 			})
 		);
+	}
+	invalidate('group-settings', 'filter-groups', 'activities');
+}
+
+/** The settings created for a new user: their tree root is visible without notifications,
+ * and only explicit guild memberships directly below that root are visible with notifications. */
+export function defaultGroupSettings(
+	groups: ReadonlyArray<{ id: string; path: string }>,
+	memberships: ReadonlyArray<{ id: string; path: string }>
+): GroupSetting[] {
+	const membershipRoots = new Set(memberships.map((group) => group.path.split('.')[0]));
+	const roots = groups.filter(
+		(group) =>
+			(group.path === 'tlth' || group.path === 'testing_tlth') &&
+			(membershipRoots.size === 0 || membershipRoots.has(group.path))
+	);
+	const rootPaths = new Set(roots.map((group) => group.path));
+	const directGuilds = memberships.filter((group) => {
+		const parts = group.path.split('.');
+		return parts.length === 2 && rootPaths.has(parts[0]) && guildFromPath(group.path) !== undefined;
+	});
+
+	return [
+		...roots.map((group) => ({
+			groupId: group.id,
+			visible: true,
+			notificationLevel: 'none' as const
+		})),
+		...directGuilds.map((group) => ({
+			groupId: group.id,
+			visible: true,
+			notificationLevel: 'all' as const
+		}))
+	];
+}
+
+export function groupSettingsAreDefault(
+	settings: readonly GroupSetting[],
+	defaults: readonly GroupSetting[]
+): boolean {
+	if (settings.length !== defaults.length) return false;
+	const byId = new Map(settings.map((setting) => [setting.groupId, setting]));
+	return defaults.every((expected) => {
+		const actual = byId.get(expected.groupId);
+		return (
+			actual?.visible === expected.visible &&
+			actual.notificationLevel === expected.notificationLevel
+		);
+	});
+}
+
+/** Resolve a group's explicit setting, or the nearest configured ancestor. */
+export function inheritedGroupSetting(
+	group: Pick<Group, 'id' | 'path'>,
+	groups: ReadonlyArray<Pick<Group, 'id' | 'path'>>,
+	settings: Iterable<GroupSetting>
+): GroupSetting | undefined {
+	const settingsById = new Map([...settings].map((setting) => [setting.groupId, setting]));
+	const explicit = settingsById.get(group.id);
+	if (explicit) return explicit;
+	const ancestor = groups
+		.filter(
+			(candidate) => group.path.startsWith(`${candidate.path}.`) && settingsById.has(candidate.id)
+		)
+		.sort((a, b) => b.path.length - a.path.length)[0];
+	return ancestor ? settingsById.get(ancestor.id) : undefined;
+}
+
+/** Replace all explicit group settings with the new-user defaults. */
+export async function resetGroupSettings(
+	settings: readonly GroupSetting[],
+	defaults: readonly GroupSetting[]
+): Promise<void> {
+	if (!DEMO_MODE) {
+		const defaultsById = new Map(defaults.map((setting) => [setting.groupId, setting]));
+		await Promise.all([
+			...settings
+				.filter((setting) => !defaultsById.has(setting.groupId))
+				.map((setting) =>
+					unwrap(() =>
+						api.DELETE('/user/group-settings/{group_id}', {
+							params: { path: { group_id: setting.groupId } }
+						})
+					)
+				),
+			...defaults.map((setting) =>
+				unwrap(() =>
+					api.PUT('/user/group-settings', {
+						body: {
+							group_id: setting.groupId,
+							visible: setting.visible,
+							notification_level: setting.notificationLevel
+						}
+					})
+				)
+			)
+		]);
 	}
 	invalidate('group-settings', 'filter-groups', 'activities');
 }

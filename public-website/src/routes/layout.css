@@ -250,18 +250,6 @@ h1 {
 	background: rgb(255 253 248 / 0.72);
 }
 
-.button.disabled {
-	cursor: not-allowed;
-	color: #819089;
-	background: rgb(220 220 214 / 0.72);
-	box-shadow: none;
-	opacity: 0.68;
-}
-
-.button.disabled:hover {
-	transform: none;
-}
-
 .install-page {
 	min-height: calc(100vh - 180px);
 	display: grid;
@@ -296,17 +284,6 @@ h1 {
 .install-actions {
 	display: grid;
 	gap: 12px;
-}
-
-.disabled-store-option {
-	display: grid;
-	gap: 7px;
-}
-
-.disabled-store-option small {
-	color: #687b73;
-	font-size: 0.82rem;
-	line-height: 1.4;
 }
 
 .app-preview {

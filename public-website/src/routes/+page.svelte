@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages.js';
+	import { APP_STORE_URL, PLAY_STORE_URL } from '$lib/store-links';
 </script>
 
 <main id="main">
@@ -10,8 +11,11 @@
 				<h1>{m.hero_title()}</h1>
 				<p class="lead">{m.hero_description()}</p>
 				<div class="actions">
-					<a class="button primary" href="https://apps.apple.com/se/app/tappen/id6772353068">
+					<a class="button primary" href={APP_STORE_URL}>
 						{m.install_app_store()}
+					</a>
+					<a class="button primary" href={PLAY_STORE_URL}>
+						{m.install_play_store()}
 					</a>
 					<a class="button primary" href="https://app.teknologappen.se">{m.login_app()}</a>
 					<a class="button secondary" href="https://admin.teknologappen.se">
