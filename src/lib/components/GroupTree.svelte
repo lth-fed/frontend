@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { ChevronDown, ChevronRight } from '@lucide/svelte';
+	import { untrack } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 	import type { Group, NotificationLevel } from '$lib/api/groups';
 	import { m } from '$lib/paraglide/messages.js';
@@ -9,8 +10,11 @@
 		visible: (group: Group) => boolean;
 		notificationLevel: (group: Group) => NotificationLevel;
 		busy?: (group: Group) => boolean;
-		onchange: (group: Group, visible: boolean) => void;
-		onnotificationchange: (group: Group, level: NotificationLevel) => void;
+		showVisibility?: boolean;
+		showNotifications?: boolean;
+		initiallyExpandedDepth?: number;
+		onchange?: (group: Group, visible: boolean) => void;
+		onnotificationchange?: (group: Group, level: NotificationLevel) => void;
 	}
 
 	let {
@@ -18,10 +22,19 @@
 		visible,
 		notificationLevel,
 		busy = () => false,
-		onchange,
-		onnotificationchange
+		showVisibility = true,
+		showNotifications = true,
+		initiallyExpandedDepth = 2,
+		onchange = () => {},
+		onnotificationchange = () => {}
 	}: Props = $props();
-	const expanded = new SvelteSet<string>();
+	const expanded = new SvelteSet<string>(
+		untrack(() =>
+			groups
+				.filter((group) => group.path.split('.').length < initiallyExpandedDepth)
+				.map((group) => group.id)
+		)
+	);
 
 	const rows = $derived.by(() => {
 		const sorted = [...groups]
@@ -76,23 +89,27 @@
 				<strong class="block truncate text-sm text-guild-on-surface">{row.group.name}</strong>
 				<small class="block truncate text-guild-on-surface/55">{row.group.path}</small>
 			</span>
-			<input
-				type="checkbox"
-				aria-label={m.filters_visibility_label({ group: row.group.name })}
-				checked={visible(row.group)}
-				disabled={busy(row.group)}
-				onchange={(event) => onchange(row.group, event.currentTarget.checked)} />
-			<select
-				aria-label={m.filters_notifications_label({ group: row.group.name })}
-				value={notificationLevel(row.group)}
-				disabled={busy(row.group)}
-				onchange={(event) =>
-					onnotificationchange(row.group, event.currentTarget.value as NotificationLevel)}
-				class="max-w-28 rounded-xl border border-gray-200 bg-white px-2 py-1.5 text-xs text-guild-on-surface">
-				<option value="none">{m.filters_notifications_none()}</option>
-				<option value="personalized">{m.filters_notifications_personalized()}</option>
-				<option value="all">{m.filters_notifications_all()}</option>
-			</select>
+			{#if showVisibility}
+				<input
+					type="checkbox"
+					aria-label={m.filters_visibility_label({ group: row.group.name })}
+					checked={visible(row.group)}
+					disabled={busy(row.group)}
+					onchange={(event) => onchange(row.group, event.currentTarget.checked)} />
+			{/if}
+			{#if showNotifications}
+				<select
+					aria-label={m.filters_notifications_label({ group: row.group.name })}
+					value={notificationLevel(row.group)}
+					disabled={busy(row.group)}
+					onchange={(event) =>
+						onnotificationchange(row.group, event.currentTarget.value as NotificationLevel)}
+					class="max-w-28 rounded-xl border border-gray-200 bg-white px-2 py-1.5 text-xs text-guild-on-surface">
+					<option value="none">{m.filters_notifications_none()}</option>
+					<option value="personalized">{m.filters_notifications_personalized()}</option>
+					<option value="all">{m.filters_notifications_all()}</option>
+				</select>
+			{/if}
 		</div>
 	{/each}
 </div>

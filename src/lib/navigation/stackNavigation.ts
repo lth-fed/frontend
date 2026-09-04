@@ -35,12 +35,15 @@ function navigate(intent: NavigationIntent, run: () => Promise<void>): Promise<v
 	return navigation;
 }
 
-export function pushNavigation(url: Pathname, opts?: { noScroll?: boolean }): Promise<void> {
+export function pushNavigation(
+	url: Pathname,
+	opts?: { noScroll?: boolean; returnTo?: Pathname }
+): Promise<void> {
 	return navigate('forward', () =>
 		goto(resolve(url), {
 			replaceState: false,
 			noScroll: opts?.noScroll ?? false,
-			state: nextState(currentDepth() + 1)
+			state: { ...nextState(currentDepth() + 1), returnTo: opts?.returnTo }
 		})
 	);
 }

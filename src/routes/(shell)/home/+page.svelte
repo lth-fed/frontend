@@ -4,7 +4,7 @@
 	import Carousel from '$lib/components/Carousel.svelte';
 	import EmptyState from '$lib/components/EmptyState.svelte';
 	import { m } from '$lib/paraglide/messages.js';
-	import { ListFilter, Ticket as TicketIcon } from '@lucide/svelte';
+	import { Funnel, FunnelX, Ticket as TicketIcon } from '@lucide/svelte';
 	import { formatCardDate } from '$lib/format/datetime';
 	import Routes from '$lib/navigation/routes';
 	import type { PageProps } from './$types';
@@ -13,6 +13,7 @@
 	import { pushNavigation } from '$lib/navigation/stackNavigation';
 	import { errorMessage } from '$lib/api/errors';
 	import { network } from '$lib/state/network.svelte';
+	import { resetGroupSettings } from '$lib/api/groups';
 	import { Capacitor } from '@capacitor/core';
 	import { onMount } from 'svelte';
 
@@ -24,6 +25,22 @@
 		showAndroidAppCard =
 			!Capacitor.isNativePlatform() && /Android/i.test(window.navigator.userAgent);
 	});
+
+	let resetBusy = $state(false);
+	let resetComplete = $state(false);
+	const filtersAreDefault = $derived(data.filtersAreDefault || resetComplete);
+
+	async function resetFilters() {
+		resetBusy = true;
+		try {
+			await resetGroupSettings(data.groupSettings, data.defaultSettings);
+			resetComplete = true;
+		} catch (cause) {
+			alert(errorMessage(cause) ?? m.error_status_unknown());
+		} finally {
+			resetBusy = false;
+		}
+	}
 
 	async function ticketAction(
 		ticket: TicketData,
@@ -104,18 +121,31 @@
 	</div>
 
 	<section id="event-flow" class="scroll-mt-24 px-6 pt-6">
-		<div class="flex items-center justify-between gap-3">
-			<h2 class="text-[20px] font-semibold">{m.home_upcoming_activities()}</h2>
-			{#if !networkUnavailable}
+		<h2 class="text-[20px] font-semibold">{m.home_upcoming_activities()}</h2>
+		{#if !networkUnavailable}
+			<div class="mt-3 flex flex-wrap gap-2">
 				<button
 					type="button"
 					onclick={() => pushNavigation(Routes.Filters)}
 					class="flex items-center gap-2 rounded-full border border-guild-ring bg-white px-3 py-2 text-sm font-semibold text-guild-on-surface">
-					<ListFilter class="size-4" aria-hidden="true" />
+					<Funnel class="size-4" aria-hidden="true" />
 					{m.filters_title()}
 				</button>
-			{/if}
-		</div>
+				{#if !filtersAreDefault}
+					<button
+						type="button"
+						disabled={resetBusy}
+						onclick={resetFilters}
+						aria-label={resetBusy ? m.filters_resetting() : m.filters_reset()}
+						title={resetBusy ? m.filters_resetting() : m.filters_reset()}
+						class="grid size-9 place-items-center rounded-full border border-guild-ring bg-white text-guild-on-surface disabled:opacity-55">
+						<span class="relative size-4" aria-hidden="true">
+							<FunnelX class="size-4" />
+						</span>
+					</button>
+				{/if}
+			</div>
+		{/if}
 
 		{#if networkUnavailable}
 			<p class="mt-3.5 rounded-2xl bg-white p-4 text-sm text-guild-on-surface/70">

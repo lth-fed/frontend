@@ -6,6 +6,7 @@
 	import { markdownToPlainText } from '$lib/markdown';
 	import type { Guild } from '$lib/types/guild';
 	import { formatTicketReleaseDistance } from '$lib/format/datetime';
+	import { serverNow } from '$lib/api/serverClock';
 	import { onMount } from 'svelte';
 
 	interface Props {
@@ -39,13 +40,15 @@
 	const cls =
 		'block w-full overflow-hidden rounded-3xl bg-white text-left shadow-[0_4px_20px_color-mix(in_srgb,rgb(0_0_0)_12%,transparent)]';
 	const descriptionPreview = $derived(markdownToPlainText(description));
-	let releaseClock = $state(0);
+	let currentTime = $state(serverNow());
 	const ticketReleaseLabel = $derived(
-		ticketRelease !== undefined ? formatTicketReleaseDistance(ticketRelease) : undefined
+		ticketRelease !== undefined
+			? formatTicketReleaseDistance(ticketRelease, currentTime)
+			: undefined
 	);
 
 	onMount(() => {
-		const timer = window.setInterval(() => (releaseClock += 1), 60_000);
+		const timer = window.setInterval(() => (currentTime = serverNow()), 60_000);
 		return () => window.clearInterval(timer);
 	});
 </script>

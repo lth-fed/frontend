@@ -3,6 +3,7 @@
 	import { pushNavigation } from '$lib/navigation/stackNavigation';
 	import Routes from '$lib/navigation/routes';
 	import { seed } from '$lib/api/cache';
+	import type { Pathname } from '$app/types';
 
 	function openDetails() {
 		// Minilith currently has no public GET /groups/:id. Seed the detail
@@ -18,15 +19,15 @@
 			logoUrl: organiser.logoUrl,
 			adminIds: []
 		});
-		void pushNavigation(Routes.Group(organiser.id));
+		void pushNavigation(Routes.Group(organiser.id), { returnTo });
 	}
 
 	interface Props {
 		organiser: ActivityOrganiser;
-		onFollow?: () => void;
+		returnTo?: Pathname;
 	}
 
-	let { organiser, onFollow: _onFollow }: Props = $props();
+	let { organiser, returnTo }: Props = $props();
 </script>
 
 <div

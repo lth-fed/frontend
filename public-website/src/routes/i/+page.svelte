@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages.js';
+	import { APP_STORE_URL, PLAY_STORE_URL } from '$lib/store-links';
 	import { onMount } from 'svelte';
 
-	const APP_STORE_URL = 'https://apps.apple.com/se/app/tappen/id6772353068';
 	const WEB_APP_URL = 'https://app.teknologappen.se';
-	const IOS_REDIRECTED_KEY = 'tappen-app-store-redirected';
+	const STORE_REDIRECTED_KEY = 'tappen-store-redirected';
 
 	type Client = 'ios' | 'android' | 'desktop';
 
@@ -15,9 +15,11 @@
 		client = detectClient();
 		ready = true;
 
-		if (client === 'ios' && sessionStorage.getItem(IOS_REDIRECTED_KEY) !== 'true') {
-			sessionStorage.setItem(IOS_REDIRECTED_KEY, 'true');
-			requestAnimationFrame(() => window.location.assign(APP_STORE_URL));
+		const storeUrl =
+			client === 'ios' ? APP_STORE_URL : client === 'android' ? PLAY_STORE_URL : null;
+		if (storeUrl && sessionStorage.getItem(STORE_REDIRECTED_KEY) !== storeUrl) {
+			sessionStorage.setItem(STORE_REDIRECTED_KEY, storeUrl);
+			requestAnimationFrame(() => window.location.assign(storeUrl));
 		}
 	});
 
@@ -41,19 +43,12 @@
 		<p class="eyebrow">Teknologappen</p>
 		<h1>{m.install_title()}</h1>
 		{#if !ready}
-			<p class="install-lead">{m.install_ios_opening()}</p>
+			<p class="install-lead">{m.install_store_opening()}</p>
 		{:else}
-			<p class="install-lead">
-				{client === 'android' ? m.install_android_unavailable() : m.install_description()}
-			</p>
+			<p class="install-lead">{m.install_description()}</p>
 			<div class="install-actions">
 				<a class="button primary" href={APP_STORE_URL}>{m.install_app_store()}</a>
-				<div class="disabled-store-option">
-					<span class="button secondary disabled" aria-disabled="true">
-						{m.install_play_store()}
-					</span>
-					<small>{m.install_play_store_soon()}</small>
-				</div>
+				<a class="button primary" href={PLAY_STORE_URL}>{m.install_play_store()}</a>
 				<a class="button secondary" href={WEB_APP_URL}>{m.install_web()}</a>
 			</div>
 		{/if}

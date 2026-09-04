@@ -18,6 +18,7 @@
 	"date_today": "Today",
 	"date_tomorrow": "Tomorrow",
 	"date_yesterday": "Yesterday",
+	"ticket_release_now": "Now",
 
 	"top_bar_account_label": "Account",
 	"top_bar_notifications_label": "Notifications",
@@ -35,6 +36,8 @@
 	"nav_settings": "Settings",
 
 	"settings_language": "Language",
+	"notification_settings_title": "Notification settings",
+	"notification_settings_description": "Choose which groups may send you notifications. Child groups inherit their nearest parent's setting until you change them.",
 	"filters_title": "Activity filters",
 	"filters_description": "Choose which groups' activities appear. Child groups inherit their nearest parent setting until you change them.",
 	"filters_visibility_label": "Show activities from {group}",
@@ -42,6 +45,9 @@
 	"filters_notifications_none": "No notifications",
 	"filters_notifications_personalized": "Important notifications",
 	"filters_notifications_all": "All notifications",
+	"filters_notifications_disabled": "Notifications from {group} were also turned off because its activities are hidden.",
+	"filters_reset": "Reset filters",
+	"filters_resetting": "Resetting…",
 
 	"profile_student_id_label": "Student ID",
 	"profile_guild_label": "Guild",
@@ -89,6 +95,10 @@
 	"activity_contact": "Contact",
 	"activity_organiser": "Organiser",
 	"activity_organiser_follow": "Follow",
+	"activity_follow": "Follow activity",
+	"activity_unfollow": "Unfollow activity",
+	"notification_from": "From {sender}",
+	"notification_open_activity": "Open activity",
 	"activity_location": "Location",
 	"activity_open_maps": "Open Maps",
 	"activity_buy_tickets": "Buy Tickets",

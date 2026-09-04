@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { ChevronRight, Download, Globe, Info, ScanLine } from '@lucide/svelte';
+	import { Bell, ChevronRight, Download, Globe, Info, ScanLine } from '@lucide/svelte';
 	import { locales } from '$lib/paraglide/runtime';
 	import { locale, setLocale } from '$lib/state/locale.svelte';
 	import { m } from '$lib/paraglide/messages.js';
@@ -75,6 +75,20 @@
 		<span class="text-[16px] font-semibold text-guild-on-surface">
 			{nativeName[locale.current]}
 		</span>
+	</button>
+	<button
+		type="button"
+		disabled={networkUnavailable}
+		onclick={() => pushNavigation(Routes.NotificationSettings)}
+		class="flex w-full items-center gap-4 rounded-3xl border border-gray-100 bg-white p-4 text-left shadow-[0_4px_10px_color-mix(in_srgb,rgb(0_0_0)_6%,transparent)] disabled:opacity-55">
+		<div
+			class="flex size-10 shrink-0 items-center justify-center rounded-full bg-guild-primary-light text-guild-on-surface">
+			<Bell class="size-5" aria-hidden="true" />
+		</div>
+		<span class="flex-1 text-[16px] font-medium text-guild-on-surface">
+			{m.notification_settings_title()}
+		</span>
+		<ChevronRight class="size-5 text-guild-on-surface/50" aria-hidden="true" />
 	</button>
 	{#if canVerify}
 		<button

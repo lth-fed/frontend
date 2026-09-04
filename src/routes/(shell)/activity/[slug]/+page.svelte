@@ -11,20 +11,41 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import type { PageProps } from './$types';
 	import { isIos26Plus } from '$lib/platform/isIos26Plus';
-	import { onMount } from 'svelte';
+	import { onMount, untrack } from 'svelte';
 	import { pushNavigation } from '$lib/navigation/stackNavigation';
 	import Routes from '$lib/navigation/routes';
 	import { fly } from 'svelte/transition';
 	import { quadOut } from 'svelte/easing';
 	import ActivityMap from '$lib/components/ActivityMap.svelte';
 	import MarkdownContent from '$lib/components/MarkdownContent.svelte';
+	import { setActivityFollow } from '$lib/api/notifications';
+	import { errorMessage } from '$lib/api/errors';
 
 	let { data }: PageProps = $props();
 	const activity = $derived(data.activity);
+	let followed = $state(untrack(() => data.followed));
+	let followBusy = $state(false);
+	let followError = $state('');
 
 	let isIos26Native = $state(false);
 
 	onMount(async () => (isIos26Native = await isIos26Plus()));
+
+	async function toggleFollow(): Promise<void> {
+		if (followBusy) return;
+		const previous = followed;
+		followed = !followed;
+		followBusy = true;
+		followError = '';
+		try {
+			await setActivityFollow(activity.id, followed);
+		} catch (cause) {
+			followed = previous;
+			followError = errorMessage(cause) ?? m.error_status_unknown();
+		} finally {
+			followBusy = false;
+		}
+	}
 
 	useAppBars(() => ({
 		topBar: detailTopBar({
@@ -62,8 +83,13 @@
 				title={activity.title}
 				date={formatDetailDate(activity.startAt)}
 				time={formatTimeRange(activity.startAt, activity.endAt)}
-				location={activity.location} />
+				location={activity.location}
+				{followBusy}
+				{followed}
+				followToggle={toggleFollow}>
+			</ActivityHeadCard>
 		</div>
+		{#if followError}<p class="text-sm text-red-700" role="alert">{followError}</p>{/if}
 
 		<div
 			class="flex w-full flex-col gap-3.75"
@@ -96,7 +122,7 @@
 			<div class="flex w-full flex-col gap-2">
 				{#if activity.full}
 					{#each activity.organisers as organiser (organiser.id)}
-						<OrganiserCard {organiser} onFollow={() => alert(`Follow ${organiser.name}`)} />
+						<OrganiserCard {organiser} returnTo={Routes.Activity(activity.id)} />
 					{/each}
 				{:else}
 					<!-- List-seeded placeholder: hosts arrive with the full fetch. -->

@@ -24,6 +24,7 @@ class Routes {
 	/** Settings sub-pages */
 	static About: Pathname = '/settings/about/';
 	static Filters: Pathname = '/settings/filters/';
+	static NotificationSettings: Pathname = '/settings/notifications/';
 	static Verify: Pathname = '/verify/';
 	static Group = (id: string): Pathname => `/group/${id}/`;
 
