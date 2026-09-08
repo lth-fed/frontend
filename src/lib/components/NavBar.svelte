@@ -92,7 +92,7 @@
 {#if !overlay.isActive}
 	<nav
 		bind:this={nav}
-		class="relative flex w-full items-center gap-1 rounded-full bg-white px-2 py-2 shadow-[0_2px_10px_color-mix(in_srgb,var(--guild-primary-light)_75%,transparent)] ring-(length:--guild-ring-width) ring-guild-ring">
+		class="relative flex w-full items-center gap-1 rounded-full bg-white px-2 py-2 shadow-[0_2px_10px_color-mix(in_srgb,var(--guild-primary-light)_75%,transparent)] ring-(length:--guild-ring-width) ring-guild-ring md:max-w-xl md:mx-auto">
 		<div
 			aria-hidden="true"
 			class="pointer-events-none absolute top-0 left-0 rounded-full bg-guild-primary ring-(length:--guild-ring-width) ring-guild-ring {animated

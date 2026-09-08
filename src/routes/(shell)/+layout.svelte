@@ -109,7 +109,7 @@
 
 <main
 	bind:this={mainEl}
-	class="h-dvh overflow-y-auto overscroll-y-contain {isIos26Native
+	class="h-dvh overflow-y-auto overscroll-y-contain md:max-w-xl md:mx-auto {isIos26Native
 		? bottom.kind === 'none'
 			? 'pt-[calc(env(safe-area-inset-top)+4.25rem)] pb-[calc(env(safe-area-inset-bottom)+2rem)]'
 			: 'pt-[calc(env(safe-area-inset-top)+4.25rem)] pb-[calc(env(safe-area-inset-bottom)+8rem)]'
@@ -128,13 +128,13 @@
 
 {#if bottom.kind === 'tabs'}
 	<div
-		class="shell-bottom-nav pointer-events-none fixed right-5 bottom-[max(env(safe-area-inset-bottom),1.5rem)] left-5 z-1000">
+		class="shell-bottom-nav md:max-w-xl md:mx-auto pointer-events-none fixed right-5 bottom-[max(env(safe-area-inset-bottom),1.5rem)] left-5 z-1000">
 		<div class="pointer-events-auto w-full">
 			<NavBar items={bottom.items} selected={bottom.selected} onSelect={bottom.onSelect} />
 		</div>
 	</div>
 {:else if bottom.kind === 'action'}
-	<div class="fixed inset-x-0 bottom-[max(env(safe-area-inset-bottom),1.5rem)] z-1000 px-6">
+	<div class="fixed inset-x-0 md:max-w-xl md:mx-auto bottom-[max(env(safe-area-inset-bottom),1.5rem)] z-1000 px-6">
 		<BottomActionButton
 			id={bottom.id}
 			label={bottom.label}
