@@ -8,6 +8,7 @@
 	import { deriveKindState } from '$lib/purchase/kindState';
 	import {
 		acknowledge,
+		beginPaymentReturnPolling,
 		cancel,
 		choosePaymentAgain,
 		configurePurchase,
@@ -17,6 +18,7 @@
 		resync,
 		setAttached
 	} from '$lib/purchase/purchase.svelte';
+	import { requestPurchaseCelebration } from '$lib/purchase/celebration';
 	import { freeGateway, paidGatewayFor } from '$lib/payment/gateway';
 	import { formatPrice } from '$lib/format/money';
 	import { replaceNavigation } from '$lib/navigation/stackNavigation';
@@ -57,6 +59,7 @@
 	// to the ticket carousel.
 	$effect(() => {
 		if (flow.state === 'purchased') {
+			requestPurchaseCelebration();
 			acknowledge();
 			void replaceNavigation(Routes.Home, { resetDepth: true });
 		}
@@ -188,7 +191,8 @@
 	$effect(() => {
 		showPayAgain = false;
 		if (flow.state !== 'paying' || !pageVisible) return;
-		const timer = window.setTimeout(() => (showPayAgain = true), 3_000);
+		beginPaymentReturnPolling();
+		const timer = window.setTimeout(() => (showPayAgain = true), 5_000);
 		return () => window.clearTimeout(timer);
 	});
 

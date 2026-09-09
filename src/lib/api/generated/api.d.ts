@@ -635,7 +635,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json; charset=utf-8": string[];
+                        "application/json; charset=utf-8": components["schemas"]["AdminUser"][];
                     };
                 };
                 /** @description This is for user input errors. */
@@ -2127,6 +2127,89 @@ export interface paths {
                 };
             };
         };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/groups/visible-members": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List all members we have visibility access for. */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json; charset=utf-8": components["schemas"]["AdminUser"][];
+                    };
+                };
+                /** @description This is for user input errors. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json; charset=utf-8": components["schemas"]["MinilithError"];
+                    };
+                };
+                /** @description This is for auth errors. This usually requires re-login. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json; charset=utf-8": components["schemas"]["MinilithError"];
+                    };
+                };
+                /** @description This is for client application errors. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json; charset=utf-8": components["schemas"]["MinilithError"];
+                    };
+                };
+                /**
+                 * @description This is for when the user requests something that doesn't exist. Probably cache invalidaton
+                 *     issue.
+                 */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json; charset=utf-8": components["schemas"]["MinilithError"];
+                    };
+                };
+                /** @description Shit went down and the team is scrambling to fix it. */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json; charset=utf-8": components["schemas"]["MinilithError"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -6313,6 +6396,7 @@ export interface components {
             ticket_kind_id: string;
             purchaser_id: string;
             owner_id: string;
+            owner_name: string;
             /** Format: uuid */
             transaction_id: string;
             owner_memberships: string[];

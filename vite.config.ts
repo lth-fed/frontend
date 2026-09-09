@@ -6,13 +6,19 @@ import { defineConfig } from 'vite';
 
 const gitRevision = (() => {
 	try {
-		const hash = execFileSync('git', ['rev-parse', '--short', 'HEAD'], {
-			encoding: 'utf8'
-		}).trim();
+		const git = (args: string[]) =>
+			execFileSync('git', args, {
+				encoding: 'utf8'
+			}).trim();
+		const [tag] = git(['tag', '--sort=-version:refname']).split('\n');
+		if (!tag) return 'unknown';
+		const hash = git(['rev-parse', '--short', 'HEAD']);
+		const taggedCommit = git(['rev-list', '-n', '1', tag]);
+		const head = git(['rev-parse', 'HEAD']);
 		const modified = execFileSync('git', ['status', '--porcelain'], {
 			encoding: 'utf8'
 		}).trim();
-		return `${hash}${modified ? '-modified' : ''}`;
+		return `${tag}${taggedCommit === head ? '' : '-old'} (${hash}${modified ? '-modified' : ''})`;
 	} catch {
 		return 'unknown';
 	}

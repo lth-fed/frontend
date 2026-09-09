@@ -4,7 +4,8 @@
 	import BottomActionButton from '$lib/components/BottomActionButton.svelte';
 	import PurchasePill from '$lib/components/PurchasePill.svelte';
 	import { Home, Globe, IdCard, Settings } from '@lucide/svelte';
-	import { afterNavigate, beforeNavigate } from '$app/navigation';
+	import { afterNavigate, beforeNavigate, preloadData } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import type { Pathname } from '$app/types';
 	import { SvelteMap } from 'svelte/reactivity';
@@ -62,6 +63,23 @@
 		else alert(`${id} (not implemented)`);
 	}
 
+	function preloadTab(id: string) {
+		const route = navRoutes[id as NavId];
+		if (route) void preloadData(resolve(route)).catch(() => undefined);
+	}
+
+	onMount(() => {
+		// These are custom web/native buttons rather than anchors, so SvelteKit cannot perform its
+		// normal touchstart preloading. Warm the other root tabs after first paint; pointerdown below
+		// also refreshes the target preload immediately before a tap completes.
+		const timer = window.setTimeout(() => {
+			for (const [id, route] of Object.entries(navRoutes) as [NavId, Pathname | null][]) {
+				if (route && id !== selected) void preloadData(resolve(route)).catch(() => undefined);
+			}
+		}, 0);
+		return () => window.clearTimeout(timer);
+	});
+
 	const bars = createAppBars({ topBar: null, bottom: null });
 
 	const defaultTopBar = $derived<TopBarConfig>({
@@ -109,7 +127,7 @@
 
 <main
 	bind:this={mainEl}
-	class="h-dvh overflow-y-auto overscroll-y-contain md:max-w-xl md:mx-auto {isIos26Native
+	class="h-dvh overflow-y-auto overscroll-y-contain md:mx-auto md:max-w-xl {isIos26Native
 		? bottom.kind === 'none'
 			? 'pt-[calc(env(safe-area-inset-top)+4.25rem)] pb-[calc(env(safe-area-inset-bottom)+2rem)]'
 			: 'pt-[calc(env(safe-area-inset-top)+4.25rem)] pb-[calc(env(safe-area-inset-bottom)+8rem)]'
@@ -128,13 +146,18 @@
 
 {#if bottom.kind === 'tabs'}
 	<div
-		class="shell-bottom-nav md:max-w-xl md:mx-auto pointer-events-none fixed right-5 bottom-[max(env(safe-area-inset-bottom),1.5rem)] left-5 z-1000">
+		class="shell-bottom-nav pointer-events-none fixed right-5 bottom-[max(env(safe-area-inset-bottom),1.5rem)] left-5 z-1000 md:mx-auto md:max-w-xl">
 		<div class="pointer-events-auto w-full">
-			<NavBar items={bottom.items} selected={bottom.selected} onSelect={bottom.onSelect} />
+			<NavBar
+				items={bottom.items}
+				selected={bottom.selected}
+				onSelect={bottom.onSelect}
+				onPreload={preloadTab} />
 		</div>
 	</div>
 {:else if bottom.kind === 'action'}
-	<div class="fixed inset-x-0 md:max-w-xl md:mx-auto bottom-[max(env(safe-area-inset-bottom),1.5rem)] z-1000 px-6">
+	<div
+		class="fixed inset-x-0 bottom-[max(env(safe-area-inset-bottom),1.5rem)] z-1000 px-6 md:mx-auto md:max-w-xl">
 		<BottomActionButton
 			id={bottom.id}
 			label={bottom.label}

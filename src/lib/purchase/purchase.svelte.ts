@@ -78,6 +78,8 @@ const PURCHASE_FLOW_RETRY_MS = 3_000;
 /** Faster cadence while a payment is in flight — the server callback is
  *  our only completion signal (spec §4.2). */
 const PAYING_POLL_MS = 5_000;
+const PAYMENT_RETURN_POLL_MS = 1_000;
+const PAYMENT_RETURN_POLL_DURATION_MS = 5_000;
 const PAYMENT_CONFIRMATION_GRACE_MS = 60_000;
 const RESOLUTION_GIVE_UP_MS = 3 * 60_000;
 const QUEUE_POLL_MS = 15_000;
@@ -87,6 +89,7 @@ let releaseTimer: Timer | undefined;
 let pollTimer: Timer | undefined;
 let expiryTimer: Timer | undefined;
 let resolutionStartedAt: number | undefined;
+let rapidPaymentPollUntil: number | undefined;
 /** The purchase screen for the active kind is visible (drives the
  *  reservation-queued poll — nothing polls while the user is away). */
 let attached = false;
@@ -95,6 +98,13 @@ function clearTimers(): void {
 	for (const t of [releaseTimer, pollTimer, expiryTimer]) if (t) clearTimeout(t);
 	releaseTimer = pollTimer = expiryTimer = undefined;
 	resolutionStartedAt = undefined;
+	rapidPaymentPollUntil = undefined;
+}
+
+function payingPollDelay(): number {
+	if (rapidPaymentPollUntil && Date.now() < rapidPaymentPollUntil) return PAYMENT_RETURN_POLL_MS;
+	rapidPaymentPollUntil = undefined;
+	return PAYING_POLL_MS;
 }
 
 function persist(
@@ -219,7 +229,7 @@ async function poll(kind: FlowKind): Promise<void> {
 	if (document.hidden) {
 		// backgrounded tab: skip the request, try again next interval —
 		// resume()/attach() fire an immediate resync anyway
-		schedulePoll(kind, purchase.flow.state === 'paying' ? PAYING_POLL_MS : RESOLUTION_POLL_MS);
+		schedulePoll(kind, purchase.flow.state === 'paying' ? payingPollDelay() : RESOLUTION_POLL_MS);
 		return;
 	}
 	await resync(kind);
@@ -236,7 +246,7 @@ async function poll(kind: FlowKind): Promise<void> {
 	} else if (state === 'paying') {
 		// Swish confirms asynchronously. Keep checking until the queue
 		// disappears instead of stopping after the first `Buying` response.
-		schedulePoll(kind, PAYING_POLL_MS);
+		schedulePoll(kind, payingPollDelay());
 	}
 }
 
@@ -571,5 +581,17 @@ export function acknowledge(): void {
 
 /** App came back to the foreground — one immediate resync (spec §4.2). */
 export function onResume(): void {
-	if (purchase.flow.state !== 'idle') void resync();
+	if (purchase.flow.state === 'paying') {
+		beginPaymentReturnPolling();
+	} else if (purchase.flow.state !== 'idle') {
+		void resync();
+	}
+}
+
+/** Poll quickly while the payment provider hands control back to the app. */
+export function beginPaymentReturnPolling(): void {
+	const flow = purchase.flow;
+	if (flow.state !== 'paying') return;
+	rapidPaymentPollUntil = Date.now() + PAYMENT_RETURN_POLL_DURATION_MS;
+	schedulePoll(flow.kind, 0);
 }

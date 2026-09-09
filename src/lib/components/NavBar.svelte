@@ -17,6 +17,7 @@
 		items: Item[];
 		selected: K;
 		onSelect: (id: K) => void;
+		onPreload?: (id: K) => void;
 		/** When true (default), replace the web pill with the iOS 26 native tab bar. */
 		native?: boolean;
 		selectedIconColor?: string;
@@ -27,6 +28,7 @@
 		items,
 		selected,
 		onSelect,
+		onPreload,
 		native = true,
 		selectedIconColor,
 		unselectedIconColor
@@ -92,7 +94,7 @@
 {#if !overlay.isActive}
 	<nav
 		bind:this={nav}
-		class="relative flex w-full items-center gap-1 rounded-full bg-white px-2 py-2 shadow-[0_2px_10px_color-mix(in_srgb,var(--guild-primary-light)_75%,transparent)] ring-(length:--guild-ring-width) ring-guild-ring md:max-w-xl md:mx-auto">
+		class="relative flex w-full items-center gap-1 rounded-full bg-white px-2 py-2 shadow-[0_2px_10px_color-mix(in_srgb,var(--guild-primary-light)_75%,transparent)] ring-(length:--guild-ring-width) ring-guild-ring md:mx-auto md:max-w-xl">
 		<div
 			aria-hidden="true"
 			class="pointer-events-none absolute top-0 left-0 rounded-full bg-guild-primary ring-(length:--guild-ring-width) ring-guild-ring {animated
@@ -109,6 +111,7 @@
 				aria-label={it.label}
 				aria-current={active ? 'page' : undefined}
 				onclick={() => onSelect(it.id)}
+				onpointerdown={() => onPreload?.(it.id)}
 				class="relative z-10 flex min-h-12 flex-1 items-center justify-center rounded-full transition-colors duration-300 {active
 					? 'text-guild-on-primary'
 					: 'text-gray-600'}">

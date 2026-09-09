@@ -41,7 +41,9 @@ export const load: PageLoad = async ({ depends }) => {
 	const cutoff = Date.now() - 6 * 60 * 60 * 1000;
 	return {
 		activities,
-		tickets: tickets.filter((ticket) => ticket.timeEnd.getTime() > cutoff),
+		tickets: tickets
+			.filter((ticket) => ticket.timeEnd.getTime() > cutoff)
+			.sort((a, b) => a.timeStart.getTime() - b.timeStart.getTime()),
 		ownerName: me?.name ?? '',
 		groupSettings,
 		defaultSettings,

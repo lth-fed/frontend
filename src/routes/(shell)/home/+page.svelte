@@ -16,25 +16,59 @@
 	import { resetGroupSettings } from '$lib/api/groups';
 	import { Capacitor } from '@capacitor/core';
 	import { onMount } from 'svelte';
+	import { Confetti } from 'svelte-confetti';
+	import { consumePurchaseCelebration } from '$lib/purchase/celebration';
+	const TICKET_FILTER_STORAGE_KEY = 'tappen-ticket-filter-enabled';
 
 	let { data }: PageProps = $props();
 	const networkUnavailable = $derived(!network.online || data.networkUnavailable);
 	let showAndroidAppCard = $state(false);
+	let celebratePurchase = $state(false);
 
 	onMount(() => {
+		celebratePurchase = consumePurchaseCelebration();
+		try {
+			ticketFilterEnabled = localStorage.getItem(TICKET_FILTER_STORAGE_KEY) === 'true';
+		} catch {
+			// The filter still works for this session when storage is unavailable.
+		}
 		showAndroidAppCard =
 			!Capacitor.isNativePlatform() && /Android/i.test(window.navigator.userAgent);
 	});
 
 	let resetBusy = $state(false);
 	let resetComplete = $state(false);
-	const filtersAreDefault = $derived(data.filtersAreDefault || resetComplete);
+	let ticketFilterEnabled = $state(false);
+	const groupFiltersAreDefault = $derived(data.filtersAreDefault || resetComplete);
+	const filtersAreDefault = $derived(groupFiltersAreDefault && !ticketFilterEnabled);
+	const visibleActivities = $derived(
+		ticketFilterEnabled
+			? data.activities
+					.filter((activity) => activity.earliestPurchasableTicketRelease !== undefined)
+					.sort(
+						(a, b) => +a.earliestPurchasableTicketRelease! - +b.earliestPurchasableTicketRelease!
+					)
+			: data.activities
+	);
+
+	function setTicketFilterEnabled(enabled: boolean): void {
+		ticketFilterEnabled = enabled;
+		try {
+			if (enabled) localStorage.setItem(TICKET_FILTER_STORAGE_KEY, 'true');
+			else localStorage.removeItem(TICKET_FILTER_STORAGE_KEY);
+		} catch {
+			// State remains active in memory when storage is unavailable.
+		}
+	}
 
 	async function resetFilters() {
 		resetBusy = true;
 		try {
-			await resetGroupSettings(data.groupSettings, data.defaultSettings);
+			if (!groupFiltersAreDefault) {
+				await resetGroupSettings(data.groupSettings, data.defaultSettings);
+			}
 			resetComplete = true;
+			setTicketFilterEnabled(false);
 		} catch (cause) {
 			alert(errorMessage(cause) ?? m.error_status_unknown());
 		} finally {
@@ -68,6 +102,14 @@
 		}
 	}
 </script>
+
+{#if celebratePurchase}
+	<div
+		class="pointer-events-none fixed inset-x-0 top-1/2 z-1100 flex justify-center"
+		aria-hidden="true">
+		<Confetti amount={80} cone x={[-1, 1]} fallDistance="60dvh" disableForReducedMotion />
+	</div>
+{/if}
 
 <div
 	style="--ticket-scale: clamp(0.8, calc((100dvh - 340px) / 470px), 1); --carousel-item-width: calc(300px * var(--ticket-scale));">
@@ -123,7 +165,7 @@
 	<section id="event-flow" class="scroll-mt-24 px-6 pt-6">
 		<h2 class="text-[20px] font-semibold">{m.home_upcoming_activities()}</h2>
 		{#if !networkUnavailable}
-			<div class="mt-3 flex flex-wrap gap-2">
+			<div class="mt-3 flex items-center gap-2">
 				<button
 					type="button"
 					onclick={() => pushNavigation(Routes.Filters)}
@@ -144,6 +186,17 @@
 						</span>
 					</button>
 				{/if}
+				<button
+					type="button"
+					onclick={() => setTicketFilterEnabled(!ticketFilterEnabled)}
+					aria-label={m.activity_buy_tickets()}
+					aria-pressed={ticketFilterEnabled}
+					title={m.activity_buy_tickets()}
+					class="ml-auto grid size-9 place-items-center rounded-full border border-guild-ring {ticketFilterEnabled
+						? 'bg-guild-primary text-guild-on-primary'
+						: 'bg-guild-surface text-guild-ring'}">
+					<TicketIcon class="size-4" aria-hidden="true" />
+				</button>
 			</div>
 		{/if}
 
@@ -153,7 +206,7 @@
 			</p>
 		{:else}
 			<div class="mt-3.5 space-y-5.5">
-				{#each data.activities as a (a.id)}
+				{#each visibleActivities as a (a.id)}
 					<ActivityCard
 						image={a.image}
 						ticketRelease={a.earliestPurchasableTicketRelease}
