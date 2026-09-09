@@ -35,7 +35,7 @@
 		const nextScales = items.map((_, i) => {
 			const el = itemEls[i];
 			if (!el) return 0.86;
-			const itemCenter = el.offsetLeft + el.offsetWidth / 2;
+			const itemCenter = el.offsetLeft - root.offsetLeft + el.offsetWidth / 2;
 			const dist = Math.abs(center - itemCenter);
 			if (dist < bestDist) {
 				bestDist = dist;
