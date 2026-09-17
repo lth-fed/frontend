@@ -140,9 +140,17 @@ platform :android do
 
     # supply (upload_to_play_store) has no release_notes parameter — unlike
     # deliver, it only reads changelog text from disk, under
-    # metadata_path/<locale>/changelogs/<version_code>.txt.
+    # metadata_path/<locale>/changelogs/<version_code>.txt, checked with a
+    # raw File.directory? (no smart path resolution, unlike e.g. gradle's
+    # project_dir).
+    #
+    # fastlane chdir's into fastlane/ for the whole lane execution (Dir.pwd
+    # inside a lane body is <repo>/fastlane, confirmed with a local test
+    # lane), so a bare relative path here would be relative to fastlane/ —
+    # expand to absolute immediately so it can't be affected by anything
+    # later in the lane changing the cwd assumption.
     locale = ENV.fetch('PLAY_LOCALE', 'sv-SE')
-    metadata_path = 'fastlane/metadata/android'
+    metadata_path = File.expand_path('metadata/android')
     changelog_dir = File.join(metadata_path, locale, 'changelogs')
     FileUtils.mkdir_p(changelog_dir)
     File.write(File.join(changelog_dir, "#{version_code}.txt"), release_notes_text(limit: 500))
