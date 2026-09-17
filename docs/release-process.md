@@ -90,12 +90,24 @@ unrecognized key.
 
 ## What each job does
 
-- **`ios`** (`macos-15` runner): `pnpm build` → `cap sync ios` → imports the
-  distribution cert into a throwaway CI keychain → installs the provisioning
-  profile → bumps version/build number → `xcodebuild` archive & export via
-  fastlane's `build_app` → uploads to App Store Connect and submits for review
-  with `automatic_release: true` (so it goes live automatically once Apple
-  approves it — CI can't skip Apple's review itself).
+- **`ios`** (`macos-26` runner, pinned to **Xcode 26.4.1** via `DEVELOPER_DIR`):
+  `pnpm build` → `cap sync ios` → imports the distribution cert into a
+  throwaway CI keychain → installs the provisioning profile → bumps
+  version/build number → `xcodebuild` archive & export via fastlane's
+  `build_app` → uploads to App Store Connect and submits for review with
+  `automatic_release: true` (so it goes live automatically once Apple approves
+  it — CI can't skip Apple's review itself).
+
+  **The Xcode pin matters and needs to be kept in sync with local dev.** The
+  native Swift plugins use iOS 26 "Liquid Glass" UIKit APIs that don't exist
+  in older SDKs at all (not a runtime `@available` issue — a compile-time one:
+  the symbols aren't declared in the SDK). If you bump the app's minimum
+  supported Xcode locally, bump `DEVELOPER_DIR` in `release.yml` to match —
+  check available versions in the [`macos-26` runner image
+  readme](https://github.com/actions/runner-images/blob/main/images/macos/macos-26-arm64-Readme.md)
+  before picking a new pin, since GitHub only keeps a handful of versions
+  installed at a time. Run `xcodebuild -version` locally to see what you're
+  actually building against.
 - **`android`** (`ubuntu-latest` runner): `pnpm build` → `cap sync android` →
   decodes the keystore → `./gradlew bundleRelease` (signed, via the
   `signingConfigs.release` block added to `android/app/build.gradle`) →

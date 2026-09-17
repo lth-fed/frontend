@@ -42,8 +42,16 @@ jobs:
 
   ios:
     needs: version
-    runs-on: macos-15
+    runs-on: macos-26
     timeout-minutes: 60
+    env:
+      # Pinned to match the Xcode version this project is actually developed
+      # against — the native Swift plugins use iOS 26 "Liquid Glass" UIKit
+      # APIs that don't exist in older SDKs, so an older/default Xcode fails
+      # to compile them outright. Bump this deliberately (and in lockstep
+      # with local dev Xcode) rather than trusting the runner's default,
+      # which GitHub moves over time.
+      DEVELOPER_DIR: /Applications/Xcode_26.4.1.app/Contents/Developer
     steps:
       - uses: actions/checkout@v4
 
@@ -84,7 +92,7 @@ jobs:
           echo "IOS_PROFILE_PATH=$PROFILE_PATH" >> "$GITHUB_ENV"
           echo "ASC_KEY_PATH=$ASC_KEY_PATH" >> "$GITHUB_ENV"
 
-      - name: Build, sign, and release to the App Store
+      - name: "${{ github.event.release.prerelease && 'Build and sign (pre-release, upload skipped)' || 'Build, sign, and release to the App Store' }}"
         env:
           RELEASE_VERSION: ${{ needs.version.outputs.version }}
           RELEASE_NOTES: ${{ github.event.release.body }}
@@ -148,7 +156,7 @@ jobs:
           echo "ANDROID_KEYSTORE_PATH=$KEYSTORE_PATH" >> "$GITHUB_ENV"
           echo "PLAY_STORE_JSON_KEY_PATH=$PLAY_KEY_PATH" >> "$GITHUB_ENV"
 
-      - name: Build, sign, and release to Google Play
+      - name: "${{ github.event.release.prerelease && 'Build and sign (pre-release, upload skipped)' || 'Build, sign, and release to Google Play' }}"
         env:
           RELEASE_VERSION: ${{ needs.version.outputs.version }}
           RELEASE_NOTES: ${{ github.event.release.body }}
