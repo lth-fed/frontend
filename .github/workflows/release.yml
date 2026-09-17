@@ -140,7 +140,10 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          # @capacitor/android and capacitor-cordova-android-plugins both
+          # declare sourceCompatibility/targetCompatibility VERSION_21 —
+          # javac rejects `--release 21` on anything older.
+          java-version: '21'
 
       - uses: ruby/setup-ruby@v1
         with:
