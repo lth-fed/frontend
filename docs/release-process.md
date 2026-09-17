@@ -23,7 +23,12 @@ release; if you want that convention enforced, it'd need to be a separate check
 (e.g. a script comparing against the last published tag), which isn't set up.
 
 **To test the workflow without shipping to real users**, mark the GitHub Release
-as a "pre-release" — the `ios` and `android` jobs are skipped in that case.
+as a "pre-release". Both jobs still run in full — build, sign, package — but the
+`upload_to_app_store` / `upload_to_play_store` steps are skipped, so nothing
+reaches App Store Connect or Play Console. The signed `.ipa`/`.aab` are attached
+to the workflow run as downloadable artifacts either way (Actions tab -> the run
+-> **Artifacts**, kept 14 days), which is the easiest way to sanity-check a
+release build without shipping it.
 
 ## Release notes
 

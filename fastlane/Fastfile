@@ -22,6 +22,12 @@ def release_notes_text(limit:)
   notes.length > limit ? "#{notes[0, limit - 1]}…" : notes
 end
 
+# GitHub Releases marked "pre-release" still build and sign, so you can
+# verify the pipeline end-to-end, but never reach the stores.
+def skip_upload?
+  ENV.fetch('SKIP_UPLOAD', 'false') == 'true'
+end
+
 platform :ios do
   desc 'Build and submit a release build to the App Store'
   lane :release do
@@ -70,12 +76,19 @@ platform :ios do
       project: project_path,
       scheme: 'App',
       export_method: 'app-store',
+      output_directory: 'build/ios',
+      output_name: 'App.ipa',
       export_options: {
         provisioningProfiles: {
           'se.teknologappen.tappen' => ENV.fetch('IOS_PROFILE_NAME')
         }
       }
     )
+
+    if skip_upload?
+      UI.important('SKIP_UPLOAD set (pre-release) — built and signed App.ipa, skipping App Store upload.')
+      next
+    end
 
     upload_to_app_store(
       api_key: api_key,
@@ -117,6 +130,11 @@ platform :android do
         'appVersionCode' => version_code
       }
     )
+
+    if skip_upload?
+      UI.important('SKIP_UPLOAD set (pre-release) — built and signed app-release.aab, skipping Play Store upload.')
+      next
+    end
 
     upload_to_play_store(
       package_name: package_name,

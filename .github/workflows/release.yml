@@ -10,8 +10,10 @@ name: Release Mobile Apps
 # Xcode project / build.gradle are only relevant for local development
 # builds. The release's description becomes the store "what's new" text.
 #
-# Mark the GitHub Release as a "pre-release" to skip shipping to the stores
-# (useful for testing the release workflow itself, e.g. release notes).
+# Mark the GitHub Release as a "pre-release" to still build and sign both
+# apps — so you can verify the pipeline end-to-end — but skip the actual
+# App Store / Play Store upload. The signed .ipa/.aab are attached as
+# workflow run artifacts (Actions tab -> the run -> Artifacts) either way.
 #
 # See docs/release-process.md for the one-time setup (required secrets).
 
@@ -40,7 +42,6 @@ jobs:
 
   ios:
     needs: version
-    if: github.event.release.prerelease == false
     runs-on: macos-15
     timeout-minutes: 60
     steps:
@@ -83,10 +84,11 @@ jobs:
           echo "IOS_PROFILE_PATH=$PROFILE_PATH" >> "$GITHUB_ENV"
           echo "ASC_KEY_PATH=$ASC_KEY_PATH" >> "$GITHUB_ENV"
 
-      - name: Release to the App Store
+      - name: Build, sign, and release to the App Store
         env:
           RELEASE_VERSION: ${{ needs.version.outputs.version }}
           RELEASE_NOTES: ${{ github.event.release.body }}
+          SKIP_UPLOAD: ${{ github.event.release.prerelease }}
           ASC_LOCALE: ${{ vars.ASC_LOCALE || 'sv' }}
           ASC_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
           ASC_ISSUER_ID: ${{ secrets.ASC_API_ISSUER_ID }}
@@ -94,9 +96,14 @@ jobs:
           IOS_PROFILE_NAME: ${{ secrets.IOS_PROVISIONING_PROFILE_NAME }}
         run: bundle exec fastlane ios release
 
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ios-app-${{ needs.version.outputs.version }}
+          path: build/ios/App.ipa
+          retention-days: 14
+
   android:
     needs: version
-    if: github.event.release.prerelease == false
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -141,12 +148,19 @@ jobs:
           echo "ANDROID_KEYSTORE_PATH=$KEYSTORE_PATH" >> "$GITHUB_ENV"
           echo "PLAY_STORE_JSON_KEY_PATH=$PLAY_KEY_PATH" >> "$GITHUB_ENV"
 
-      - name: Release to Google Play
+      - name: Build, sign, and release to Google Play
         env:
           RELEASE_VERSION: ${{ needs.version.outputs.version }}
           RELEASE_NOTES: ${{ github.event.release.body }}
+          SKIP_UPLOAD: ${{ github.event.release.prerelease }}
           PLAY_LOCALE: ${{ vars.PLAY_LOCALE || 'sv-SE' }}
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: bundle exec fastlane android release
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-app-${{ needs.version.outputs.version }}
+          path: android/app/build/outputs/bundle/release/app-release.aab
+          retention-days: 14
