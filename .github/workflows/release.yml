@@ -92,7 +92,9 @@ jobs:
           echo "IOS_PROFILE_PATH=$PROFILE_PATH" >> "$GITHUB_ENV"
           echo "ASC_KEY_PATH=$ASC_KEY_PATH" >> "$GITHUB_ENV"
 
-      - name: "${{ github.event.release.prerelease && 'Build and sign (pre-release, upload skipped)' || 'Build, sign, and release to the App Store' }}"
+      - name:
+          "${{ github.event.release.prerelease && 'Build and sign (pre-release, upload skipped)' ||
+          'Build, sign, and release to the App Store' }}"
         env:
           RELEASE_VERSION: ${{ needs.version.outputs.version }}
           RELEASE_NOTES: ${{ github.event.release.body }}
@@ -156,7 +158,9 @@ jobs:
           echo "ANDROID_KEYSTORE_PATH=$KEYSTORE_PATH" >> "$GITHUB_ENV"
           echo "PLAY_STORE_JSON_KEY_PATH=$PLAY_KEY_PATH" >> "$GITHUB_ENV"
 
-      - name: "${{ github.event.release.prerelease && 'Build and sign (pre-release, upload skipped)' || 'Build, sign, and release to Google Play' }}"
+      - name:
+          "${{ github.event.release.prerelease && 'Build and sign (pre-release, upload skipped)' ||
+          'Build, sign, and release to Google Play' }}"
         env:
           RELEASE_VERSION: ${{ needs.version.outputs.version }}
           RELEASE_NOTES: ${{ github.event.release.body }}

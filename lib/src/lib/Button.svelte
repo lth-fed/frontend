@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type { HTMLInputAttributes } from 'svelte/elements';
+	import type { HTMLButtonAttributes } from 'svelte/elements';
 
-	const { children, ...rest }: HTMLInputAttributes = $props();
+	const { children, ...rest }: HTMLButtonAttributes = $props();
 </script>
 
 <button
