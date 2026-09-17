@@ -1,3 +1,5 @@
+require 'fileutils'
+
 default_platform(:ios)
 
 # The web bundle is built and `cap sync`'d into ios/ and android/ by the
@@ -136,15 +138,28 @@ platform :android do
       next
     end
 
+    # supply (upload_to_play_store) has no release_notes parameter — unlike
+    # deliver, it only reads changelog text from disk, under
+    # metadata_path/<locale>/changelogs/<version_code>.txt.
+    locale = ENV.fetch('PLAY_LOCALE', 'sv-SE')
+    metadata_path = 'fastlane/metadata/android'
+    changelog_dir = File.join(metadata_path, locale, 'changelogs')
+    FileUtils.mkdir_p(changelog_dir)
+    File.write(File.join(changelog_dir, "#{version_code}.txt"), release_notes_text(limit: 500))
+
     upload_to_play_store(
       package_name: package_name,
       track: 'production',
       aab: 'android/app/build/outputs/bundle/release/app-release.aab',
       json_key: ENV.fetch('PLAY_STORE_JSON_KEY_PATH'),
       release_status: 'completed',
-      release_notes: {
-        ENV.fetch('PLAY_LOCALE', 'sv-SE') => release_notes_text(limit: 500)
-      }
+      metadata_path: metadata_path,
+      # Only the changelog directory above exists on disk — don't let supply
+      # try to push/blank out the store listing (title, description,
+      # screenshots, etc.) that's set manually in Play Console.
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
     )
   end
 end

@@ -29,10 +29,16 @@ build without shipping it.
 ## Release notes
 
 The GitHub Release's **description** (the markdown body you write in the release form — not the tag)
-is uploaded verbatim as the App Store "What's New" text and the Play Store release notes. Apple
+is uploaded verbatim as the App Store "What's New" text and the Play Store changelog. Apple
 _requires_ non-empty release notes for every update submission (not the first one), so don't publish
 a release with an empty description — if you do, the lane falls back to a placeholder string ("No
 release notes provided.") rather than failing, but real notes are obviously better.
+
+The two stores take this text through different mechanisms: `deliver` (iOS) accepts a
+`release_notes` parameter directly; `supply` (Android) has no such parameter at all — it only reads
+changelog text from disk, under `fastlane/metadata/android/<locale>/changelogs/<version_code>.txt`.
+The Android lane writes that file itself each run before calling `upload_to_play_store`; that
+directory is gitignored since it's regenerated every release.
 
 Notes are truncated to each store's limit (4000 chars for the App Store, 500 for Play) and uploaded
 under `sv` (App Store Connect) / `sv-SE` (Play Console) by default, since the listings are Swedish.
