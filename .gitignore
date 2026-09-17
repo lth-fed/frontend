@@ -27,3 +27,18 @@ project.inlang/cache/
 
 static/tickets/*.pkpass
 render-pass-output/
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/
+fastlane/test_output/
+*.dSYM.zip
+*.ipa
+
+# Signing material — never commit these, they're pulled from GitHub secrets in CI
+*.p12
+*.p8
+*.mobileprovision
+*.jks
+*.keystore

@@ -1,5 +1,11 @@
 apply plugin: 'com.android.application'
 
+// Release signing and version are supplied by the fastlane `android release`
+// lane (see /fastlane/Fastfile), which passes -PappVersionName/-PappVersionCode
+// and sets the ANDROID_KEYSTORE_* env vars. Falls back to the checked-in
+// defaults below for local/manual (unsigned) builds via `pnpm android`.
+def releaseStoreFile = System.getenv("ANDROID_KEYSTORE_PATH")
+
 android {
     namespace = "se.teknologappen.tappen"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -7,8 +13,8 @@ android {
         applicationId "se.teknologappen.tappen"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 7
-        versionName "0.3.4"
+        versionCode project.hasProperty('appVersionCode') ? (project.appVersionCode as Integer) : 7
+        versionName project.hasProperty('appVersionName') ? project.appVersionName : "0.3.4"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged aszsets dir, modified to accommodate modern web apps.
@@ -16,10 +22,23 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        release {
+            if (releaseStoreFile) {
+                storeFile file(releaseStoreFile)
+                storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                keyAlias System.getenv("ANDROID_KEY_ALIAS")
+                keyPassword System.getenv("ANDROID_KEY_PASSWORD")
+            }
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            if (releaseStoreFile) {
+                signingConfig signingConfigs.release
+            }
         }
     }
 }

@@ -1,0 +1,140 @@
+default_platform(:ios)
+
+# The web bundle is built and `cap sync`'d into ios/ and android/ by the
+# GitHub Actions workflow *before* these lanes run (see
+# .github/workflows/release.yml). These lanes only handle native
+# versioning, signing, building and store upload.
+#
+# RELEASE_VERSION (e.g. "1.4.0") is the single source of truth for the
+# marketing version on both platforms — it comes from the GitHub Release
+# tag. Build numbers are fetched live from App Store Connect / Play
+# Console and incremented, so nothing in the repo needs to track them.
+
+IOS_KEYCHAIN_NAME = 'fastlane_release.keychain'
+
+# The GitHub Release's body becomes the store "what's new" text on both
+# platforms. Apple requires this to be non-empty for update submissions;
+# falls back to a placeholder if the release was published with no
+# description, and truncates to each store's character limit.
+def release_notes_text(limit:)
+  notes = ENV.fetch('RELEASE_NOTES', '').strip
+  notes = 'No release notes provided.' if notes.empty?
+  notes.length > limit ? "#{notes[0, limit - 1]}…" : notes
+end
+
+platform :ios do
+  desc 'Build and submit a release build to the App Store'
+  lane :release do
+    version = ENV.fetch('RELEASE_VERSION')
+    project_path = 'ios/App/App.xcodeproj'
+    keychain_password = SecureRandom.hex
+
+    api_key = app_store_connect_api_key(
+      key_id: ENV.fetch('ASC_KEY_ID'),
+      issuer_id: ENV.fetch('ASC_ISSUER_ID'),
+      key_filepath: ENV.fetch('ASC_KEY_PATH'),
+      in_house: false
+    )
+
+    create_keychain(
+      name: IOS_KEYCHAIN_NAME,
+      password: keychain_password,
+      default_keychain: true,
+      unlock: true,
+      timeout: 3600,
+      lock_when_sleeps: false
+    )
+
+    import_certificate(
+      certificate_path: ENV.fetch('IOS_CERTIFICATE_PATH'),
+      certificate_password: ENV.fetch('IOS_CERTIFICATE_PASSWORD'),
+      keychain_name: IOS_KEYCHAIN_NAME,
+      keychain_password: keychain_password
+    )
+
+    install_provisioning_profile(path: ENV.fetch('IOS_PROFILE_PATH'))
+
+    increment_version_number(version_number: version, xcodeproj: project_path)
+
+    build_number = (latest_testflight_build_number(api_key: api_key, version: version) + 1).to_s
+    increment_build_number(build_number: build_number, xcodeproj: project_path)
+
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: project_path,
+      code_sign_identity: 'Apple Distribution',
+      profile_name: ENV.fetch('IOS_PROFILE_NAME')
+    )
+
+    build_app(
+      project: project_path,
+      scheme: 'App',
+      export_method: 'app-store',
+      export_options: {
+        provisioningProfiles: {
+          'se.teknologappen.tappen' => ENV.fetch('IOS_PROFILE_NAME')
+        }
+      }
+    )
+
+    upload_to_app_store(
+      api_key: api_key,
+      submit_for_review: true,
+      automatic_release: true,
+      force: true,
+      skip_screenshots: true,
+      # false so the release_notes below actually get uploaded — deliver only
+      # touches fields it's given, so description/keywords/etc. set manually
+      # in App Store Connect are left untouched.
+      skip_metadata: false,
+      release_notes: {
+        ENV.fetch('ASC_LOCALE', 'sv') => release_notes_text(limit: 4000)
+      },
+      precheck_include_in_app_purchases: false
+    )
+  end
+end
+
+platform :android do
+  desc 'Build and upload a release bundle to Google Play'
+  lane :release do
+    version = ENV.fetch('RELEASE_VERSION')
+    package_name = 'se.teknologappen.tappen'
+
+    version_codes = google_play_track_version_codes(
+      package_name: package_name,
+      track: 'production',
+      json_key: ENV.fetch('PLAY_STORE_JSON_KEY_PATH')
+    )
+    version_code = (version_codes.max || 0) + 1
+
+    gradle(
+      project_dir: 'android',
+      task: 'bundle',
+      build_type: 'Release',
+      properties: {
+        'appVersionName' => version,
+        'appVersionCode' => version_code
+      }
+    )
+
+    upload_to_play_store(
+      package_name: package_name,
+      track: 'production',
+      aab: 'android/app/build/outputs/bundle/release/app-release.aab',
+      json_key: ENV.fetch('PLAY_STORE_JSON_KEY_PATH'),
+      release_status: 'completed',
+      release_notes: {
+        ENV.fetch('PLAY_LOCALE', 'sv-SE') => release_notes_text(limit: 500)
+      }
+    )
+  end
+end
+
+def cleanup_ios_keychain
+  path = File.expand_path("~/Library/Keychains/#{IOS_KEYCHAIN_NAME}-db")
+  delete_keychain(name: IOS_KEYCHAIN_NAME) if File.exist?(path)
+end
+
+after_all { |_lane| cleanup_ios_keychain }
+error { |_lane, _exception| cleanup_ios_keychain }

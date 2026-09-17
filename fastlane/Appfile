@@ -1,0 +1,7 @@
+# iOS
+app_identifier('se.teknologappen.tappen')
+team_id('J77J9HFNJC')
+
+# Android
+json_key_file(ENV['PLAY_STORE_JSON_KEY_PATH'])
+package_name('se.teknologappen.tappen')

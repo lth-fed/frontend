@@ -1,0 +1,152 @@
+name: Release Mobile Apps
+
+# Builds and ships the iOS and Android apps whenever a GitHub Release is
+# published. The release's tag name is the marketing version shipped to
+# both stores verbatim (e.g. tag "v1.4.0" or "1.4.0" -> version "1.4.0") —
+# nothing here decides between a patch/minor/major bump, you choose the
+# version by picking the tag. Build *numbers* (the invisible per-upload
+# counter, not the marketing version) are fetched live from App Store
+# Connect / Play Console and incremented, so the versions committed in the
+# Xcode project / build.gradle are only relevant for local development
+# builds. The release's description becomes the store "what's new" text.
+#
+# Mark the GitHub Release as a "pre-release" to skip shipping to the stores
+# (useful for testing the release workflow itself, e.g. release notes).
+#
+# See docs/release-process.md for the one-time setup (required secrets).
+
+on:
+  release:
+    types: [published]
+
+concurrency:
+  group: release-${{ github.event.release.tag_name }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Derive release version from tag
+        id: version
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+          echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+
+  ios:
+    needs: version
+    if: github.event.release.prerelease == false
+    runs-on: macos-15
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build web app
+        run: pnpm build
+
+      - name: Sync Capacitor iOS project
+        run: npx cap sync ios
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.4'
+          bundler-cache: true
+
+      - name: Decode signing assets
+        run: |
+          CERT_PATH="$RUNNER_TEMP/ios_distribution.p12"
+          PROFILE_PATH="$RUNNER_TEMP/ios_profile.mobileprovision"
+          ASC_KEY_PATH="$RUNNER_TEMP/asc_api_key.p8"
+
+          echo "${{ secrets.IOS_DIST_CERTIFICATE_BASE64 }}" | base64 --decode -o "$CERT_PATH"
+          echo "${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}" | base64 --decode -o "$PROFILE_PATH"
+          echo "${{ secrets.ASC_API_KEY_BASE64 }}" | base64 --decode -o "$ASC_KEY_PATH"
+
+          echo "IOS_CERTIFICATE_PATH=$CERT_PATH" >> "$GITHUB_ENV"
+          echo "IOS_PROFILE_PATH=$PROFILE_PATH" >> "$GITHUB_ENV"
+          echo "ASC_KEY_PATH=$ASC_KEY_PATH" >> "$GITHUB_ENV"
+
+      - name: Release to the App Store
+        env:
+          RELEASE_VERSION: ${{ needs.version.outputs.version }}
+          RELEASE_NOTES: ${{ github.event.release.body }}
+          ASC_LOCALE: ${{ vars.ASC_LOCALE || 'sv' }}
+          ASC_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_API_ISSUER_ID }}
+          IOS_CERTIFICATE_PASSWORD: ${{ secrets.IOS_DIST_CERTIFICATE_PASSWORD }}
+          IOS_PROFILE_NAME: ${{ secrets.IOS_PROVISIONING_PROFILE_NAME }}
+        run: bundle exec fastlane ios release
+
+  android:
+    needs: version
+    if: github.event.release.prerelease == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build web app
+        run: pnpm build
+
+      - name: Sync Capacitor Android project
+        run: npx cap sync android
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.4'
+          bundler-cache: true
+
+      - name: Decode signing assets
+        run: |
+          KEYSTORE_PATH="$RUNNER_TEMP/release.keystore"
+          PLAY_KEY_PATH="$RUNNER_TEMP/play-store-key.json"
+
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > "$KEYSTORE_PATH"
+          echo "${{ secrets.PLAY_STORE_JSON_KEY_BASE64 }}" | base64 -d > "$PLAY_KEY_PATH"
+
+          echo "ANDROID_KEYSTORE_PATH=$KEYSTORE_PATH" >> "$GITHUB_ENV"
+          echo "PLAY_STORE_JSON_KEY_PATH=$PLAY_KEY_PATH" >> "$GITHUB_ENV"
+
+      - name: Release to Google Play
+        env:
+          RELEASE_VERSION: ${{ needs.version.outputs.version }}
+          RELEASE_NOTES: ${{ github.event.release.body }}
+          PLAY_LOCALE: ${{ vars.PLAY_LOCALE || 'sv-SE' }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: bundle exec fastlane android release
