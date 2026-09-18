@@ -20,21 +20,28 @@ version bump follows semver from commit types — `fix:` bumps patch, `feat:` bu
 your commits correctly (see the `conventional-commit-message` skill) and the version follows.
 
 Merging that PR is the trigger: release-please tags the merge commit (`v1.5.0`) and creates the
-GitHub Release **directly as a prerelease** — a real release with a real tag, immediately, just
-flagged "Pre-release" — with the full changelog entry as its body (every commit type gets its own
-section: Features, Bug Fixes, Documentation, Continuous Integration, ...). That's deliberately the
-_complete_ technical changelog, not App Store copy (see [Release notes](#release-notes) below). A
-real tag matters: release-please only knows where "the last release" was by looking at actual git
-tags, and a GitHub _draft_ doesn't create one until published — using a prerelease instead means the
-next push to `main` always computes the right diff, with nothing left ambiguous.
+GitHub Release **directly** — a real release with a real tag, immediately, not a draft — with the
+full changelog entry as its body (every commit type gets its own section: Features, Bug Fixes,
+Documentation, Continuous Integration, ...). That's deliberately the _complete_ technical changelog,
+not App Store copy (see [Release notes](#release-notes) below). A real tag matters: release-please
+only knows where "the last release" was by looking at actual git tags, and a GitHub _draft_ doesn't
+create one until published — creating it directly means the next push to `main` always computes the
+right diff, with nothing left ambiguous.
 
-**The prerelease is the safety gate that replaces manually creating a release.** Creating it also
-runs `release.yml` once automatically (build + sign only, no upload — see
-[What each job does](#what-each-job-does)), so you get a free "does it still build" check on every
-proposed release with zero risk of shipping anything. Nothing reaches the stores until a human opens
-it on the repo's Releases page, edits it, unchecks **Set as a pre-release**, and saves — that
-promotion is the `release: released` event, the only trigger this workflow ever uploads on. Add your
-[App Store Notes](#release-notes) to the body before promoting.
+`release-please.yml` then immediately marks that release **Pre-release** itself, in a separate step
+— not via release-please's own `prerelease` config option, which turned out not to do what it sounds
+like: internally it's gated on the version having a semver prerelease suffix (like `1.1.0-beta.1`)
+or a `0.x` major version, so it silently does nothing for a plain `1.4.0`. Marking it ourselves
+works unconditionally regardless of version shape.
+
+**The prerelease is the safety gate that replaces manually creating a release.** Nothing runs
+automatically at creation time — GitHub deliberately never fires workflow runs for events caused by
+a workflow's own `GITHUB_TOKEN` (both release-please-action's release creation and our own
+prerelease-marking step use it), so there's no automatic build here, just the label. Nothing reaches
+the stores until a human opens the release on the repo's Releases page, edits it, unchecks **Set as
+a pre-release**, and saves — that promotion is a genuine user action, not `GITHUB_TOKEN`, so it
+fires normally: GitHub's `release: released` event, the only trigger `release.yml` ever uploads on.
+Add your [App Store Notes](#release-notes) to the body before promoting.
 
 You don't have to promote every prerelease, and you don't have to promote them in order. A
 prerelease you never touch just sits there, clearly labeled, forever — merge another release PR on
@@ -101,6 +108,25 @@ Variables tab, not Secrets — these aren't sensitive) if they differ from the d
 needed — but repos default to denying Actions the ability to open PRs. Enable **Settings → Actions →
 General → Workflow permissions → Allow GitHub Actions to create and approve pull requests**, or the
 release PR step fails silently on a repo that hasn't had this flipped before.
+
+### Why the release PR's checks sometimes need manual approval
+
+The release PR is opened using the default `GITHUB_TOKEN`, and GitHub has a special case for exactly
+this: a `pull_request` opened/updated by `GITHUB_TOKEN` still runs its checks, but the very first
+run sits as **"Expected — waiting for status to be reported"** until a human clicks **Approve and
+run** on it (Actions tab → the run). Once you've approved a run for that PR once, subsequent pushes
+to the same PR run automatically without asking again. This is a GitHub platform behavior, not
+something this repo's workflows configure.
+
+If you'd rather not deal with this at all — and also want the free "does it still build" check back
+on every release-please-created release (see above; it's currently skipped because `GITHUB_TOKEN`
+can't trigger `release.yml` either) — replace `github.token` in `release-please.yml` with a
+[fine-grained PAT](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens)
+(`contents: write`, `pull requests: write` on this repo) or a GitHub App installation token, stored
+as a repo secret. Either sidesteps both limitations, since neither is subject to the `GITHUB_TOKEN`
+restrictions above — but it also means release-please's automation runs with a real identity instead
+of the tightly-scoped default token, which is worth deciding deliberately rather than defaulting
+into.
 
 ## One-time setup: required GitHub secrets
 

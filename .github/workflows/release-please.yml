@@ -2,12 +2,25 @@ name: release-please
 
 # Maintains a standing "release PR" on every push to main that bumps the
 # version (package.json) and updates CHANGELOG.md from Conventional Commits.
-# Merging that PR creates a git tag and a *draft* GitHub Release containing
-# the full changelog for that version — draft, not published, so nothing
-# ships to the App Store / Play Store automatically. A human reviews the
-# draft and clicks "Publish release" when ready; that's what actually
-# triggers .github/workflows/release.yml (which fires on `release:
-# published`), same as today's manual flow.
+# Merging that PR creates a real git tag and GitHub Release immediately.
+#
+# release-please's own `prerelease` config option does NOT mark this as a
+# prerelease for us: internally it's gated on
+# `config.prerelease && (version has a semver prerelease suffix || major === 0)`
+# (see googleapis/release-please's src/manifest.ts) — meaning it only ever
+# applies to versions like "1.1.0-beta.1" or the "0.x" range, never to a
+# plain "1.4.0". Since this project is past 1.0 with no prerelease
+# identifiers, that condition is always false, so we mark it prerelease
+# ourselves in the step below, unconditionally.
+#
+# That step runs with this workflow's own GITHUB_TOKEN, which — like the
+# release-please-action step above it — cannot trigger release.yml (GitHub
+# does not fire new workflow runs for events caused by GITHUB_TOKEN, with a
+# narrow exception for pull_request that doesn't apply to `release` events).
+# That's fine: we don't want anything to fire automatically on creation.
+# The only thing that ships to the stores is a human opening the resulting
+# prerelease, editing it to uncheck "Set as a pre-release", and saving —
+# a genuine user action, which fires normally regardless of GITHUB_TOKEN.
 #
 # See docs/release-process.md for the full picture, including how the
 # store release notes get curated down from this full changelog.
@@ -24,7 +37,15 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
-      - uses: googleapis/release-please-action@v4
+      - id: release-please
+        uses: googleapis/release-please-action@v4
         with:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
+
+      - name: Mark the new release as a prerelease pending promotion
+        if: steps.release-please.outputs.release_created == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.release-please.outputs.tag_name }}
+        run: gh release edit "$TAG" --repo "${{ github.repository }}" --prerelease

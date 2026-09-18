@@ -4,17 +4,22 @@ name: Release Mobile Apps
 # release-please (.github/workflows/release-please.yml) auto-creates each
 # release directly as a GitHub *prerelease* (real tag, created immediately —
 # not a draft) with the full Conventional Commits changelog as its body.
-# That creation fires `published`, which runs this workflow in build+sign
-# ONLY mode — no store upload — so every proposed release gets a free,
-# automatic "does it still build" check with no risk of shipping anything.
+# That creation does NOT run this workflow at all: it's done using
+# release-please's own GITHUB_TOKEN, and GitHub deliberately never fires new
+# workflow runs for events caused by GITHUB_TOKEN (release-please.yml has
+# the full explanation). That's fine — we don't want anything to build
+# automatically at that point anyway.
 #
 # Shipping is a separate, deliberate action: open the prerelease on the
 # repo's Releases page, edit it to uncheck "Set as a pre-release", and save.
-# That promotion fires GitHub's `released` event, which is the ONLY trigger
-# this workflow ever uploads on (see SKIP_UPLOAD below) — regardless of the
-# release's prerelease flag, so a directly-created stable release (skipping
-# the prerelease step entirely, e.g. for a hotfix) can't double-upload from
-# both `published` and `released` firing for the same release.
+# Because that's a genuine human action (not GITHUB_TOKEN), it fires
+# normally — GitHub's `released` event, which is the ONLY trigger this
+# workflow ever uploads on (see SKIP_UPLOAD below), regardless of the
+# release's prerelease flag. That "regardless" matters for one edge case:
+# a directly-created stable release (skipping the prerelease step entirely,
+# e.g. a hotfix created straight from the GitHub UI by a human) fires both
+# `published` and `released` for the same release — keying the upload
+# decision on the action, not the flag, means that can't double-upload.
 #
 # The release's tag name is the marketing version shipped to both stores
 # verbatim (e.g. tag "v1.4.0" or "1.4.0" -> version "1.4.0"). Build
