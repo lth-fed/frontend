@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.0.4](https://github.com/lth-fed/frontend/compare/v1.0.3...v1.0.4) (2026-09-18)
+
+
+### Bug Fixes
+
+* **ci:** run the CLA check job for bots instead of skipping it ([16c7ee2](https://github.com/lth-fed/frontend/commit/16c7ee26f258aed68d66cb9afea5f71902f03af8))
+* generate Paraglide messages before type-checking ([017dc7e](https://github.com/lth-fed/frontend/commit/017dc7eb770b4a6a27239f35cd330f2b0a6e70c9))
+* **release:** create real prereleases instead of drafts, require App Store Notes ([6bfdd5a](https://github.com/lth-fed/frontend/commit/6bfdd5aa9fdb4c60e5224b66d02f1ea0cea026ca))
+* **release:** ignore CHANGELOG.md in prettier ([174194e](https://github.com/lth-fed/frontend/commit/174194ef54ce201415ffb0cbd1c8e887cb417609))
+
 ## [1.0.3](https://github.com/lth-fed/frontend/compare/v1.0.2...v1.0.3) (2026-09-18)
 
 
