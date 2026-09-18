@@ -11,10 +11,10 @@
 				<h1>{m.hero_title()}</h1>
 				<p class="lead">{m.hero_description()}</p>
 				<div class="actions">
-					<a class="button primary" href={APP_STORE_URL}>
+					<a class="button primary" href={APP_STORE_URL} rel="external">
 						{m.install_app_store()}
 					</a>
-					<a class="button primary" href={PLAY_STORE_URL}>
+					<a class="button primary" href={PLAY_STORE_URL} rel="external">
 						{m.install_play_store()}
 					</a>
 					<a class="button primary" href="https://app.teknologappen.se">{m.login_app()}</a>

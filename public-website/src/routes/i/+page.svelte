@@ -47,8 +47,8 @@
 		{:else}
 			<p class="install-lead">{m.install_description()}</p>
 			<div class="install-actions">
-				<a class="button primary" href={APP_STORE_URL}>{m.install_app_store()}</a>
-				<a class="button primary" href={PLAY_STORE_URL}>{m.install_play_store()}</a>
+				<a class="button primary" href={APP_STORE_URL} rel="external">{m.install_app_store()}</a>
+				<a class="button primary" href={PLAY_STORE_URL} rel="external">{m.install_play_store()}</a>
 				<a class="button secondary" href={WEB_APP_URL}>{m.install_web()}</a>
 			</div>
 		{/if}

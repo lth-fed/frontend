@@ -29,7 +29,7 @@
 		<a
 			href={segment.href}
 			target="_blank"
-			rel="noopener noreferrer"
+			rel="noopener noreferrer external"
 			class="pointer-events-auto font-medium text-guild-accent underline underline-offset-2"
 			onclick={(event) => event.stopPropagation()}>{segment.text}</a>
 	{:else}{segment.text}{/if}
