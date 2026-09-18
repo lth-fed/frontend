@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.5](https://github.com/lth-fed/frontend/compare/v1.0.4...v1.0.5) (2026-09-18)
+
+
+### Bug Fixes
+
+* **release:** mark releases prerelease ourselves, not via release-please config ([a05457a](https://github.com/lth-fed/frontend/commit/a05457a6951e5e3c068e69f9b0496c84c45baaba))
+
 ## [1.0.4](https://github.com/lth-fed/frontend/compare/v1.0.3...v1.0.4) (2026-09-18)
 
 
