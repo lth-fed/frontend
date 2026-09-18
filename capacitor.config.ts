@@ -24,7 +24,7 @@ const config: CapacitorConfig = {
 			showSpinner: false
 		},
 		PushNotifications: {
-			presentationOptions: ["banner", "list", "sound", "badge"]
+			presentationOptions: ['banner', 'list', 'sound', 'badge']
 		}
 	}
 };

@@ -11,7 +11,7 @@
 	async function approve() {
 		const body = {
 			token: query.get('token'),
-			language: i18n.getLang(),
+			language: i18n.getLang()
 		};
 		const resp = await fetch(authApiUrl('/api/v0/providers/email/approve'), {
 			method: 'POST',

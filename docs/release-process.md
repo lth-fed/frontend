@@ -5,8 +5,9 @@ Android apps and ships them straight to the App Store and Google Play (productio
 [fastlane](https://fastlane.tools) (`fastlane/Fastfile`).
 
 That GitHub Release itself is prepared automatically by
-[release-please](https://github.com/googleapis/release-please) (`.github/workflows/release-please.yml`)
-from [Conventional Commits](https://www.conventionalcommits.org/) on `main` — see below.
+[release-please](https://github.com/googleapis/release-please)
+(`.github/workflows/release-please.yml`) from
+[Conventional Commits](https://www.conventionalcommits.org/) on `main` — see below.
 
 ## How versioning and changelogs work
 
@@ -21,7 +22,7 @@ your commits correctly (see the `conventional-commit-message` skill) and the ver
 Merging that PR is the trigger: release-please tags the merge commit (`v1.5.0`) and creates a
 **draft** GitHub Release with the full changelog entry as its body — every commit type gets its own
 section (Features, Bug Fixes, Documentation, Continuous Integration, ...), which is deliberately the
-*complete* technical changelog, not App Store copy (see [Release notes](#release-notes) below).
+_complete_ technical changelog, not App Store copy (see [Release notes](#release-notes) below).
 
 **The draft is the safety gate that replaces manually creating a release.** Nothing ships until a
 human opens that draft on the repo's Releases page and clicks **Publish release** — that's the
@@ -29,19 +30,20 @@ human opens that draft on the repo's Releases page and clicks **Publish release*
 want, then publish when you're ready to ship to both stores. Marking it a pre-release before
 publishing still works exactly as before (see below) to dry-run the pipeline.
 
-Build *numbers* (the invisible per-upload counter, not the marketing version) are still fetched live
+Build _numbers_ (the invisible per-upload counter, not the marketing version) are still fetched live
 from App Store Connect / Play Console and incremented by fastlane — the `MARKETING_VERSION`/
 `CURRENT_PROJECT_VERSION` in `App.xcodeproj` and `versionName`/`versionCode` in
 `android/app/build.gradle` only matter for local dev builds (`pnpm ios` / `pnpm android`).
 
 **To test the release pipeline without shipping to real users**, mark the draft (or any manually
-created) GitHub Release as a "pre-release" before publishing it. Both jobs still run in full — build,
-sign, package — but the `upload_to_app_store` / `upload_to_play_store` steps are skipped, so nothing
-reaches App Store Connect or Play Console. The signed `.ipa`/`.aab` are attached to the workflow run
-as downloadable artifacts either way (Actions tab -> the run -> **Artifacts**, kept 14 days).
+created) GitHub Release as a "pre-release" before publishing it. Both jobs still run in full —
+build, sign, package — but the `upload_to_app_store` / `upload_to_play_store` steps are skipped, so
+nothing reaches App Store Connect or Play Console. The signed `.ipa`/`.aab` are attached to the
+workflow run as downloadable artifacts either way (Actions tab -> the run -> **Artifacts**, kept 14
+days).
 
-You can still create a GitHub Release by hand (e.g. for a one-off hotfix tag) — `release.yml` doesn't
-care who or what created the release it's reacting to, only that it was published.
+You can still create a GitHub Release by hand (e.g. for a one-off hotfix tag) — `release.yml`
+doesn't care who or what created the release it's reacting to, only that it was published.
 
 ## Release notes
 
@@ -59,7 +61,7 @@ the section list at the top of that script.
 
 If you want the store text to say something different from what your commit messages produce
 mechanically, publish the draft release, then edit its description in the GitHub UI to whatever you
-want *before* editing/re-publishing — or just accept the mechanical cut, since good commit subjects
+want _before_ editing/re-publishing — or just accept the mechanical cut, since good commit subjects
 (per the `conventional-commit-message` skill) already read like changelog bullets.
 
 The two stores take this text through different mechanisms: `deliver` (iOS) accepts a

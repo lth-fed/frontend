@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Bell, BellOff, CalendarIcon, MapPinIcon } from '@lucide/svelte';
 	import InfoRow from './InfoRow.svelte';
-	import { m } from '$lib/paraglide/messages.js'
+	import { m } from '$lib/paraglide/messages.js';
 
 	interface Props {
 		badge?: string;
@@ -38,7 +38,7 @@
 				onclick={() => followToggle()}
 				aria-label={followed ? m.activity_unfollow() : m.activity_follow()}
 				title={followed ? m.activity_unfollow() : m.activity_follow()}
-				class="col-start-2 row-start-1 row-span-2 self-end grid m-1 size-11 place-items-center rounded-full bg-guild-surface text-guild-on-surface shadow-sm disabled:opacity-60">
+				class="col-start-2 row-span-2 row-start-1 m-1 grid size-11 place-items-center self-end rounded-full bg-guild-surface text-guild-on-surface shadow-sm disabled:opacity-60">
 				{#if followed}
 					<BellOff class="size-5" aria-hidden="true" />
 				{:else}
