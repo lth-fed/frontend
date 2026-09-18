@@ -43,7 +43,7 @@ jobs:
           git config user.email "cla-bot@users.noreply.github.com"
           git remote set-url origin https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/${{ github.repository }}
           git add .github/cla-signatures.json
-          git diff --cached --quiet || git commit -m "[INFRA] (Update): Add CLA signature for ${{ github.event.comment.user.login }}"
+          git diff --cached --quiet || git commit -m "chore: add CLA signature for ${{ github.event.comment.user.login }}"
           git push
 
       - name: Re-trigger CLA check
