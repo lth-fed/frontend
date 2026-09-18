@@ -50,16 +50,35 @@ Version bumps and the changelog are generated from these messages — see
 style, it drives the release. If you have the `conventional-commit-message` skill available, use it
 when writing commit messages.
 
+## Releasing
+
+1. Merge the standing `chore(main): release X.Y.Z` pull request (opened automatically by
+   release-please).
+2. Find the release it creates on the repo's **Releases** page — it's created as a **Pre-release**,
+   so nothing has shipped yet.
+3. Edit the release and add this section to its body:
+
+   ```markdown
+   ### App Store Notes
+
+   A short, human-written summary of what changed.
+   ```
+
+   > **Required.** This is the _only_ text that reaches the App Store and Play Store — the rest of
+   > the release body is a technical changelog. Skip this and the release step fails on purpose.
+
+4. When ready to ship, edit the release again, uncheck **Set as a pre-release**, and save — this
+   builds, signs, and uploads to both stores.
+
+Full reasoning, one-time setup, and troubleshooting:
+[docs/release-process.md](docs/release-process.md).
+
 ## Mobile apps
 
 ```sh
 pnpm ios      # build, sync, and open the native iOS project in Xcode
 pnpm android  # build, sync, and open the native Android project in Android Studio
 ```
-
-Shipping a new version to the App Store / Play Store is automated (version bump, changelog, build,
-sign, upload) — see [docs/release-process.md](docs/release-process.md) for the full flow and
-one-time setup.
 
 Some Capacitor plugins are custom-written and maintained in this repo rather than pulled from npm —
 e.g. `TicketWalletPlugin` and `ReceiptPlugin` (both platforms), plus iOS-only UI plugins
