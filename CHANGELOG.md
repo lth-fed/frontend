@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.6](https://github.com/lth-fed/frontend/compare/v1.0.5...v1.0.6) (2026-09-18)
+
+
+### Documentation
+
+* add quick-start Releasing steps to README ([152b1f5](https://github.com/lth-fed/frontend/commit/152b1f5b3152bbe95585cb8099c671da551f94ab))
+
 ## [1.0.5](https://github.com/lth-fed/frontend/compare/v1.0.4...v1.0.5) (2026-09-18)
 
 
