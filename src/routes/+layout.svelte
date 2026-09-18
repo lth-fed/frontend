@@ -27,6 +27,7 @@
 
 	let { children } = $props();
 	let notificationNavigationTarget = $state<Pathname | null>(null);
+	let notificationNavigationInFlight = $state(false);
 
 	function notificationTarget(data: Record<string, unknown> | undefined): Pathname {
 		const activityId = data?.activity_id;
@@ -161,11 +162,17 @@
 	});
 
 	$effect(() => {
-		if (!notificationNavigationTarget || !bootstrapped || !session.accessToken) return;
-		const target = notificationNavigationTarget;
+		if (!bootstrapped || !session.accessToken || notificationNavigationInFlight) return;
+		const target = notificationNavigationTarget ?? (page.route.id === '/' ? Routes.Home : null);
+		if (!target) return;
 		notificationNavigationTarget = null;
+		notificationNavigationInFlight = true;
 		evict('notification-history');
-		void replaceNavigation(target, { resetDepth: true });
+		void replaceNavigation(target, { resetDepth: true })
+			.catch((error) => console.warn('Could not open notification', error))
+			.finally(() => {
+				notificationNavigationInFlight = false;
+			});
 	});
 
 	let activeViewTransition: ViewTransition | null = null;

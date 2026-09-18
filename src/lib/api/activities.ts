@@ -262,6 +262,7 @@ export function cachedTicketKinds(id: string, depends?: Depends): Promise<Ticket
 
 const _mockBriefs: RawBrief[] = [
 	{
+		host_ids: [],
 		id: 'a',
 		creator_name: { en: 'A-sektionen', sv: 'A-sektionen' },
 		creator_path: 'tlth.a',
@@ -278,6 +279,7 @@ const _mockBriefs: RawBrief[] = [
 	},
 	{
 		id: 'b',
+		host_ids: [],
 		creator_name: { en: 'D-sektionen', sv: 'D-sektionen' },
 		creator_path: 'tlth.d',
 		title: { en: 'Spring fest', sv: 'Vårfest' },
@@ -293,6 +295,7 @@ const _mockBriefs: RawBrief[] = [
 	},
 	{
 		id: 'c',
+		host_ids: [],
 		creator_name: { en: 'I-sektionen', sv: 'I-sektionen' },
 		creator_path: 'tlth.i',
 		title: { en: 'Tuesday pub', sv: 'Tisdagspub' },

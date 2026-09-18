@@ -99,12 +99,9 @@ export function majorityGuild(groups: MyGroup[]): Guild | undefined {
 /** Use the neutral theme when a user directly belongs to multiple guilds. */
 export function themeGuild(groups: MyGroup[]): Guild | undefined {
 	const directGuilds = new Set(
-		groups
-			.filter((group) => group.path.split('.').length === 2)
-			.map((group) => guildFromPath(group.path))
-			.filter((guild): guild is Guild => guild !== undefined)
+		groups.filter((group) => /^tlth\.[^.]+$/.test(group.path)).map((group) => group.path)
 	);
-	return directGuilds.size > 1 ? undefined : majorityGuild(groups);
+	return directGuilds.size === 1 ? guildFromPath([...directGuilds][0]) : undefined;
 }
 
 const _mockMe: RawMe = {
