@@ -6,6 +6,10 @@ on:
 
 jobs:
   cla-check:
+    # release-please opens its own release PRs as github-actions[bot], bundling commits that
+    # already went through this check (and signed the CLA) on their original PRs. There's no new
+    # authorship to gate here, so skip rather than asking a bot to sign a human CLA.
+    if: github.event.pull_request.user.login != 'github-actions[bot]'
     runs-on: ubuntu-latest
     permissions:
       contents: read
