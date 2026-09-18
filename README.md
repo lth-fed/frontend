@@ -1,5 +1,20 @@
 # FED Frontend
 
+Teknologappen (`se.teknologappen.tappen`) — a SvelteKit app shipped as a website and, via
+[Capacitor](https://capacitorjs.com), as native iOS and Android apps.
+
+## Project structure
+
+- `src/` — the main app.
+- `auth/` — a separate SvelteKit app handling authentication flows.
+- `public-website/` — the marketing site (teknologappen.se).
+- `lib/`, `auth-lib/` — small local packages shared between the apps above.
+- `android/`, `ios/` — native Capacitor projects. Only relevant for building/running the mobile
+  apps; not touched for regular web development.
+- `fastlane/` — mobile app store release automation (see [Mobile apps](#mobile-apps) below).
+- `docs/` — deeper docs: [release process](docs/release-process.md), push notification setup,
+  agentic testing, MVP tech spec.
+
 ## Local development
 
 Install dependencies and run the main frontend:
@@ -9,11 +24,55 @@ pnpm install
 pnpm dev
 ```
 
-Run the auth frontend from its directory with `pnpm --dir auth dev`.
+Run the other apps from their own directory, e.g. `pnpm --dir auth dev` or
+`pnpm --dir public-website dev`.
 
 Run the backend using `podman compose up`.
 
-## Build and push production images
+## Checks
+
+```sh
+pnpm lint    # prettier --check + eslint
+pnpm check   # svelte-check (type-checking)
+pnpm build   # production build
+```
+
+These run automatically on every pull request and push to `main` via GitHub Actions
+(`.github/workflows/ci.yml`) — they're intentionally **not** run as local git hooks, so commits and
+pushes stay instant. Run them yourself before pushing if you want the same feedback earlier.
+
+## Commit messages
+
+This repo enforces [Conventional Commits](https://www.conventionalcommits.org/) (`type: subject`,
+e.g. `fix: correct token refresh race condition`) via a commitlint hook that runs on every commit.
+Version bumps and the changelog are generated from these messages — see
+[docs/release-process.md](docs/release-process.md) — so a well-formed commit message isn't just
+style, it drives the release. If you have the `conventional-commit-message` skill available, use it
+when writing commit messages.
+
+## Mobile apps
+
+```sh
+pnpm ios      # build, sync, and open the native iOS project in Xcode
+pnpm android  # build, sync, and open the native Android project in Android Studio
+```
+
+Shipping a new version to the App Store / Play Store is automated (version bump, changelog, build,
+sign, upload) — see [docs/release-process.md](docs/release-process.md) for the full flow and
+one-time setup.
+
+Some Capacitor plugins are custom-written and maintained in this repo rather than pulled from npm —
+e.g. `TicketWalletPlugin` and `ReceiptPlugin` (both platforms), plus iOS-only UI plugins
+(`NavigationBar`, `TabsBar`, `ToolBar`, `NativeButton`) and Android's `NativeCapabilitiesPlugin`.
+They live alongside the rest of the native project:
+`android/app/src/main/java/se/teknologappen/tappen/` and `ios/App/App/Plugins/`.
+
+The
+[WebNative VS Code extension](https://marketplace.visualstudio.com/items?itemName=webnative.webnative)
+(formerly Ionic's) is handy for day-to-day Capacitor work — building, syncing, running, etc. —
+without having to remember the underlying CLI commands.
+
+## Build and push production web images
 
 Run `./build-push.sh`.
 
