@@ -6,10 +6,10 @@ on:
 
 jobs:
   cla-check:
-    # release-please opens its own release PRs as github-actions[bot], bundling commits that
-    # already went through this check (and signed the CLA) on their original PRs. There's no new
-    # authorship to gate here, so skip rather than asking a bot to sign a human CLA.
-    if: github.event.pull_request.user.login != 'github-actions[bot]'
+    # cla-check is a required branch-protection status check, so this job must always RUN and
+    # report success/failure — never be skipped via a job-level `if`. A skipped job reports no
+    # status at all, which leaves a required check stuck at "Expected — waiting for status to be
+    # reported" forever, permanently blocking the PR from becoming mergeable.
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -22,6 +22,16 @@ jobs:
         run: |
           AUTHOR="${{ github.event.pull_request.user.login }}"
           PR_NUMBER="${{ github.event.pull_request.number }}"
+
+          # release-please opens its own release PRs as github-actions[bot], bundling commits
+          # that already went through this check (and signed the CLA) on their original PRs.
+          # There's no new authorship to gate here — succeed immediately rather than asking a
+          # bot to sign a human CLA.
+          if [ "$AUTHOR" = "github-actions[bot]" ]; then
+            echo "Skipping CLA check for github-actions[bot] (release-please PR)"
+            exit 0
+          fi
+
           echo "Checking CLA for $AUTHOR"
 
           SIGNATURES=$(gh api "repos/${{ github.repository }}/contents/.github/cla-signatures.json" \
