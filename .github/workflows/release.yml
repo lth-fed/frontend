@@ -1,14 +1,22 @@
 name: Release Mobile Apps
 
 # Builds and ships the iOS and Android apps whenever a GitHub Release is
-# published. The release's tag name is the marketing version shipped to
-# both stores verbatim (e.g. tag "v1.4.0" or "1.4.0" -> version "1.4.0") —
-# nothing here decides between a patch/minor/major bump, you choose the
-# version by picking the tag. Build *numbers* (the invisible per-upload
-# counter, not the marketing version) are fetched live from App Store
-# Connect / Play Console and incremented, so the versions committed in the
-# Xcode project / build.gradle are only relevant for local development
-# builds. The release's description becomes the store "what's new" text.
+# published. release-please (.github/workflows/release-please.yml) opens
+# the release as a *draft* with the full Conventional Commits changelog as
+# its body — nothing here runs until a human reviews that draft and clicks
+# "Publish release", which is what actually fires this workflow. The
+# release's tag name is the marketing version shipped to both stores
+# verbatim (e.g. tag "v1.4.0" or "1.4.0" -> version "1.4.0"). Build
+# *numbers* (the invisible per-upload counter, not the marketing version)
+# are fetched live from App Store Connect / Play Console and incremented,
+# so the versions committed in the Xcode project / build.gradle are only
+# relevant for local development builds.
+#
+# The release's full description is a changelog, not App Store copy — it
+# includes every Conventional Commit type (chore, ci, refactor, ...), which
+# isn't what end users should see as "What's New". The `version` job below
+# curates it down to just the Features/Bug Fixes bullets (plain text, no
+# Markdown or commit links) before it's handed to fastlane.
 #
 # Mark the GitHub Release as a "pre-release" to still build and sign both
 # apps — so you can verify the pipeline end-to-end — but skip the actual
@@ -33,12 +41,30 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.version.outputs.version }}
+      release_notes: ${{ steps.notes.outputs.release_notes }}
     steps:
+      - uses: actions/checkout@v4
+
       - name: Derive release version from tag
         id: version
         run: |
           TAG="${{ github.event.release.tag_name }}"
           echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Curate store release notes from full changelog
+        id: notes
+        env:
+          FULL_BODY: ${{ github.event.release.body }}
+        run: |
+          CURATED="$(printf '%s' "$FULL_BODY" | .github/scripts/curate-release-notes.sh)"
+          if [ -z "$CURATED" ]; then
+            CURATED="General improvements and bug fixes."
+          fi
+          {
+            echo "release_notes<<RELEASE_NOTES_EOF"
+            echo "$CURATED"
+            echo "RELEASE_NOTES_EOF"
+          } >> "$GITHUB_OUTPUT"
 
   ios:
     needs: version
@@ -97,7 +123,7 @@ jobs:
           'Build, sign, and release to the App Store' }}"
         env:
           RELEASE_VERSION: ${{ needs.version.outputs.version }}
-          RELEASE_NOTES: ${{ github.event.release.body }}
+          RELEASE_NOTES: ${{ needs.version.outputs.release_notes }}
           SKIP_UPLOAD: ${{ github.event.release.prerelease }}
           ASC_LOCALE: ${{ vars.ASC_LOCALE || 'sv' }}
           ASC_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
@@ -166,7 +192,7 @@ jobs:
           'Build, sign, and release to Google Play' }}"
         env:
           RELEASE_VERSION: ${{ needs.version.outputs.version }}
-          RELEASE_NOTES: ${{ github.event.release.body }}
+          RELEASE_NOTES: ${{ needs.version.outputs.release_notes }}
           SKIP_UPLOAD: ${{ github.event.release.prerelease }}
           PLAY_LOCALE: ${{ vars.PLAY_LOCALE || 'sv-SE' }}
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}

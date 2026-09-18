@@ -4,35 +4,63 @@ Publishing a GitHub Release triggers `.github/workflows/release.yml`, which buil
 Android apps and ships them straight to the App Store and Google Play (production track) via
 [fastlane](https://fastlane.tools) (`fastlane/Fastfile`).
 
-## How versioning works
+That GitHub Release itself is prepared automatically by
+[release-please](https://github.com/googleapis/release-please) (`.github/workflows/release-please.yml`)
+from [Conventional Commits](https://www.conventionalcommits.org/) on `main` — see below.
 
-The release's **tag name** is the marketing version shipped to both stores (a leading `v` is
-stripped, so both `v1.4.0` and `1.4.0` become `1.4.0`). Build numbers are _not_ read from the repo —
-the fastlane lanes fetch the latest build number already on TestFlight / the Play production track
-and increment it. This means the `MARKETING_VERSION`/`CURRENT_PROJECT_VERSION` in `App.xcodeproj`
-and `versionName`/`versionCode` in `android/app/build.gradle` only matter for local dev builds
-(`pnpm ios` / `pnpm android`); you don't need to hand-bump them before tagging a release anymore.
+## How versioning and changelogs work
 
-Tag/release the same version you want on the stores, e.g. create a GitHub Release with tag `1.5.0`
-to ship `1.5.0` to both platforms. **Nothing here auto-decides a patch/minor/major bump** — the
-workflow just mirrors whatever tag you type. Going from `1.2` to `1.3` vs `2.0` vs `2.2` is entirely
-your call when you create the release; if you want that convention enforced, it'd need to be a
-separate check (e.g. a script comparing against the last published tag), which isn't set up.
+Every push to `main` runs `release-please`, which looks at the Conventional Commit messages since
+the last release and, if there's anything release-worthy (`feat`/`fix`/etc.), opens or updates a
+standing pull request titled something like `chore(main): release 1.5.0`. That PR contains only two
+kinds of change: the version bump in `package.json` and an update to the root `CHANGELOG.md`. The
+version bump follows semver from commit types — `fix:` bumps patch, `feat:` bumps minor, a `!` or a
+`BREAKING CHANGE:` footer bumps major — so **you don't choose the version by hand anymore**; write
+your commits correctly (see the `conventional-commit-message` skill) and the version follows.
 
-**To test the workflow without shipping to real users**, mark the GitHub Release as a "pre-release".
-Both jobs still run in full — build, sign, package — but the `upload_to_app_store` /
-`upload_to_play_store` steps are skipped, so nothing reaches App Store Connect or Play Console. The
-signed `.ipa`/`.aab` are attached to the workflow run as downloadable artifacts either way (Actions
-tab -> the run -> **Artifacts**, kept 14 days), which is the easiest way to sanity-check a release
-build without shipping it.
+Merging that PR is the trigger: release-please tags the merge commit (`v1.5.0`) and creates a
+**draft** GitHub Release with the full changelog entry as its body — every commit type gets its own
+section (Features, Bug Fixes, Documentation, Continuous Integration, ...), which is deliberately the
+*complete* technical changelog, not App Store copy (see [Release notes](#release-notes) below).
+
+**The draft is the safety gate that replaces manually creating a release.** Nothing ships until a
+human opens that draft on the repo's Releases page and clicks **Publish release** — that's the
+`release: published` event `release.yml` actually listens for. Review the changelog, edit it if you
+want, then publish when you're ready to ship to both stores. Marking it a pre-release before
+publishing still works exactly as before (see below) to dry-run the pipeline.
+
+Build *numbers* (the invisible per-upload counter, not the marketing version) are still fetched live
+from App Store Connect / Play Console and incremented by fastlane — the `MARKETING_VERSION`/
+`CURRENT_PROJECT_VERSION` in `App.xcodeproj` and `versionName`/`versionCode` in
+`android/app/build.gradle` only matter for local dev builds (`pnpm ios` / `pnpm android`).
+
+**To test the release pipeline without shipping to real users**, mark the draft (or any manually
+created) GitHub Release as a "pre-release" before publishing it. Both jobs still run in full — build,
+sign, package — but the `upload_to_app_store` / `upload_to_play_store` steps are skipped, so nothing
+reaches App Store Connect or Play Console. The signed `.ipa`/`.aab` are attached to the workflow run
+as downloadable artifacts either way (Actions tab -> the run -> **Artifacts**, kept 14 days).
+
+You can still create a GitHub Release by hand (e.g. for a one-off hotfix tag) — `release.yml` doesn't
+care who or what created the release it's reacting to, only that it was published.
 
 ## Release notes
 
-The GitHub Release's **description** (the markdown body you write in the release form — not the tag)
-is uploaded verbatim as the App Store "What's New" text and the Play Store changelog. Apple
-_requires_ non-empty release notes for every update submission (not the first one), so don't publish
-a release with an empty description — if you do, the lane falls back to a placeholder string ("No
-release notes provided.") rather than failing, but real notes are obviously better.
+`CHANGELOG.md` and the GitHub Release body are the **full** technical changelog — every commit type,
+useful for developers, not filtered. Neither is what should reach end users on the App Store or Play
+Store: nobody wants "ci: bump JDK to 21" in their update notes.
+
+Instead, the `version` job in `release.yml` runs the release body through
+`.github/scripts/curate-release-notes.sh`, which keeps only the **Features** and **Bug Fixes**
+sections, strips the trailing commit-link reference and any Markdown (neither store renders it), and
+falls back to "General improvements and bug fixes." if a release happens to contain neither (e.g. an
+all-`chore` release). That curated, plain-text result — not the raw release body — is what's passed
+to fastlane as `RELEASE_NOTES`. If you want a different cut (e.g. also surface `perf` commits), edit
+the section list at the top of that script.
+
+If you want the store text to say something different from what your commit messages produce
+mechanically, publish the draft release, then edit its description in the GitHub UI to whatever you
+want *before* editing/re-publishing — or just accept the mechanical cut, since good commit subjects
+(per the `conventional-commit-message` skill) already read like changelog bullets.
 
 The two stores take this text through different mechanisms: `deliver` (iOS) accepts a
 `release_notes` parameter directly; `supply` (Android) has no such parameter at all — it only reads
@@ -50,6 +78,13 @@ localization, deliver/supply create a _new_ one instead of updating yours, which
 app → App Information → Localizable Information for the exact code, and override via the
 `ASC_LOCALE` / `PLAY_LOCALE` **repository variables** (Settings → Secrets and variables → Actions →
 Variables tab, not Secrets — these aren't sensitive) if they differ from the defaults above.
+
+## One-time setup: release-please permissions
+
+`release-please.yml` opens/updates its release PR using the default `GITHUB_TOKEN` — no new secret
+needed — but repos default to denying Actions the ability to open PRs. Enable **Settings → Actions →
+General → Workflow permissions → Allow GitHub Actions to create and approve pull requests**, or the
+release PR step fails silently on a repo that hasn't had this flipped before.
 
 ## One-time setup: required GitHub secrets
 

@@ -1,0 +1,30 @@
+name: release-please
+
+# Maintains a standing "release PR" on every push to main that bumps the
+# version (package.json) and updates CHANGELOG.md from Conventional Commits.
+# Merging that PR creates a git tag and a *draft* GitHub Release containing
+# the full changelog for that version — draft, not published, so nothing
+# ships to the App Store / Play Store automatically. A human reviews the
+# draft and clicks "Publish release" when ready; that's what actually
+# triggers .github/workflows/release.yml (which fires on `release:
+# published`), same as today's manual flow.
+#
+# See docs/release-process.md for the full picture, including how the
+# store release notes get curated down from this full changelog.
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: googleapis/release-please-action@v4
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
