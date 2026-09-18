@@ -1,0 +1,49 @@
+name: CI
+
+# Runs the project's checks (lint, type-check, build) on every PR and on
+# every push to main. Deliberately NOT run as a local git hook — commits
+# and pushes stay instant; this is where the (comparatively slower) checks
+# live instead, gated on a PR/CI runner rather than every local commit.
+#
+# There's no test suite yet (scripts/render-pass.mjs is a manual local
+# smoke-test tool, not CI-ready — it needs a live local backend and a
+# hardcoded local Brave install). Add a `test` step here once one exists.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint (prettier + eslint)
+        run: pnpm lint
+
+      - name: Type-check (svelte-check)
+        run: pnpm check
+
+      - name: Build
+        run: pnpm build
