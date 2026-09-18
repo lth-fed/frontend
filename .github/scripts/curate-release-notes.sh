@@ -1,22 +1,20 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Reads a release-please-generated changelog (Markdown, on stdin) and
-# writes only its "Features" and "Bug Fixes" bullets, reformatted as plain
-# text for App Store / Play Store release notes: the trailing commit-link
-# reference and any Markdown emphasis are stripped, since neither store
-# renders Markdown.
+# Extracts the "### App Store Notes" section from a release body (Markdown,
+# on stdin) — a short, human-written summary the maintainer adds to the
+# release before promoting it, which is what actually ships to the App
+# Store / Play Store. Prints nothing if the section is absent or empty.
 #
-# Usage: curate-release-notes.sh < full-changelog.md
+# There is deliberately no fallback to the auto-generated changelog here:
+# that changelog includes every commit type (chore, ci, refactor, ...) and
+# reads like a technical log, not App Store copy. The caller (release.yml)
+# treats empty output as a hard failure rather than shipping it anyway.
+#
+# Usage: curate-release-notes.sh < release-body.md
 
 awk '
-	/^### Features$/  { section=1; next }
-	/^### Bug Fixes$/ { section=1; next }
-	/^### /           { section=0; next }
-	section && /^\* /  { print }
-' | sed -E \
-	-e 's/^\* //' \
-	-e 's/ \(\[[0-9a-f]+\]\([^)]*\)\)[[:space:]]*$//' \
-	-e 's/\*\*([^*]+)\*\*/\1/g' \
-	-e 's/`([^`]+)`/\1/g' \
-	-e 's/^/- /'
+	/^### App Store Notes$/ { capture=1; next }
+	capture && /^### /      { capture=0 }
+	capture && NF           { print }
+'

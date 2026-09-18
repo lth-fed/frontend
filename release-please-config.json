@@ -19,7 +19,7 @@
 	"packages": {
 		".": {
 			"package-name": "tappen-frontend",
-			"draft": true
+			"prerelease": true
 		}
 	}
 }

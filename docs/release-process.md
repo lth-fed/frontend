@@ -1,8 +1,8 @@
 # Mobile release process
 
-Publishing a GitHub Release triggers `.github/workflows/release.yml`, which builds the iOS and
-Android apps and ships them straight to the App Store and Google Play (production track) via
-[fastlane](https://fastlane.tools) (`fastlane/Fastfile`).
+Promoting a GitHub prerelease to a full release triggers `.github/workflows/release.yml`, which
+builds the iOS and Android apps and ships them straight to the App Store and Google Play (production
+track) via [fastlane](https://fastlane.tools) (`fastlane/Fastfile`).
 
 That GitHub Release itself is prepared automatically by
 [release-please](https://github.com/googleapis/release-please)
@@ -19,50 +19,64 @@ version bump follows semver from commit types — `fix:` bumps patch, `feat:` bu
 `BREAKING CHANGE:` footer bumps major — so **you don't choose the version by hand anymore**; write
 your commits correctly (see the `conventional-commit-message` skill) and the version follows.
 
-Merging that PR is the trigger: release-please tags the merge commit (`v1.5.0`) and creates a
-**draft** GitHub Release with the full changelog entry as its body — every commit type gets its own
-section (Features, Bug Fixes, Documentation, Continuous Integration, ...), which is deliberately the
-_complete_ technical changelog, not App Store copy (see [Release notes](#release-notes) below).
+Merging that PR is the trigger: release-please tags the merge commit (`v1.5.0`) and creates the
+GitHub Release **directly as a prerelease** — a real release with a real tag, immediately, just
+flagged "Pre-release" — with the full changelog entry as its body (every commit type gets its own
+section: Features, Bug Fixes, Documentation, Continuous Integration, ...). That's deliberately the
+_complete_ technical changelog, not App Store copy (see [Release notes](#release-notes) below). A
+real tag matters: release-please only knows where "the last release" was by looking at actual git
+tags, and a GitHub _draft_ doesn't create one until published — using a prerelease instead means the
+next push to `main` always computes the right diff, with nothing left ambiguous.
 
-**The draft is the safety gate that replaces manually creating a release.** Nothing ships until a
-human opens that draft on the repo's Releases page and clicks **Publish release** — that's the
-`release: published` event `release.yml` actually listens for. Review the changelog, edit it if you
-want, then publish when you're ready to ship to both stores. Marking it a pre-release before
-publishing still works exactly as before (see below) to dry-run the pipeline.
+**The prerelease is the safety gate that replaces manually creating a release.** Creating it also
+runs `release.yml` once automatically (build + sign only, no upload — see
+[What each job does](#what-each-job-does)), so you get a free "does it still build" check on every
+proposed release with zero risk of shipping anything. Nothing reaches the stores until a human opens
+it on the repo's Releases page, edits it, unchecks **Set as a pre-release**, and saves — that
+promotion is the `release: released` event, the only trigger this workflow ever uploads on. Add your
+[App Store Notes](#release-notes) to the body before promoting.
+
+You don't have to promote every prerelease, and you don't have to promote them in order. A
+prerelease you never touch just sits there, clearly labeled, forever — merge another release PR on
+top of it, skip straight to a later version, whatever you need. Version numbers come purely from git
+tags + `.release-please-manifest.json`, not from what's promoted, so this never gets confused. The
+only thing to remember: only the version you actually promote reaches real users, so if you skip
+one, make sure the next one's App Store Notes cover everything meaningful since the last version you
+_did_ ship.
 
 Build _numbers_ (the invisible per-upload counter, not the marketing version) are still fetched live
 from App Store Connect / Play Console and incremented by fastlane — the `MARKETING_VERSION`/
 `CURRENT_PROJECT_VERSION` in `App.xcodeproj` and `versionName`/`versionCode` in
 `android/app/build.gradle` only matter for local dev builds (`pnpm ios` / `pnpm android`).
 
-**To test the release pipeline without shipping to real users**, mark the draft (or any manually
-created) GitHub Release as a "pre-release" before publishing it. Both jobs still run in full —
-build, sign, package — but the `upload_to_app_store` / `upload_to_play_store` steps are skipped, so
-nothing reaches App Store Connect or Play Console. The signed `.ipa`/`.aab` are attached to the
-workflow run as downloadable artifacts either way (Actions tab -> the run -> **Artifacts**, kept 14
-days).
-
-You can still create a GitHub Release by hand (e.g. for a one-off hotfix tag) — `release.yml`
-doesn't care who or what created the release it's reacting to, only that it was published.
+You can still create a GitHub Release by hand (e.g. for a one-off hotfix tag) — create it as a
+prerelease too, for the same free build-verification pass, then promote it the same way. (If you
+skip straight to a full release, `release.yml` still only uploads on the promotion-shaped trigger,
+so it can't double-ship — but you lose the "watch it build first" step, since there's nothing left
+to promote.)
 
 ## Release notes
 
 `CHANGELOG.md` and the GitHub Release body are the **full** technical changelog — every commit type,
 useful for developers, not filtered. Neither is what should reach end users on the App Store or Play
-Store: nobody wants "ci: bump JDK to 21" in their update notes.
+Store: nobody wants "ci: bump JDK to 21" in their update notes, and this is enforced, not just a
+default.
 
-Instead, the `version` job in `release.yml` runs the release body through
-`.github/scripts/curate-release-notes.sh`, which keeps only the **Features** and **Bug Fixes**
-sections, strips the trailing commit-link reference and any Markdown (neither store renders it), and
-falls back to "General improvements and bug fixes." if a release happens to contain neither (e.g. an
-all-`chore` release). That curated, plain-text result — not the raw release body — is what's passed
-to fastlane as `RELEASE_NOTES`. If you want a different cut (e.g. also surface `perf` commits), edit
-the section list at the top of that script.
+Before promoting a release, edit its body and add a section, anywhere in it:
 
-If you want the store text to say something different from what your commit messages produce
-mechanically, publish the draft release, then edit its description in the GitHub UI to whatever you
-want _before_ editing/re-publishing — or just accept the mechanical cut, since good commit subjects
-(per the `conventional-commit-message` skill) already read like changelog bullets.
+```markdown
+### App Store Notes
+
+Fixed links opening incorrectly, and polished the login screen.
+```
+
+That's a short, human-written summary — your own words, not commit messages. When you promote, the
+`version` job in `release.yml` fetches the release body fresh and runs it through
+`.github/scripts/curate-release-notes.sh`, which extracts **only** that section's text. **If the
+section is missing or empty, the job fails on purpose** rather than falling back to the technical
+changelog — fix the release body and re-run the failed job (it re-fetches the body live, so an
+edit-and-retry loop works). There is no mechanical fallback by design: nothing auto-derived from
+commit messages is considered acceptable App Store copy.
 
 The two stores take this text through different mechanisms: `deliver` (iOS) accepts a
 `release_notes` parameter directly; `supply` (Android) has no such parameter at all — it only reads

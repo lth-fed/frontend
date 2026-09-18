@@ -1,11 +1,22 @@
 name: Release Mobile Apps
 
-# Builds and ships the iOS and Android apps whenever a GitHub Release is
-# published. release-please (.github/workflows/release-please.yml) opens
-# the release as a *draft* with the full Conventional Commits changelog as
-# its body — nothing here runs until a human reviews that draft and clicks
-# "Publish release", which is what actually fires this workflow. The
-# release's tag name is the marketing version shipped to both stores
+# Builds and, when actually shipping, uploads the iOS and Android apps.
+# release-please (.github/workflows/release-please.yml) auto-creates each
+# release directly as a GitHub *prerelease* (real tag, created immediately —
+# not a draft) with the full Conventional Commits changelog as its body.
+# That creation fires `published`, which runs this workflow in build+sign
+# ONLY mode — no store upload — so every proposed release gets a free,
+# automatic "does it still build" check with no risk of shipping anything.
+#
+# Shipping is a separate, deliberate action: open the prerelease on the
+# repo's Releases page, edit it to uncheck "Set as a pre-release", and save.
+# That promotion fires GitHub's `released` event, which is the ONLY trigger
+# this workflow ever uploads on (see SKIP_UPLOAD below) — regardless of the
+# release's prerelease flag, so a directly-created stable release (skipping
+# the prerelease step entirely, e.g. for a hotfix) can't double-upload from
+# both `published` and `released` firing for the same release.
+#
+# The release's tag name is the marketing version shipped to both stores
 # verbatim (e.g. tag "v1.4.0" or "1.4.0" -> version "1.4.0"). Build
 # *numbers* (the invisible per-upload counter, not the marketing version)
 # are fetched live from App Store Connect / Play Console and incremented,
@@ -14,20 +25,18 @@ name: Release Mobile Apps
 #
 # The release's full description is a changelog, not App Store copy — it
 # includes every Conventional Commit type (chore, ci, refactor, ...), which
-# isn't what end users should see as "What's New". The `version` job below
-# curates it down to just the Features/Bug Fixes bullets (plain text, no
-# Markdown or commit links) before it's handed to fastlane.
+# must never reach end users. Before promoting a release, add a
+# "### App Store Notes" section to its body with a short, human-written
+# summary — that's the ONLY text ever sent to the stores. If it's missing
+# at promotion time, the `version` job fails on purpose rather than
+# shipping the technical changelog instead; add the section and re-run.
 #
-# Mark the GitHub Release as a "pre-release" to still build and sign both
-# apps — so you can verify the pipeline end-to-end — but skip the actual
-# App Store / Play Store upload. The signed .ipa/.aab are attached as
-# workflow run artifacts (Actions tab -> the run -> Artifacts) either way.
-#
-# See docs/release-process.md for the one-time setup (required secrets).
+# See docs/release-process.md for the full flow and one-time setup
+# (required secrets).
 
 on:
   release:
-    types: [published]
+    types: [published, released]
 
 concurrency:
   group: release-${{ github.event.release.tag_name }}
@@ -51,14 +60,27 @@ jobs:
           TAG="${{ github.event.release.tag_name }}"
           echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
 
-      - name: Curate store release notes from full changelog
+      - name: Fetch and require App Store release notes
+        # Only needed (and only enforced) on the actual ship trigger — the
+        # dry-run build on `published` doesn't upload anything, so it
+        # doesn't need release notes at all. Fetched live via `gh` rather
+        # than read from the event payload so that fixing the release body
+        # and using "Re-run failed jobs" picks up the fix (the event
+        # payload itself is frozen at the time the workflow first fired).
+        if: github.event.action == 'released'
         id: notes
         env:
-          FULL_BODY: ${{ github.event.release.body }}
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name }}
         run: |
-          CURATED="$(printf '%s' "$FULL_BODY" | .github/scripts/curate-release-notes.sh)"
+          BODY="$(gh release view "$TAG" --json body -q .body)"
+          CURATED="$(printf '%s' "$BODY" | .github/scripts/curate-release-notes.sh)"
           if [ -z "$CURATED" ]; then
-            CURATED="General improvements and bug fixes."
+            MSG="No '### App Store Notes' section found in the $TAG release body."
+            MSG="$MSG Add one (a short, human-written summary — the ONLY text that ships to the"
+            MSG="$MSG App Store and Play Store), then re-run this job."
+            echo "::error::$MSG"
+            exit 1
           fi
           {
             echo "release_notes<<RELEASE_NOTES_EOF"
@@ -119,12 +141,12 @@ jobs:
           echo "ASC_KEY_PATH=$ASC_KEY_PATH" >> "$GITHUB_ENV"
 
       - name:
-          "${{ github.event.release.prerelease && 'Build and sign (pre-release, upload skipped)' ||
-          'Build, sign, and release to the App Store' }}"
+          "${{ github.event.action == 'released' && 'Build, sign, and release to the App Store' ||
+          'Build and sign (dry run, upload skipped)' }}"
         env:
           RELEASE_VERSION: ${{ needs.version.outputs.version }}
           RELEASE_NOTES: ${{ needs.version.outputs.release_notes }}
-          SKIP_UPLOAD: ${{ github.event.release.prerelease }}
+          SKIP_UPLOAD: ${{ github.event.action != 'released' }}
           ASC_LOCALE: ${{ vars.ASC_LOCALE || 'sv' }}
           ASC_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
           ASC_ISSUER_ID: ${{ secrets.ASC_API_ISSUER_ID }}
@@ -188,12 +210,12 @@ jobs:
           echo "PLAY_STORE_JSON_KEY_PATH=$PLAY_KEY_PATH" >> "$GITHUB_ENV"
 
       - name:
-          "${{ github.event.release.prerelease && 'Build and sign (pre-release, upload skipped)' ||
-          'Build, sign, and release to Google Play' }}"
+          "${{ github.event.action == 'released' && 'Build, sign, and release to Google Play' ||
+          'Build and sign (dry run, upload skipped)' }}"
         env:
           RELEASE_VERSION: ${{ needs.version.outputs.version }}
           RELEASE_NOTES: ${{ needs.version.outputs.release_notes }}
-          SKIP_UPLOAD: ${{ github.event.release.prerelease }}
+          SKIP_UPLOAD: ${{ github.event.action != 'released' }}
           PLAY_LOCALE: ${{ vars.PLAY_LOCALE || 'sv-SE' }}
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
