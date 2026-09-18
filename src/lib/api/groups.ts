@@ -278,6 +278,7 @@ export async function createGroup(input: CreateGroupInput): Promise<void> {
 			name: input.name,
 			description: input.description,
 			limit_membership_visibility: input.limitMembershipVisibility,
+			propagate_member_visibility_access: false,
 			deleted: false,
 			logo_id: input.logoId,
 			logo_url: ''
@@ -294,6 +295,7 @@ export async function createGroup(input: CreateGroupInput): Promise<void> {
 				name: input.name,
 				description: input.description,
 				limit_membership_visibility: input.limitMembershipVisibility,
+				propagate_member_visibility_access: false,
 				logo_id: input.logoId
 			}
 		})
@@ -354,6 +356,7 @@ let _mockGroups: RawFatGroup[] = [
 		id: '00000000-0000-0000-0000-000000000001',
 		path: 'tlth',
 		limit_membership_visibility: false,
+		propagate_member_visibility_access: false,
 		name: { en: 'TLTH', sv: 'TLTH' },
 		description: {
 			en: 'The Student Union at Lund University Faculty of Engineering',
@@ -368,6 +371,7 @@ let _mockGroups: RawFatGroup[] = [
 		id: '00000000-0000-0000-0000-000000000002',
 		path: 'tlth.f',
 		limit_membership_visibility: false,
+		propagate_member_visibility_access: false,
 		name: { en: 'F-section', sv: 'F-sektionen' },
 		description: { en: 'Physics section', sv: 'Fysiksektionen' },
 		deleted: false,

@@ -3,6 +3,7 @@ import { api } from './clients';
 import { cached } from './cache';
 import { DEMO_MODE, unwrap } from './call';
 import { parseDate, pickI18n } from './mappings';
+import { getLocale } from '$lib/paraglide/runtime';
 
 type Depends = (dep: `app:cache:${string}`) => void;
 type RawNotification = components['schemas']['Notification'];
@@ -21,7 +22,7 @@ function mapNotification(notification: RawNotification): NotificationHistoryItem
 		id: notification.id,
 		activityId: notification.activity_id,
 		sender: pickI18n(notification.sender),
-		title: pickI18n(notification.title),
+		title: notification.title[getLocale()] ?? pickI18n(notification.title),
 		content: pickI18n(notification.content),
 		sentAt: parseDate(notification.send_at)
 	};

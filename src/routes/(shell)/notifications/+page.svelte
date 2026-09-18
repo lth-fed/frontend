@@ -38,7 +38,7 @@
 							{formatShortDateTime(notification.sentAt)}
 						</time>
 						<h2 class="mt-1.5 text-[17px] font-semibold text-guild-on-surface">
-							{notification.sender ? `${notification.sender}: ` : ''}{notification.title}
+							{[notification.sender, notification.title].filter((part) => part.trim()).join(': ')}
 						</h2>
 						{#if notification.content}
 							<p

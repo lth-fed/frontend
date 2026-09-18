@@ -434,14 +434,15 @@
 {/if}
 
 {#if configuringKind}
-	<div class="fixed inset-0 z-50 grid place-items-end justify-center sm:place-items-center">
+	<div
+		class="fixed inset-0 z-50 grid place-items-end justify-center pt-[calc(env(safe-area-inset-top)+3rem)] sm:place-items-center">
 		<button
 			type="button"
 			aria-label={m.queue_cancel()}
 			class="absolute inset-0 bg-black/40"
 			onclick={() => (configuringKind = undefined)}></button>
 		<div
-			class="relative max-h-[85dvh] w-full max-w-sm overflow-y-auto rounded-t-3xl bg-white p-6 sm:rounded-3xl">
+			class="relative max-h-[min(85dvh,calc(100dvh-env(safe-area-inset-top)-3rem))] w-full max-w-sm overflow-y-auto rounded-t-3xl bg-white p-6 sm:rounded-3xl">
 			<h3 class="text-xl font-semibold">{m.addons_title()}</h3>
 			<div class="mt-4 space-y-5">
 				{#each configuringKind.addons as addon (addon.id)}
