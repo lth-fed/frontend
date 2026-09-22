@@ -172,6 +172,7 @@
 	"verifier_checking": "Checking ticket…",
 	"verifier_invalid_qr": "That isn't a Teknologappen ticket QR code.",
 	"verifier_camera_error": "Camera access is needed to scan tickets.",
+	"verifier_scanner_init_error": "The QR scanner could not start. Please reopen the scanner and try again.",
 	"verifier_switch_camera": "Switch camera",
 	"verifier_addons": "Additions",
 	"verifier_ticket_kind": "Ticket kind",

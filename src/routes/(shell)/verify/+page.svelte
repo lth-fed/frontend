@@ -127,8 +127,17 @@
 	}
 
 	onMount(() => {
-		detector = new BarcodeDetector({ formats: ['qr_code'] });
-		void startPreferredCamera().then(() => (timer = setInterval(() => void scan(), 300)));
+		void prepareZXingModule({ fireImmediately: true })
+			.then(async () => {
+				if (!active) return;
+				detector = new BarcodeDetector({ formats: ['qr_code'] });
+				await startPreferredCamera();
+				if (active) timer = setInterval(() => void scan(), 300);
+			})
+			.catch((cause) => {
+				console.error('QR scanner initialization failed', cause);
+				error = m.verifier_scanner_init_error();
+			});
 		return () => {
 			active = false;
 			if (timer) clearInterval(timer);

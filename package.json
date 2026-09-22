@@ -10,7 +10,7 @@
 		"dev": "vite dev",
 		"render-pass": "node scripts/render-pass.mjs",
 		"dev:swish-pay": "node scripts/dev-swish-pay.mjs",
-		"build": "vite build",
+		"build": "node --test scripts/qr-decoder.test.mjs && vite build",
 		"preview": "vite preview",
 		"prepare": "husky && (svelte-kit sync || echo '')",
 		"paraglide:compile": "paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide --strategy cookie localStorage globalVariable baseLocale --silent",
@@ -80,6 +80,6 @@
 		"remark-parse": "^11.0.0",
 		"remark-rehype": "^11.1.2",
 		"unified": "^11.0.5",
-		"zxing-wasm": "3.1.1"
+		"zxing-wasm": "3.1.3"
 	}
 }
