@@ -160,6 +160,7 @@
 	"verifier_checking": "Kontrollerar biljett…",
 	"verifier_invalid_qr": "Det där är inte en biljettkod från Teknologappen.",
 	"verifier_camera_error": "Kameraåtkomst behövs för att skanna biljetter.",
+	"verifier_scanner_init_error": "QR-skannern kunde inte starta. Öppna skannern på nytt och försök igen.",
 	"verifier_switch_camera": "Byt kamera",
 	"verifier_addons": "Tillägg",
 	"verifier_ticket_kind": "Biljettyp",
