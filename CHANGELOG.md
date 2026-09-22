@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.0.6](https://github.com/lth-fed/frontend/compare/v1.0.5...v1.0.6) (2026-09-22)
+
+
+### Bug Fixes
+
+* scanner not initializing due to unmatching versions ([12a1b0c](https://github.com/lth-fed/frontend/commit/12a1b0caf1a1c587d97ac7df38069bc029142367))
+
+
+### Documentation
+
+* add quick-start Releasing steps to README ([152b1f5](https://github.com/lth-fed/frontend/commit/152b1f5b3152bbe95585cb8099c671da551f94ab))
+
 ## [1.0.5](https://github.com/lth-fed/frontend/compare/v1.0.4...v1.0.5) (2026-09-18)
 
 
