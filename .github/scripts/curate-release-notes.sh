@@ -14,6 +14,7 @@ set -euo pipefail
 # Usage: curate-release-notes.sh < release-body.md
 
 awk '
+	{ sub(/\r$/, "") } # Normalize CRLF from GitHub release bodies before matching.
 	/^### App Store Notes$/ { capture=1; next }
 	capture && /^### /      { capture=0 }
 	capture && NF           { print }
