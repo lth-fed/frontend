@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.7](https://github.com/lth-fed/frontend/compare/v1.0.6...v1.0.7) (2026-09-22)
+
+
+### Bug Fixes
+
+* normalize github \n\r for release script ([c2d52e4](https://github.com/lth-fed/frontend/commit/c2d52e47e4942f356c82a667156865ddb29b19f0))
+
 ## [1.0.6](https://github.com/lth-fed/frontend/compare/v1.0.5...v1.0.6) (2026-09-22)
 
 
