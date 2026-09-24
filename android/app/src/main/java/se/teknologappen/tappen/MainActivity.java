@@ -2,6 +2,7 @@ package se.teknologappen.tappen;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 
 import androidx.annotation.Nullable;
 
@@ -14,6 +15,9 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(ReceiptPlugin.class);
         registerPlugin(TicketWalletPlugin.class);
         super.onCreate(savedInstanceState);
+        if (getBridge() != null) {
+            getBridge().getWebView().setOverScrollMode(View.OVER_SCROLL_NEVER);
+        }
 
         // Capacitor's push plugin processes taps in onNewIntent(). Android does not invoke that
         // callback for the intent which creates a cold app process, so forward only an initial
