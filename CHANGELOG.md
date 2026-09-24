@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/lth-fed/frontend/compare/v1.0.7...v1.1.0) (2026-09-24)
+
+
+### Features
+
+* remove overscroll on android ([eb876c6](https://github.com/lth-fed/frontend/commit/eb876c69319d434ddbe4e76bd9e11edcefa1f86c))
+
 ## [1.0.7](https://github.com/lth-fed/frontend/compare/v1.0.6...v1.0.7) (2026-09-22)
 
 
