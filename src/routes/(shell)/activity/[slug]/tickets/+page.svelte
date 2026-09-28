@@ -374,7 +374,7 @@
 
 {#if confirmingPay && flow.state === 'reserved' && flow.paymentRequired}
 	<!-- The chooser may be dismissed without affecting the underlying reservation. -->
-	<div class="fixed inset-0 z-50 grid place-items-end justify-center sm:place-items-center">
+	<div class="fixed inset-0 z-50 grid items-end justify-items-center sm:items-center">
 		<button
 			type="button"
 			aria-label={m.queue_cancel()}
@@ -435,7 +435,7 @@
 
 {#if configuringKind}
 	<div
-		class="fixed inset-0 z-50 grid place-items-end justify-center pt-[calc(env(safe-area-inset-top)+3rem)] sm:place-items-center">
+		class="fixed inset-0 z-50 grid items-end justify-items-center pt-[calc(env(safe-area-inset-top)+3rem)] sm:items-center">
 		<button
 			type="button"
 			aria-label={m.queue_cancel()}
