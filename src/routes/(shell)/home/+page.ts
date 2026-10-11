@@ -4,6 +4,7 @@ import { cachedMyTickets } from '$lib/api/tickets';
 import { cachedMe } from '$lib/api/user';
 import { browser } from '$app/environment';
 import { isConnectivityError } from '$lib/api/errors';
+import { serverNow } from '$lib/api/serverClock';
 import {
 	cachedFilterGroups,
 	cachedGroupSettings,
@@ -38,7 +39,7 @@ export const load: PageLoad = async ({ depends }) => {
 	const groupSettings = settingsResult.status === 'fulfilled' ? settingsResult.value : [];
 	const groups = groupsResult.status === 'fulfilled' ? groupsResult.value : [];
 	const defaultSettings = defaultGroupSettings(groups, me?.groups ?? []);
-	const cutoff = Date.now() - 6 * 60 * 60 * 1000;
+	const cutoff = serverNow().getTime() - 6 * 60 * 60 * 1000;
 	return {
 		activities,
 		tickets: tickets
