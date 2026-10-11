@@ -77,7 +77,10 @@ Before promoting a release, edit its body and add a section, anywhere in it:
 Fixed links opening incorrectly, and polished the login screen.
 ```
 
-That's a short, human-written summary — your own words, not commit messages. When you promote, the
+That's a short, human-written summary — your own words, not commit messages. Don't mention platform
+names (iOS, Android, etc.) — the same text is uploaded to both stores, and `upload_to_app_store`
+runs fastlane's `precheck` automatically, which fails the iOS lane on this under Apple's "no
+mentioning competitors" rule (e.g. `found: android`). When you promote, the
 `version` job in `release.yml` fetches the release body fresh and runs it through
 `.github/scripts/curate-release-notes.sh`, which extracts **only** that section's text. **If the
 section is missing or empty, the job fails on purpose** rather than falling back to the technical

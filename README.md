@@ -66,6 +66,8 @@ when writing commit messages.
 
    > **Required.** This is the _only_ text that reaches the App Store and Play Store — the rest of
    > the release body is a technical changelog. Skip this and the release step fails on purpose.
+   > Don't mention platform names (iOS, Android, etc.) — the same text goes to both stores, and
+   > fastlane's `precheck` will fail the iOS upload on it (Apple's "no mentioning competitors" rule).
 
 4. When ready to ship, edit the release again, uncheck **Set as a pre-release**, and save — this
    builds, signs, and uploads to both stores.
