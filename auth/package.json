@@ -43,5 +43,12 @@
 	"dependencies": {
 		"auth-lib": "link:../auth-lib",
 		"common-lib": "link:../lib"
+	},
+	"pnpm": {
+		"overrides": {
+			"cookie": ">=0.7.0 <1",
+			"devalue": ">=5.9.3 <6",
+			"source-map-js": ">=1.2.2"
+		}
 	}
 }
