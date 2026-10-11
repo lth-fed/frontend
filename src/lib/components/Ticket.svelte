@@ -335,19 +335,19 @@
 				<p class="text-base leading-none opacity-90">{creatorName}</p>
 			</div>
 
-			<dl class="grid grid-cols-2 gap-y-3 text-sm">
-				<div>
+			<dl class="grid grid-cols-2 gap-x-3 gap-y-3 text-sm">
+				<div class="min-w-0">
 					<dt class="text-xs tracking-wide opacity-75">{m.ticket_label_date()}</dt>
 					<dd class="font-semibold">{date}</dd>
 				</div>
-				<div>
+				<div class="col-start-2 row-span-2 row-start-1 min-w-0">
 					<dt class="text-xs tracking-wide opacity-75">{m.ticket_label_time()}</dt>
 					<dd class="font-semibold">{time}</dd>
 				</div>
 				{#if location}
-					<div class="col-span-2">
+					<div class="col-start-1 row-start-2 min-w-0">
 						<dt class="text-xs tracking-wide opacity-75">{m.ticket_label_location()}</dt>
-						<dd class="font-semibold">{location}</dd>
+						<dd class="truncate font-semibold" title={location}>{location}</dd>
 					</div>
 				{/if}
 			</dl>

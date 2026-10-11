@@ -1,0 +1,13 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "J77J9HFNJC.se.teknologappen.tappen",
+        "paths": [
+          "/activity/*"
+        ]
+      }
+    ]
+  }
+}

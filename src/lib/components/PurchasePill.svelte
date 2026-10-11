@@ -18,10 +18,13 @@
 	const flow = $derived(purchase.flow);
 	const target = $derived(
 		'kind' in flow && flow.kind.activityId
-			? Routes.ActivityTickets(flow.kind.activityId)
+			? Routes.ActivityAddons(flow.kind.activityId)
 			: Routes.Home
 	);
-	const onTargetPage = $derived(page.url.pathname === resolve(target));
+	const onTargetPage = $derived(
+		page.url.pathname === resolve(target) ||
+			('kind' in flow && page.url.pathname === resolve(Routes.ActivityTickets(flow.kind.activityId)))
+	);
 	const visible = $derived(
 		!onTargetPage &&
 			(flow.state === 'release-queued' ||

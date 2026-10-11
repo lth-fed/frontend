@@ -30,6 +30,7 @@ class Routes {
 
 	/** Activity sub-pages */
 	static Activity = (slug: string): Pathname => `/activity/${slug}/`;
+	static ActivityAddons = (slug: string): Pathname => `/activity/${slug}/tickets/addons/`;
 	static ActivityTickets = (slug: string): Pathname => `/activity/${slug}/tickets/`;
 }
 

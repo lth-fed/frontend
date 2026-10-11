@@ -20,6 +20,7 @@
 		inFlow?: boolean;
 		/** Some purchase flow is active (one at a time, spec §4.5). */
 		flowActive?: boolean;
+		resumable?: boolean;
 		onclick?: () => void;
 	}
 
@@ -31,12 +32,13 @@
 		busy = false,
 		inFlow = false,
 		flowActive = false,
+		resumable = false,
 		onclick
 	}: Props = $props();
 
 	// Every available kind (free included) goes through the purchase machine.
 	const joinable = $derived(state.state === 'open' || state.state === 'window');
-	const enabled = $derived(joinable && !busy && !flowActive);
+	const enabled = $derived(!busy && (resumable || (joinable && !flowActive)));
 
 	const statusLabel = $derived.by(() => {
 		switch (state.state) {

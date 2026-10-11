@@ -13,6 +13,7 @@
 	import SigningInFallback from '$lib/components/SigningInFallback.svelte';
 	import './layout.css';
 	import { afterNavigate, beforeNavigate, onNavigate } from '$app/navigation';
+	import { rememberActivityLink, takeActivityLink } from '$lib/navigation/activityLinks';
 	import { App } from '@capacitor/app';
 	import { onMount } from 'svelte';
 	import { evict, invalidate as invalidateCache } from '$lib/api/cache';
@@ -55,6 +56,23 @@
 	// On web this fires on tab re-focus.
 	onMount(() => {
 		if (page.route.id !== '/auth/callback') {
+			notificationNavigationTarget = rememberActivityLink(page.url.href);
+		}
+		const receiveActivityLink = ({ url }: { url: string }) => {
+			const target = rememberActivityLink(url);
+			if (target) notificationNavigationTarget = target;
+		};
+		const linkListener = Capacitor.isNativePlatform()
+			? App.addListener('appUrlOpen', receiveActivityLink)
+			: undefined;
+		if (Capacitor.isNativePlatform()) {
+			void App.getLaunchUrl()
+				.then((launch) => {
+					if (launch) receiveActivityLink(launch);
+				})
+				.catch((error) => console.warn('Could not read app launch URL', error));
+		}
+		if (page.route.id !== '/auth/callback') {
 			void runAuthBootstrap().finally(hideSplashScreen);
 		} else {
 			hideSplashScreen();
@@ -86,6 +104,7 @@
 			: undefined;
 		return () => {
 			stopMonitoringNetwork();
+			void linkListener?.then((handle) => handle.remove());
 			void listener.then((handle) => handle.remove());
 			void notificationListener?.then((handle) => handle.remove());
 		};
@@ -163,9 +182,14 @@
 
 	$effect(() => {
 		if (!bootstrapped || !session.accessToken || notificationNavigationInFlight) return;
-		const target = notificationNavigationTarget ?? (page.route.id === '/' ? Routes.Home : null);
+		const target =
+			notificationNavigationTarget ??
+			takeActivityLink() ??
+			(page.route.id === '/' ? Routes.Home : null);
 		if (!target) return;
+		takeActivityLink();
 		notificationNavigationTarget = null;
+		if (target === page.url.pathname) return;
 		notificationNavigationInFlight = true;
 		evict('notification-history');
 		void replaceNavigation(target, { resetDepth: true })

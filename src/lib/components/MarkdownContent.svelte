@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { Root, Element } from 'hast';
 	import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
 	import rehypeStringify from 'rehype-stringify';
 	import remarkParse from 'remark-parse';
@@ -23,11 +24,31 @@
 		return new TextDecoder().decode(bytes.slice(0, MAX_BYTES));
 	}
 
+	function externalLinks() {
+		return (tree: Root) => {
+			function visit(node: Root | Element): void {
+				for (const child of node.children) {
+					if (child.type !== 'element') continue;
+					if (
+						child.tagName === 'a' &&
+						/^(https?:)?\/\//i.test(String(child.properties.href ?? ''))
+					) {
+						child.properties.target = '_blank';
+						child.properties.rel = ['noopener', 'noreferrer', 'external'];
+					}
+					visit(child);
+				}
+			}
+			visit(tree);
+		};
+	}
+
 	const html = $derived(
 		unified()
 			.use(remarkParse)
 			.use(remarkRehype)
 			.use(rehypeSanitize, schema)
+			.use(externalLinks)
 			.use(rehypeStringify)
 			.processSync(withinLimit(markdown))
 			.toString()

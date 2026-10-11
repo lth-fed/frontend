@@ -1,4 +1,7 @@
 <script lang="ts">
+	import { Capacitor } from '@capacitor/core';
+	import { Share } from '@capacitor/share';
+	import { activityShareUrl } from '$lib/navigation/activityLinks';
 	import ActivityHeadCard from '$lib/components/ActivityHeadCard.svelte';
 	import OrganiserCard from '$lib/components/OrganiserCard.svelte';
 	import {
@@ -26,6 +29,7 @@
 	let followed = $state(untrack(() => data.followed));
 	let followBusy = $state(false);
 	let followError = $state('');
+	let shareFeedback = $state('');
 
 	let isIos26Native = $state(false);
 
@@ -47,10 +51,26 @@
 		}
 	}
 
+	async function shareActivity(): Promise<void> {
+		shareFeedback = '';
+		const url = activityShareUrl(activity.id);
+		try {
+			if (Capacitor.isNativePlatform()) await Share.share({ title: activity.title, url });
+			else if (navigator.share) await navigator.share({ title: activity.title, url });
+			else {
+				await navigator.clipboard.writeText(url);
+			}
+		} catch (error) {
+			if (error instanceof Error && (error.name === 'AbortError' || /cancel/i.test(error.message)))
+				return;
+			shareFeedback = m.share_failed();
+		}
+	}
+
 	useAppBars(() => ({
 		topBar: detailTopBar({
-			title: activity.title
-			// onShare: () => alert(`Share ${activity.title}`)
+			title: activity.title,
+			onShare: () => void shareActivity()
 		}),
 		// Wait for the full record before deciding whether the stable CTA is enabled.
 		bottom:
@@ -70,6 +90,10 @@
 	<div class="z-0 h-75 w-full overflow-hidden">
 		<img class="h-full w-full min-w-full object-cover" src={activity.image} alt={activity.title} />
 	</div>
+
+	{#if shareFeedback}<p role="status" class="relative z-20 mx-4 rounded-2xl bg-white p-3">
+			{shareFeedback}
+		</p>{/if}
 
 	<!-- The animations here are a workaround. There is a backdrop filter applying a bacgkround
 	 blur effect on the ActivityHeadCard and this effect won't load until after the page transition

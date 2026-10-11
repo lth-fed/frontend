@@ -217,5 +217,7 @@
 	"error_status_network": "We can't reach the server right now.",
 	"error_status_server": "The server tripped up.",
 	"error_status_service_down": "The app isn't working right now. The team has received an email and will try to fix it as soon as possible.",
-	"error_status_unknown": "Something unexpected happened."
+	"error_status_unknown": "Something unexpected happened.",
+	"addons_none": "This ticket has no add-ons. Confirm to continue your purchase.",
+	"share_failed": "Could not share the activity."
 }

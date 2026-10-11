@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "se.teknologappen.tappen",
+      "sha256_cert_fingerprints": [
+        "69:43:83:9A:A1:E8:61:E9:87:70:A2:6F:D8:C7:FB:FD:C7:B4:90:B5:65:62:4A:EF:8B:C5:C6:A3:47:36:BA:B1"
+      ]
+    }
+  }
+]

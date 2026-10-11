@@ -132,3 +132,19 @@ podman compose up -d --no-build
 
 Traefik serves the main frontend at `app.teknologappen.se` and the auth frontend at
 `auth.teknologappen.se`.
+
+## Activity app links
+
+Shared links use `https://app.teknologappen.se/activity/<id>/`. Installed apps handle verified
+links; otherwise the activity opens directly in the web app.
+
+To configure Android links, run from this directory:
+
+```sh
+node scripts/configure-app-links.mjs 'CERTIFICATE_SHA256'
+```
+
+Use the **App signing key certificate** SHA-256 from Play Console, not a hash of a keystore file or
+the upload certificate. Additional arguments can authorize release certificates for sideloaded
+builds. Commit the generated `static/.well-known/assetlinks.json`, rebuild and deploy the web app,
+and release the updated native apps. iOS signing profiles need the Associated Domains entitlement.

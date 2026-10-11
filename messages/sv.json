@@ -205,5 +205,7 @@
 	"error_status_network": "Vi når inte servern just nu.",
 	"error_status_server": "Servern snubblade.",
 	"error_status_service_down": "Appen fungerar inte just nu. Teamet har fått ett mejl och försöker lösa problemet så snart som möjligt.",
-	"error_status_unknown": "Något oväntat hände."
+	"error_status_unknown": "Något oväntat hände.",
+	"addons_none": "Den här biljetten har inga tillval. Bekräfta för att fortsätta köpet.",
+	"share_failed": "Det gick inte att dela aktiviteten."
 }
