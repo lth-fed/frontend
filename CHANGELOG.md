@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0](https://github.com/lth-fed/frontend/compare/v1.0.7...v1.1.0) (2026-10-11)
+
+
+### Features
+
+* addons page at checkout, in app links, share button etc ([e7ce639](https://github.com/lth-fed/frontend/commit/e7ce639bbf94c567c221b7b9a8929fedd5403e38))
+* remove overscroll on android ([eb876c6](https://github.com/lth-fed/frontend/commit/eb876c69319d434ddbe4e76bd9e11edcefa1f86c))
+
 ## [1.0.7](https://github.com/lth-fed/frontend/compare/v1.0.6...v1.0.7) (2026-09-22)
 
 
