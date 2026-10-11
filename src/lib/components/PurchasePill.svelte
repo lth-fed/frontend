@@ -23,7 +23,8 @@
 	);
 	const onTargetPage = $derived(
 		page.url.pathname === resolve(target) ||
-			('kind' in flow && page.url.pathname === resolve(Routes.ActivityTickets(flow.kind.activityId)))
+			('kind' in flow &&
+				page.url.pathname === resolve(Routes.ActivityTickets(flow.kind.activityId)))
 	);
 	const visible = $derived(
 		!onTargetPage &&
