@@ -1,6 +1,7 @@
 import { api } from './clients';
 import { attempt, DEMO_MODE, unwrap, type Attempt } from './call';
 import { parseDate, pickI18n } from './mappings';
+import { serverNow } from './serverClock';
 import type { components } from './generated/api';
 
 export type ValidationActivity = {
@@ -25,7 +26,7 @@ export type ValidationResult = {
 
 export type TicketQrPayload = { tid: string; t: number };
 
-export function ticketQrPayload(ticketId: string, now = Date.now()): string {
+export function ticketQrPayload(ticketId: string, now = serverNow().getTime()): string {
 	return JSON.stringify({ tid: ticketId, t: Math.floor(now / 1000) } satisfies TicketQrPayload);
 }
 
