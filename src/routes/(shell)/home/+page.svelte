@@ -18,6 +18,7 @@
 	import { onMount } from 'svelte';
 	import { Confetti } from 'svelte-confetti';
 	import { consumePurchaseCelebration } from '$lib/purchase/celebration';
+	import { Browser } from '@capacitor/browser';
 	const TICKET_FILTER_STORAGE_KEY = 'tappen-ticket-filter-enabled';
 
 	let { data }: PageProps = $props();
@@ -39,6 +40,16 @@
 	let resetBusy = $state(false);
 	let resetComplete = $state(false);
 	let ticketFilterEnabled = $state(false);
+
+	async function openTeknologappen() {
+		try {
+			// Try deep link first
+			await Browser.open({ url: 'teknologappen://' });
+		} catch {
+			// Fall back to App Store
+			await Browser.open({ url: 'https://apps.apple.com/se/app/teknologappen/id6444627682' });
+		}
+	}
 	const groupFiltersAreDefault = $derived(data.filtersAreDefault || resetComplete);
 	const filtersAreDefault = $derived(groupFiltersAreDefault && !ticketFilterEnabled);
 	const visibleActivities = $derived(
@@ -119,13 +130,13 @@
 			<p class="mt-1.5 text-sm text-guild-on-surface/70">
 				{m.android_app_card_description()}
 			</p>
-			<a
-				href="https://play.google.com/store/apps/details?id=se.teknologappen.tappen"
-				target="_blank"
-				rel="noopener noreferrer"
-				class="mt-4 inline-flex rounded-full bg-black px-5 py-2.5 text-sm font-semibold text-white">
+			<button
+				onclick={openTeknologappen}
+				class="mt-4 inline-flex rounded-full bg-black px-5 py-2.5 text-sm font-semibold text-white"
+				data-analytics-action="open_app"
+				data-analytics-entity="teknologappen">
 				{m.android_app_card_cta()}
-			</a>
+			</button>
 		</aside>
 	{/if}
 
