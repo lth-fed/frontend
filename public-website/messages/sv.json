@@ -50,5 +50,6 @@
 	"swish_number": "Swishnummer",
 	"contact_title": "Kontakt",
 	"contact_description": "Frågor om tjänsten kan skickas till",
-	"footer_description": "En gemensam app för aktiviteter och biljetter på LTH."
+	"footer_description": "En gemensam app för aktiviteter och biljetter på LTH.",
+	"nav_organisations": "För organisationer"
 }

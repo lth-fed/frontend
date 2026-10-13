@@ -30,6 +30,7 @@
 			<a href={`${resolve('/')}#about`}>{m.nav_about()}</a>
 			<!-- eslint-disable svelte/no-navigation-without-resolve -- same-page sections on the root route -->
 			<a href={`${resolve('/')}#legal`}>{m.nav_legal()}</a>
+			<a href={resolve('/organisationer')}>{m.nav_organisations()}</a>
 		</nav>
 		<label class="language-picker">
 			<span>{m.language()}</span>

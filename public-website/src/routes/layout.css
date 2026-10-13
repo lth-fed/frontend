@@ -426,7 +426,7 @@ h1 {
 
 .section-heading {
 	max-width: 760px;
-	margin-bottom: 54px;
+	margin-bottom: 34px;
 }
 
 .section-heading h2 {
@@ -458,7 +458,7 @@ h1 {
 
 .feature-number {
 	display: inline-block;
-	margin-bottom: 64px;
+	margin-bottom: 32px;
 	color: #c85532;
 	font-size: 0.78rem;
 	font-weight: 800;
@@ -594,7 +594,7 @@ h1 {
 	}
 
 	.feature-number {
-		margin-bottom: 34px;
+		margin-bottom: 24px;
 	}
 }
 
@@ -650,7 +650,7 @@ h1 {
 	}
 
 	.section-heading {
-		margin-bottom: 36px;
+		margin-bottom: 26px;
 	}
 
 	.legal-grid {
@@ -680,5 +680,422 @@ h1 {
 
 	.button {
 		transition: none;
+	}
+}
+
+/* ---------- Teknologappen pitch page (/organisationer) ---------- */
+
+.tappen-page {
+	background: #f5f1e8;
+}
+
+.tappen-hero {
+	padding: 150px 0 72px;
+	background: radial-gradient(circle at 85% 10%, rgb(200 85 50 / 0.12), transparent 26rem), #173f31;
+	color: #f8f4ea;
+}
+
+.tappen-hero-inner {
+	width: min(1160px, calc(100% - 40px));
+	margin: 0 auto;
+	display: grid;
+	grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+	align-items: center;
+	gap: clamp(40px, 6vw, 90px);
+}
+
+.tappen-logo {
+	width: 64px;
+	height: 64px;
+	margin-bottom: 22px;
+}
+
+.tappen-hero .eyebrow {
+	color: #f0a17f;
+}
+
+.tappen-hero h1 {
+	color: #fffdf8;
+}
+
+.tappen-hero .lead {
+	color: #c3d4cc;
+}
+
+.tappen-hero .button.secondary {
+	border-color: rgb(255 255 255 / 0.25);
+	background: rgb(255 255 255 / 0.08);
+	color: #fffdf8;
+}
+
+.tappen-hero-cards {
+	display: grid;
+	gap: 14px;
+}
+
+.tappen-stat-card {
+	border: 1px solid rgb(255 255 255 / 0.14);
+	border-radius: 22px;
+	padding: 22px 26px;
+	background: rgb(255 255 255 / 0.06);
+	backdrop-filter: blur(6px);
+}
+
+.tappen-stat-card strong {
+	display: block;
+	font-size: 1.9rem;
+	font-weight: 800;
+	letter-spacing: -0.03em;
+	color: #fffdf8;
+}
+
+.tappen-stat-card span {
+	color: #b9cbc3;
+	font-size: 0.9rem;
+}
+
+.tappen-tabs {
+	position: sticky;
+	top: 76px;
+	z-index: 40;
+	border-bottom: 1px solid rgb(24 51 42 / 0.1);
+	background: rgb(245 241 232 / 0.92);
+	backdrop-filter: blur(14px);
+}
+
+.tappen-tabs-inner {
+	width: min(1160px, calc(100% - 40px));
+	margin: 0 auto;
+	display: flex;
+	gap: 6px;
+	overflow-x: auto;
+	padding: 10px 0;
+}
+
+.tappen-tabs button {
+	flex-shrink: 0;
+	border: 1px solid transparent;
+	border-radius: 999px;
+	padding: 9px 18px;
+	color: #456057;
+	background: transparent;
+	font-size: 0.88rem;
+	font-weight: 700;
+	cursor: pointer;
+	transition:
+		background 140ms ease,
+		color 140ms ease;
+}
+
+.tappen-tabs button:hover {
+	background: rgb(23 63 49 / 0.08);
+	color: #173f31;
+}
+
+.tappen-tabs button.active {
+	border-color: rgb(23 63 49 / 0.2);
+	background: #173f31;
+	color: #fffdf8;
+}
+
+.tappen-tabs button:focus-visible {
+	outline: 3px solid rgb(200 85 50 / 0.38);
+	outline-offset: 2px;
+}
+
+.tappen-section {
+	scroll-margin-top: 140px;
+}
+
+.tappen-feature-grid {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 16px;
+}
+
+.tappen-feature-grid article {
+	min-height: 190px;
+	border: 1px solid #e6e0d5;
+	border-radius: 24px;
+	padding: 26px;
+	background: #fffdf8;
+	transition:
+		transform 160ms ease,
+		box-shadow 160ms ease;
+}
+
+.tappen-feature-grid article:hover {
+	transform: translateY(-3px);
+	box-shadow: 0 16px 34px rgb(23 63 49 / 0.1);
+}
+
+.tappen-feature-grid .feature-number {
+	margin-bottom: 20px;
+}
+
+.tappen-eligibility {
+	background: #fffdf8;
+}
+
+.tappen-eligibility-grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 16px;
+}
+
+.tappen-card {
+	border: 1px solid #e6e0d5;
+	border-radius: 24px;
+	padding: 30px;
+	background: #f8f5ee;
+}
+
+.tappen-card-wide {
+	grid-column: 1 / -1;
+	background: #173f31;
+	border-color: transparent;
+	color: #f8f4ea;
+}
+
+.tappen-card-wide h3 {
+	color: #fffdf8;
+}
+
+.tappen-card-wide p {
+	max-width: 640px;
+	color: #c3d4cc;
+	line-height: 1.65;
+}
+
+.tappen-card h3 {
+	margin-bottom: 16px;
+	font-size: 1.15rem;
+}
+
+.tappen-card ul {
+	margin: 0;
+	padding-left: 20px;
+	display: grid;
+	gap: 10px;
+}
+
+.tappen-card li {
+	color: #53685f;
+	line-height: 1.55;
+}
+
+.tappen-card-wide .actions {
+	margin-top: 22px;
+}
+
+.tappen-card-wide .button.secondary {
+	border-color: rgb(255 255 255 / 0.25);
+	background: rgb(255 255 255 / 0.08);
+	color: #fffdf8;
+}
+
+.tappen-gallery {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 20px;
+}
+
+.tappen-gallery-card {
+	display: grid;
+	grid-template-columns: minmax(180px, 260px) 1fr;
+	gap: 22px;
+	border: 1px solid #e6e0d5;
+	border-radius: 24px;
+	padding: 18px;
+	background: #fffdf8;
+	text-decoration: none;
+	transition:
+		transform 160ms ease,
+		box-shadow 160ms ease;
+}
+
+.tappen-gallery-card:hover {
+	transform: translateY(-3px);
+	box-shadow: 0 18px 40px rgb(23 63 49 / 0.12);
+}
+
+.tappen-gallery-card img {
+	width: 100%;
+	aspect-ratio: 16 / 9;
+	object-fit: cover;
+	border-radius: 14px;
+	background: #161a2e;
+}
+
+.tappen-gallery-meta {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	gap: 8px;
+}
+
+.tappen-gallery-meta strong {
+	font-size: 1.12rem;
+	letter-spacing: -0.01em;
+}
+
+.tappen-gallery-meta span {
+	color: #61736a;
+	font-size: 0.93rem;
+	line-height: 1.55;
+}
+
+.tappen-gallery-cta {
+	margin-top: 8px;
+	color: #c85532 !important;
+	font-weight: 750;
+}
+
+.tappen-videos {
+	background: #fffdf8;
+}
+
+.tappen-video-grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 18px;
+}
+
+.tappen-video-frame {
+	aspect-ratio: 16 / 9;
+	border-radius: 20px;
+	overflow: hidden;
+	border: 1px solid #e6e0d5;
+	background: #161a2e;
+}
+
+.tappen-video-frame iframe {
+	width: 100%;
+	height: 100%;
+	border: 0;
+	display: block;
+}
+
+.tappen-video-placeholder {
+	border: 1px dashed rgb(24 51 42 / 0.25);
+	border-radius: 20px;
+	padding: 44px 24px;
+	text-align: center;
+	color: #61736a;
+	background: #f8f5ee;
+}
+
+.tappen-booking {
+	background: #173f31;
+	color: #f8f4ea;
+}
+
+.tappen-booking .eyebrow {
+	color: #f0a17f;
+}
+
+.tappen-booking h2 {
+	color: #fffdf8;
+}
+
+.tappen-booking .lead {
+	color: #c3d4cc;
+}
+
+.tappen-booking-inner {
+	display: grid;
+	grid-template-columns: minmax(0, 1.4fr) minmax(220px, 0.6fr);
+	align-items: end;
+	gap: 48px;
+}
+
+.tappen-booking .button.secondary {
+	border-color: rgb(255 255 255 / 0.25);
+	background: rgb(255 255 255 / 0.08);
+	color: #fffdf8;
+}
+
+.tappen-booking-note {
+	margin: 0;
+	color: #9fb5ac;
+	font-size: 0.85rem;
+	line-height: 1.6;
+	text-align: right;
+}
+
+.tappen-back {
+	width: min(1160px, calc(100% - 40px));
+	margin: 0 auto;
+	padding: 26px 0 40px;
+	font-size: 0.88rem;
+}
+
+.tappen-back a {
+	color: #456057;
+	font-weight: 650;
+	text-decoration: none;
+}
+
+.tappen-back a:hover {
+	color: #173f31;
+}
+
+@media (max-width: 850px) {
+	.tappen-hero-inner {
+		grid-template-columns: 1fr;
+	}
+
+	.tappen-hero-cards {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+
+	.tappen-feature-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.tappen-feature-grid article {
+		min-height: auto;
+	}
+
+	.tappen-feature-grid .feature-number {
+		margin-bottom: 18px;
+	}
+
+	.tappen-eligibility-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.tappen-gallery {
+		grid-template-columns: 1fr;
+	}
+
+	.tappen-video-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.tappen-booking-inner {
+		grid-template-columns: 1fr;
+	}
+
+	.tappen-booking-note {
+		text-align: left;
+	}
+}
+
+@media (max-width: 620px) {
+	.tappen-hero {
+		padding: 120px 0 56px;
+	}
+
+	.tappen-hero-cards {
+		grid-template-columns: 1fr;
+	}
+
+	.tappen-tabs {
+		top: 68px;
+	}
+
+	.tappen-gallery-card {
+		grid-template-columns: 1fr;
 	}
 }
