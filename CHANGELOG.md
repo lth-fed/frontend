@@ -1,5 +1,30 @@
 # Changelog
 
+## [1.2.0](https://github.com/lth-fed/frontend/compare/v1.1.0...v1.2.0) (2026-10-15)
+
+
+### Features
+
+* add public showcase & salesdeck ([d4e6728](https://github.com/lth-fed/frontend/commit/d4e6728b3129534fda6d8c3a358d9eba652f05b1))
+
+
+### Bug Fixes
+
+* add last explainer video ([0521b0a](https://github.com/lth-fed/frontend/commit/0521b0a73f25455009cc14c4b3b8f1e9b631fbff))
+* update android modal on web ([4375db0](https://github.com/lth-fed/frontend/commit/4375db05180df06e57f3620e95c62c40993b0a1c))
+* use server time for the Home ticket cutoff and QR timestamps ([cf83ac5](https://github.com/lth-fed/frontend/commit/cf83ac549b79ce314029b1fc24be32e219f4fc1e))
+
+
+### Documentation
+
+* add `CLAUDE.md` with repository guidance for Claude Code ([f786efd](https://github.com/lth-fed/frontend/commit/f786efde42174b982613e4b69fa8bd09ae68d1fb))
+* warn against platform names in App Store Notes ([ae493a5](https://github.com/lth-fed/frontend/commit/ae493a54eafa9162dba9fa565b3dd988eaa61d2a))
+
+
+### Styles
+
+* wrap long condition in PurchasePill ([eff3a9b](https://github.com/lth-fed/frontend/commit/eff3a9b142cc96fd4ab2f456c220700ff9a54c08))
+
 ## [1.1.0](https://github.com/lth-fed/frontend/compare/v1.0.7...v1.1.0) (2026-10-11)
 
 
