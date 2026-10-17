@@ -7,7 +7,8 @@
       "namespace": "android_app",
       "package_name": "se.teknologappen.tappen",
       "sha256_cert_fingerprints": [
-        "69:43:83:9A:A1:E8:61:E9:87:70:A2:6F:D8:C7:FB:FD:C7:B4:90:B5:65:62:4A:EF:8B:C5:C6:A3:47:36:BA:B1"
+        "69:43:83:9A:A1:E8:61:E9:87:70:A2:6F:D8:C7:FB:FD:C7:B4:90:B5:65:62:4A:EF:8B:C5:C6:A3:47:36:BA:B1",
+        "92:8C:95:17:FE:F8:1B:EA:6E:77:35:2E:F8:B5:F7:FC:11:92:63:95:1D:15:8E:B0:91:FC:EC:CC:D8:8A:69:1E"
       ]
     }
   }
