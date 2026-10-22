@@ -20,7 +20,15 @@ export type NativeButtonAlignment = 'left' | 'center' | 'right';
 
 /** Font weight options applied to the native button title. */
 export type NativeButtonFontWeight =
-	'ultraLight' | 'thin' | 'light' | 'regular' | 'medium' | 'semibold' | 'bold' | 'heavy' | 'black';
+	| 'ultraLight'
+	| 'thin'
+	| 'light'
+	| 'regular'
+	| 'medium'
+	| 'semibold'
+	| 'bold'
+	| 'heavy'
+	| 'black';
 
 /** Configuration for the native button overlay. */
 export interface NativeButtonConfig {

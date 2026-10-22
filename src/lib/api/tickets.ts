@@ -226,7 +226,11 @@ export async function transferTicket(ticketId: string, toUser: string): Promise<
 // ---------------------------------------------------------------------------
 
 export type PurchaseStatus =
-	'ReleaseQueued' | 'ReservationQueued' | 'Reserved' | 'Buying' | 'Purchased';
+	| 'ReleaseQueued'
+	| 'ReservationQueued'
+	| 'Reserved'
+	| 'Buying'
+	| 'Purchased';
 
 export type QueueStatus = {
 	ticketKindId: string;
@@ -249,7 +253,9 @@ export async function enterQueue(ticketKindId: string): Promise<Attempt<Purchase
 /** Poll queue/reservation state. `null` = not queued at all (a 404 by
  *  contract — also the post-purchase/post-expiry signal, spec §4.2). */
 export type QueueStatusResult =
-	{ kind: 'status'; status: QueueStatus } | { kind: 'missing' } | { kind: 'retry' };
+	| { kind: 'status'; status: QueueStatus }
+	| { kind: 'missing' }
+	| { kind: 'retry' };
 
 export async function queueStatus(): Promise<QueueStatusResult> {
 	let result;
