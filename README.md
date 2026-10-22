@@ -1,5 +1,7 @@
 # FED Frontend
 
+> This is currently being rebuilt in Native by [Simon](https://docs.teknologappen.se/people/). Please continue adding features here, he'll port them as they come in.
+
 Teknologappen (`se.teknologappen.tappen`) — a SvelteKit app shipped as a website and, via
 [Capacitor](https://capacitorjs.com), as native iOS and Android apps.
 
@@ -41,14 +43,7 @@ These run automatically on every pull request and push to `main` via GitHub Acti
 (`.github/workflows/ci.yml`) — they're intentionally **not** run as local git hooks, so commits and
 pushes stay instant. Run them yourself before pushing if you want the same feedback earlier.
 
-## Commit messages
-
-This repo enforces [Conventional Commits](https://www.conventionalcommits.org/) (`type: subject`,
-e.g. `fix: correct token refresh race condition`) via a commitlint hook that runs on every commit.
-Version bumps and the changelog are generated from these messages — see
-[docs/release-process.md](docs/release-process.md) — so a well-formed commit message isn't just
-style, it drives the release. If you have the `conventional-commit-message` skill available, use it
-when writing commit messages.
+**See the guides at <https://docs.teknologappen.se>!!!**
 
 ## Releasing
 
@@ -76,7 +71,7 @@ when writing commit messages.
 Full reasoning, one-time setup, and troubleshooting:
 [docs/release-process.md](docs/release-process.md).
 
-## Mobile apps
+## Mobile apps development
 
 ```sh
 pnpm ios      # build, sync, and open the native iOS project in Xcode
@@ -142,19 +137,3 @@ podman compose up -d --no-build
 
 Traefik serves the main frontend at `app.teknologappen.se` and the auth frontend at
 `auth.teknologappen.se`.
-
-## Activity app links
-
-Shared links use `https://app.teknologappen.se/activity/<id>/`. Installed apps handle verified
-links; otherwise the activity opens directly in the web app.
-
-To configure Android links, run from this directory:
-
-```sh
-node scripts/configure-app-links.mjs 'CERTIFICATE_SHA256'
-```
-
-Use the **App signing key certificate** SHA-256 from Play Console, not a hash of a keystore file or
-the upload certificate. Additional arguments can authorize release certificates for sideloaded
-builds. Commit the generated `static/.well-known/assetlinks.json`, rebuild and deploy the web app,
-and release the updated native apps. iOS signing profiles need the Associated Domains entitlement.
