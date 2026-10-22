@@ -10,7 +10,7 @@
 		{ name: 'Åke Amcoff', guild: 'F' },
 		{ name: 'Axel Andersson', guild: 'E' },
 		{ name: 'Simon Mechler', guild: 'D' },
-		{ name: 'Felix Hellborg', guild: 'F' }
+		{ name: 'Markus Pettersson', guild: 'F' }
 	];
 	const thanksTo: { name: string; message: string }[] = [
 		{ name: 'Ruth Palm', message: m.about_thanks_ruth() }
