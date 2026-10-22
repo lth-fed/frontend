@@ -27,16 +27,23 @@ podman login registry.esek.se
 podman compose -f ./compose.prod.yaml build
 podman compose -f ./compose.prod.yaml push fed-frontend fed-auth-frontend fed-public
 
-# Mirror the release images to Docker Hub. `docker.io` is the registry
-# endpoint used for repositories hosted at hub.docker.com.
+# The Docker Hub images are what the local development stacks run (see the
+# frontend compose file in the backend repo), where Minilith lives on
+# `localhost:8000` and fed-auth on `localhost:8001`. Rebuild the web apps in dev
+# mode so the bundles resolve those URLs — exactly what `pnpm dev` serves —
+# instead of the production hosts. The production images pushed above are
+# untouched. `docker.io` is the registry endpoint used for repositories hosted
+# at hub.docker.com.
+NODE_ENV=development pnpm build
+NODE_ENV=development pnpm --dir auth build
+
+export CONTAINER_REGISTRY=docker.io/esekmacapar
 podman login docker.io
+podman compose -f ./compose.prod.yaml build
 for service in fed-frontend fed-auth-frontend fed-public; do
-    podman tag \
-        "${CONTAINER_REGISTRY}/${service}:${CONTAINER_TAG}" \
-        "docker.io/esekmacapar/${service}:${CONTAINER_TAG}"
     podman push "docker.io/esekmacapar/${service}:${CONTAINER_TAG}"
     podman tag \
-        "${CONTAINER_REGISTRY}/${service}:${CONTAINER_TAG}" \
+        "docker.io/esekmacapar/${service}:${CONTAINER_TAG}" \
         "docker.io/esekmacapar/${service}:latest"
     podman push "docker.io/esekmacapar/${service}:latest"
 done
