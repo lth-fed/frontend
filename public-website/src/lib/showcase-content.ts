@@ -142,7 +142,7 @@ export const BOOKING = {
  * YouTube video IDs to embed inline on the page. Add IDs here as videos are
  * published; the page renders them as inline players in the order listed.
  */
-export const VIDEO_IDS: string[] = ["bWkdSOU0_so", "UQrFhtaHl-g", "vn6-bSB2XVc", "Jk4-tN2hUiE", "QJIztThM4g0", "XZZI34KnsP8"];
+export const VIDEO_IDS: string[] = ["axMzCEkHCSU", "UQrFhtaHl-g", "vn6-bSB2XVc", "Jk4-tN2hUiE", "QJIztThM4g0", "XZZI34KnsP8"];
 
 export const VIDEOS = {
 	eyebrow: 'Se appen i praktiken',

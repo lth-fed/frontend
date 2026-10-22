@@ -11,7 +11,7 @@
 		PRESENTATIONS_SECTION,
 		VIDEOS,
 		VIDEO_IDS
-	} from '$lib/tappen-content';
+	} from '$lib/showcase-content';
 
 	const CALENDAR_URL = 'https://calendar.app.google/8onRM8GRsP6WE9qf9';
 	const CONTACT_MAIL = 'mailto:informationschef@esek.se';
