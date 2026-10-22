@@ -51,7 +51,8 @@ export async function unwrap<T>(call: () => Promise<FetchResult<T>>): Promise<T>
 export type BadRequest = { message: string; field?: string };
 export type Attempt<T> = { ok: T; badRequest?: never } | { ok?: never; badRequest: BadRequest };
 export type ForbiddenAttempt<T> =
-	(Attempt<T> & { forbidden?: never }) | { ok?: never; badRequest?: never; forbidden: true };
+	| (Attempt<T> & { forbidden?: never })
+	| { ok?: never; badRequest?: never; forbidden: true };
 
 async function fetchResult<T>(call: () => Promise<FetchResult<T>>): Promise<FetchResult<T>> {
 	try {

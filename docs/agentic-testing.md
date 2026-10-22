@@ -55,9 +55,7 @@ during development):
 
 ```js
 import { firefox } from '/abs/path/to/frontend/node_modules/playwright/index.mjs';
-const page = await (
-	await firefox.launch()
-)
+const page = await (await firefox.launch())
 	.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 })
 	.then((c) => c.newPage());
 // log in via test provider, drive the flow, screenshot, assert

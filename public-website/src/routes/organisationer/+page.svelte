@@ -118,10 +118,10 @@
 				</p>
 			</div>
 			<div class="tappen-feature-grid">
-				{#each FEATURES as feature, i (feature.title)}
+				{#each FEATURES as feature (feature.title)}
 					<article>
 						<!-- <span class="feature-number">{String(i + 1).padStart(2, '0')}</span> -->
-						<h3 class="font-bold mb-2">{feature.title}</h3>
+						<h3 class="mb-2 font-bold">{feature.title}</h3>
 						<p>{feature.description}</p>
 					</article>
 				{/each}
@@ -180,7 +180,10 @@
 				{#each PRESENTATIONS as presentation (presentation.file)}
 					<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- static asset, not a route -->
 					<a class="tappen-gallery-card" href={presentation.file} download>
-						<img class="self-center" src={presentation.poster} alt="Förhandsvisning av {presentation.title}" />
+						<img
+							class="self-center"
+							src={presentation.poster}
+							alt="Förhandsvisning av {presentation.title}" />
 						<span class="tappen-gallery-meta">
 							<strong>{presentation.title}</strong>
 							<span>{presentation.description}</span>

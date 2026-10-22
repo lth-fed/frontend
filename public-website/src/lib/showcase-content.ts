@@ -30,8 +30,7 @@ export const FEATURES: Feature[] = [
 	},
 	{
 		title: 'Biljetter direkt i appen',
-		description:
-			'Släpp biljetter med flera biljetttyper, reservationer och betalning via Swish.'
+		description: 'Släpp biljetter med flera biljetttyper, reservationer och betalning via Swish.'
 	},
 	{
 		title: 'Inloggning med LU-konto',
@@ -112,7 +111,8 @@ export type Presentation = { title: string; description: string; file: string; p
 export const PRESENTATIONS: Presentation[] = [
 	{
 		title: 'Teknologappen — presentation för sektioner (2026-10)',
-		description: 'Huvudpresentationen: vad appen är, vad den löser och var vi är på väg. Innehåller även siffror från när E-sektionen använde sig av den under nollningen 2026.',
+		description:
+			'Huvudpresentationen: vad appen är, vad den löser och var vi är på väg. Innehåller även siffror från när E-sektionen använde sig av den under nollningen 2026.',
 		file: '/public-salesdeck/teknologappen-presentation.pdf',
 		poster: '/public-salesdeck/teknologappen-presentation.png'
 	},
@@ -142,7 +142,14 @@ export const BOOKING = {
  * YouTube video IDs to embed inline on the page. Add IDs here as videos are
  * published; the page renders them as inline players in the order listed.
  */
-export const VIDEO_IDS: string[] = ["axMzCEkHCSU", "UQrFhtaHl-g", "vn6-bSB2XVc", "Jk4-tN2hUiE", "QJIztThM4g0", "XZZI34KnsP8"];
+export const VIDEO_IDS: string[] = [
+	'axMzCEkHCSU',
+	'UQrFhtaHl-g',
+	'vn6-bSB2XVc',
+	'Jk4-tN2hUiE',
+	'QJIztThM4g0',
+	'XZZI34KnsP8'
+];
 
 export const VIDEOS = {
 	eyebrow: 'Se appen i praktiken',
