@@ -94,9 +94,16 @@ The
 (formerly Ionic's) is handy for day-to-day Capacitor work — building, syncing, running, etc. —
 without having to remember the underlying CLI commands.
 
-## Build and push production web images
+## Build and push web images
 
-Run `./build-push.sh`.
+Run `./build-push.sh`. It pushes two sets of images:
+
+- **Production** (`registry.esek.se/esek`) — built with the production API hosts. These are what the
+  deploy host pulls (`compose.prod.yaml`).
+- **Development** (`esekmacapar/*` on Docker Hub) — built in dev mode, so the app and auth bundles
+  talk to `localhost:8000` and `localhost:8001`. These are what the local development stacks run
+  (`compose.backend.yaml` here and `compose.frontend.yaml` in the backend repo), so devs never have
+  to build the web apps locally.
 
 ## Deploy pushed images
 
