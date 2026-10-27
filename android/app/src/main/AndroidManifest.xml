@@ -32,6 +32,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="https" android:host="app.teknologappen.se" android:pathPrefix="/activity/" />
+                <data android:scheme="https" android:host="app.teknologappen.se" android:pathPrefix="/group/" />
             </intent-filter>
 
             <!-- Deep link -->

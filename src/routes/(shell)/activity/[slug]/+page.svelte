@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Capacitor } from '@capacitor/core';
 	import { Share } from '@capacitor/share';
-	import { activityShareUrl } from '$lib/navigation/activityLinks';
+	import { activityShareUrl } from '$lib/navigation/appLinks';
 	import ActivityHeadCard from '$lib/components/ActivityHeadCard.svelte';
 	import OrganiserCard from '$lib/components/OrganiserCard.svelte';
 	import {
