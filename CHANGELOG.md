@@ -1,5 +1,45 @@
 # Changelog
 
+## [1.2.0](https://github.com/lth-fed/frontend/compare/v1.1.0...v1.2.0) (2026-10-27)
+
+
+### Features
+
+* add public showcase & salesdeck ([d4e6728](https://github.com/lth-fed/frontend/commit/d4e6728b3129534fda6d8c3a358d9eba652f05b1))
+* open shared group links in the app ([56ecce0](https://github.com/lth-fed/frontend/commit/56ecce015011bc64e0df45180e1f84bf499884b3))
+
+
+### Bug Fixes
+
+* add last explainer video ([0521b0a](https://github.com/lth-fed/frontend/commit/0521b0a73f25455009cc14c4b3b8f1e9b631fbff))
+* release dev images on dockerhub ([c9d5d70](https://github.com/lth-fed/frontend/commit/c9d5d706141ca1e09a4166818f875ef209831a63))
+* update android deep link support file ([a38ad2a](https://github.com/lth-fed/frontend/commit/a38ad2ad11f24b1573398197e5cbf00dcd030f93))
+* update android modal on web ([4375db0](https://github.com/lth-fed/frontend/commit/4375db05180df06e57f3620e95c62c40993b0a1c))
+* update maintainer name ([5543d86](https://github.com/lth-fed/frontend/commit/5543d86c40e1ad78da46a833c2c4639f9c3f3c2e))
+* use server time for the Home ticket cutoff and QR timestamps ([cf83ac5](https://github.com/lth-fed/frontend/commit/cf83ac549b79ce314029b1fc24be32e219f4fc1e))
+
+
+### Documentation
+
+* add `CLAUDE.md` with repository guidance for Claude Code ([f786efd](https://github.com/lth-fed/frontend/commit/f786efde42174b982613e4b69fa8bd09ae68d1fb))
+* improve readme ([456e8b9](https://github.com/lth-fed/frontend/commit/456e8b97f63c7af3014d9adb5a576299161968e6))
+* make `AGENTS.md` the source of truth for all agents ([a719851](https://github.com/lth-fed/frontend/commit/a719851b2728d5e9c05fdfbb31386de99b9663f4))
+* warn against platform names in App Store Notes ([ae493a5](https://github.com/lth-fed/frontend/commit/ae493a54eafa9162dba9fa565b3dd988eaa61d2a))
+
+
+### Styles
+
+* wrap long condition in PurchasePill ([eff3a9b](https://github.com/lth-fed/frontend/commit/eff3a9b142cc96fd4ab2f456c220700ff9a54c08))
+
+
+### Miscellaneous
+
+* add CLA signature for mptrsn05 ([6dda8da](https://github.com/lth-fed/frontend/commit/6dda8daa86d82e8c914b790a6ea441a14232f578))
+* don't log errors from otel in prebuilt backend compose ([7b0db5f](https://github.com/lth-fed/frontend/commit/7b0db5fffe8f07074bbfae015a0b26853fda1413))
+* fmt ([1193813](https://github.com/lth-fed/frontend/commit/1193813645e213667521509029513c8122fc3bcc))
+* push images to dockerhub ([387a1bf](https://github.com/lth-fed/frontend/commit/387a1bf80e3af2997b4e2422b7894b70dc8500cf))
+* rename from tappen to showcase ([a9f913f](https://github.com/lth-fed/frontend/commit/a9f913feb9465b2f605921088c8dd5ac1786fb18))
+
 ## [1.1.0](https://github.com/lth-fed/frontend/compare/v1.0.7...v1.1.0) (2026-10-11)
 
 
